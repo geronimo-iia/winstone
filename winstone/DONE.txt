@@ -1,0 +1,410 @@
+List of done things:
+---------------------------
+
+
+v1.0.0
+
+DONE - Update to be maven v2 compliance:
+       - source tree
+       - load resources as UTF-8
+       - JDK 1.5
+       - add find bug plugin   
+
+DONE - Update maven dependency:
+       - servlet v2.5 MR6 - JSR 154 
+
+DONE - Remove GCJ build mechanism (not working)
+
+DONE - integrate extra stuff (filter)
+
+DONE -make HostGroup as an interface, or turn private members to protected. 
+	I had to write my own class to bypass the default behaviour : 
+	https://gforge.inria.fr/plugins/scmsvn/viewcvs.php/root/src/java/org/inria/ns/reflex/util/wunit/ServerEmulator.java?root=reflex&view=auto
+	==> make member protected (less time consuming for this version)
+	
+DONE - add constructor on HostGroup, HostConfiguration and WebApplicationconfiguration with no cluster neither objectPool args
+	
+DONE -add a method that return a servlet from an URI ; 
+	 this is done in RequestDispatcher and I have to copy the code for doing the same ; 
+	 unfortunately, the urlMatch(uriInsideWebapp, servletPath, pathInfo) method can't be accessed and I have to add an ugly hack to get it
+	==> Set visibility to public
+	
+DONE - the method that computes a session ID in WinstoneRequest#makeNewSession() is now public; 
+
+DONE - FIX HttpListenet#releaseSocket : add try/catch on each close and throw last IO exception.
+	
+DONE -bunch of methods that I have to copy because they are private and could be public AND static :
+	HttpListener#parseURILine(String,WinstoneRequest,WinstoneResponse)
+	HttpListener#trimHostName(String input)
+	Why Static ?
+	
+	==> on http://leepoint.net/notes-java/flow/methods/50static-methods.html
+	Why declare a method static
+	The above mean() method would work just as well if it wasn't declared static, as long as it was called from within the same class. If called from outside the class and it wasn't declared static, it would have to be qualified (uselessly) with an object. Even when used within the class, there are good reasons to define a method as static when it could be.
+	Documentation. Anyone seeing that a method is static will know how to call it (see below). Similarly, any programmer looking at the code will know that a static method can't interact with instance variables, which makes reading and debugging easier.
+	Efficiency. A compiler will usually produce slightly more efficient code because no implicit object parameter has to be passed to the method.
+	
+DONE - Control port password
+	Since the control port doesn't have a password yet, it would be good, security-wise, to bind the control port only to the loopback interface.
+	There could be a command line option to change the interface as well (though that's not my request).
+	To force it to the loop back interface, all we need is a single line change:
+	 controlSocket = new ServerSocket(this.controlPort, 0, InetAddress.getLocalHost());
+	instead of
+	controlSocket = new ServerSocket(this.controlPort)
+
+DONE -  Add --controlAddress command line parameter.
+	It would be nice if a --controlAddress parameter could be provided to winstone. 
+	This would provide and easy way to ensure that shutdown requests originate from the localhost or a machine on a trusted interface 
+	while still allowing winstone to serve requests on an untrusted public interface.
+	If no controlAddress is provided, InetAddress.getLocalHost() is used.
+
+DONE - TEST: Check that toolsJar.toURI().toURL() == toolsJar.toURL() (Launcher) for removing deprecated call: jars.add(toolsJar.toURL());
+
+DONE - NullPointerException in WinstoneControl.java 
+	When running the command 
+	java -cp winstone-0.9.10.jar winstone.tools.WinstoneControl
+	a NullPointerException is thrown instead of displaying the usage page for the utility.
+	Attached is a trivial patch which should resolve the issue.
+
+DONE - Ajp13Listener fails to deallocate response/request	
+	In some cases, allocated request and response objects are not deallocated and returned to the object pool. This leads to "limit exceeded" errors in object pool after some time and a "Bad Gateway" error in Apache running mod_jk.
+	The attached patch resolves the problem by setting the request/response handler members earlier 
+	(to allow the handler to call deallocate in the error case) and deallocates response/request if the headers packet length is 0.
+	
+DONE - FIX potential bug in HostConfiguration when webapp prefix (context path) did not start with "/".
+
+DONE - Errors in listener instantiation are ignored 
+	When I'm developing a JSF application over winstone, I receive this log line:
+	[Winstone 2009/05/07 11:21:09] - Error instantiating listener class: com.sun.faces.config.ConfigureListener
+	But it does not emit the error! After digging into winstone code, I found this winstone.WebAppConfiguration class:
+	http://winstone.cvs.sourceforge.net/viewvc/winstone/winstone/src/java/winstone/WebAppConfiguration.java?revision=1.59&view=markup
+	Line 422 is:
+	422 Logger.log(Logger.WARNING, Launcher.RESOURCES,
+	423 "WebAppConfig.InvalidListener",
+	424 listenerClass);
+	But I guess it should be:
+	422 Logger.log(Logger.WARNING, Launcher.RESOURCES,
+	423 "WebAppConfig.InvalidListener",
+	424 listenerClass, err);
+
+DONE - Request/response object leak
+	One of the Hudson users reported a problem <https://hudson.dev.java.net/issues/show_bug.cgi?id=1838>, which seems like the request/response object leak.
+	That is, the server is clearly not handling 1000 concurrent requests, yet the ObjectPool class denies the allocation of request, citing the maximum is reached.
+	The only valid explanation seems to me that the object is leaking.
+	Looking at ObjectPool, I think the implementation approach is rather prone to memory leak. First, since the request handling thread itself is bound by the limit, this places natural upward bound in the # of request/response object that are concurrently in use, so the value of placing a limit is questionable.
+	Also, if you do feel it's necessary to put a cap on the pool, you should just make sure that 'unusedRequestPool' doesn't grow beyond certain size. There's no point in keeping track of 'usedRequestPool'.
+
+	I applied the following patch to revision 1.13 of Ajp13Listener.java.
+	Change adds deallocation of req/resp. resources when WinstoneException is
+	thrown in Ajp13IncomingPacket constructor.
+	
+	167a168,172
+	> if (req != null)
+	> this.objectPool.releaseRequestToPool(req);
+	> if (rsp != null)
+	> this.objectPool.releaseResponseToPool(rsp);
+	> 
+	171d175
+	< deallocateRequestResponse(handler, req, rsp, null,
+	null);
+	173a178,184
+	> } catch (WinstoneException err) {
+	> if (req != null)
+	> this.objectPool.releaseRequestToPool(req);
+	> if (rsp != null)
+	> this.objectPool.releaseResponseToPool(rsp);
+	> 
+	> throw err;
+	
+	This fix solved the problem I had in my setup, running mod_jk version
+	1.2.25 with following configuration:
+	.socket_keepalive=1
+	.socket_timeout=5
+	.connection_pool_timeout=600
+	
+	Best regards
+	Johan Eriksson
+
+	=> MUST BE WELL TESTED
+
+DONE - Problem with AJP running behind Apache 2.2 mod_proxy
+ 	 	
+	I have encountered the following issue when trying to run Winstone behind Apache 2.2 with mod_proxy enabled:
+	- Apache shows an internal server error (500)
+	- log files show the following error message
+	
+	### start
+	Error within request handler thread
+	java.lang.StringIndexOutOfBoundsException: String index out of range: 1230
+	at java.lang.String.checkBounds(String.java:401)
+	at java.lang.String.<init>(String.java:442)
+	at winstone.ajp13.Ajp13IncomingPacket.readString(Ajp13IncomingPacket.java:278)
+	at winstone.ajp13.Ajp13IncomingPacket.parsePacket(Ajp13IncomingPacket.java:192)
+	at winstone.ajp13.Ajp13Listener.allocateRequestResponse(Ajp13Listener.java:178)
+	at winstone.RequestHandlerThread.run(RequestHandlerThread.java:79)
+	at java.lang.Thread.run(Thread.java:619)
+	### end
+	
+	The setup is intended to proxy Hudson through AJP behind an Apache running HTTPs. A related issue was also reported on the hudson mailing list [1], but I have not found any associated bug here, or additional information there.
+	
+	Winstone parameters (as run in the hudson.war):
+	--webroot=/var/run/hudson/war
+	--httpPort=-1
+	--ajp13Port=8102
+	--ajp13ListenAddress=127.0.0.1
+	--prefix=/hudson
+	
+	Apache configuration snippet to proxy requests
+	### start
+	ProxyRequests Off
+	ProxyPreserveHost On
+	<Proxy *>
+	Order deny,allow
+	Allow from all
+	</Proxy>
+	ProxyPass /hudson ajp://127.0.0.1:8102/hudson
+	ProxyPassReverse /hudson ajp://127.0.0.1:8102/hudson
+	### end
+	
+	Is this a known issue? What can be done.
+	
+	Thank you,
+	Kariem
+	
+	P.S.: Please excuse me, if this question has already been asked. The bug tracker is not really searchable.
+	
+	[1] http://n4.nabble.com/Hudson-behind-Apache-with-AJP13-td380444.html
+
+	==> add test on packet byte lenth in Ajp13IncomingPacket (length > packet.length)
+	==> add more test on this because probleme shoult be upper.
+
+
+DONE - Temp Dir
+	The original issue reported in https://hudson.dev.java.net/issues/show_bug.cgi?id=693
+	Given that JRE apparently chooses the same temporary directory no matter what user account is running it, the choice of default temporary directory "$TMP/winstone/<warFileBaseName>" is dangerous because two users trying to run the same app on the system will collide.
+	I suggest Winstone to use the "user.name" system property and do "$TMP/winstone/${user.name}/<warFileBaseName>
+	This is a trivial one line change in HostConfiguration.java line 223
+
+	By default system will use  "$TMP/winstone/${user.name}/${hostname}/${warFileBaseName}, and i've add a parameter --tempDirectory.
+	If tempDirectory is set, tempory directory used will be: ${tempDirectory}/${hostname}/${warFileBaseName}
+	
+DONE - update  parameter name into a more simpler way 
+	 
+DONE - FIX serialVersionUID 
+
+DONE- ArrayIndexOutOfBoundsException in SecurityConstraint 
+	
+	This exception is thrown if web.xml contains a security-constraint -> web-resource-collection with more than one url-pattern entry.
+	I started writing a patch for it which I will upload to the Patches section, soon.
+	
+	java.lang.ArrayIndexOutOfBoundsException: 1 
+	at winstone.auth.SecurityConstraint.isApplicable(SecurityConstraint.java:132) 
+	at winstone.auth.BaseAuthenticationHandler.doRoleCheck(BaseAuthenticationHandler.java:103) 
+	at winstone.auth.BaseAuthenticationHandler.processAuthentication(BaseAuthenticationHandler.java:88) 
+	at winstone.RequestDispatcher.continueAfterSecurityCheck(RequestDispatcher.java:349) 
+	at winstone.RequestDispatcher.forward(RequestDispatcher.java:323) 
+	at winstone.RequestHandlerThread.processRequest(RequestHandlerThread.java:244) 
+	at winstone.RequestHandlerThread.run(RequestHandlerThread.java:150) 
+	at java.lang.Thread.run(Thread.java:619)
+	
+	==> Have to write a test case
+	
+DONE - Add type information on collection.
+	
+DONE- remove ressource bundle ?
+	We should try a way with less time consumming ?
+	ResourceBundle time -> 9681464, 9681464000
+	WinstoneResourceBundle time -> 10006776, 10006776498
+	HashResourceBundle time -> 8912917, 8912917803				(google collection)
+	Immutable HashResourceBundle time -> 15437561, 15437561550  (google collection)
+	FastMap HashResourceBundle time -> 9583291, 9583291592		(from javolution 5.5.1)
+
+	NO just be replace ny an HashRessourceBundle implementation.
+	
+	
+DONE - Mime type:
+	ServletContext.getMimeType() implementation is backed by a list, but this list only contains a small number of entries.
+	It would be highly desirable for this to be expanded further, for example to support major formats like .zip, .jar, etc.
+	You can use the servlet 2.4 spec mime-type element to expand the list
+	freely, but I have added some of the simple ones you asked for. If there
+	are any more of these you want, re-open the bug and attach specifics.
+	Thanks.
+
+	In a more confortable way, i start to add default value (aka tomcat) by MimeTypes class which load all their value from properties file "mime.properties".
+	
+	in WebAppConfiguration, the MIME type resolution is done with a Map, it would be better to delegate that resolution to a standalone component 
+	(e.g. java.net.FileNameMap), which would allow to fallback to system-defined MIME types (java.net.URLConnection.getFileNameMap()), 
+	or make a method Map getMimeMap() (it's a private member)
+	==> The ServletContext.getMimeType(String) returns a MIME type for a given file name based on the extension of the filename. 
+	The mapping returned is based on the servlet container configuration as well as the web application descriptor's mime-mapping elements.
+
+DONE - Set parameter map to <String, String[]> as specification 2.5 
+
+DONE- Winstone (v0.9.9) fails to get request parameters
+	Try this inside some Web app on a GET request with a query string :
+	req.getInputStream();
+	req.getParameterNames();
+	
+	You won't get the parameters !
+	
+	My knowledge is that when you get the body (Reader or InputStream), you won't be able to get additional parameters in POST, but you should get those in the query string, above all if the method is GET.
+	
+	There is a useful page about this :
+	http://java.boot.by/wcd-guide/ch01s02.html
+	(just before the "Headers" section)
+	
+	So, I have tested with Tomcat that does return my parameters, but Winstone doesn't.
+	
+	Kind regards,
+	Philippe Poulard.
+
+
+	Should be fixed now, but we have to made a real test case.
+	
+	
+     
+v0.9.5
+DONE - Add session persistence across reboots (ie serialize to file)
+DONE - Add v2.5 spec support
+DONE - Heaps of include/forward and session related fixes (thanks to Martin Cordova and Robert Boyce)
+
+v0.8.1
+DONE - License change to dual CDDL + LGPL
+DONE - appfuse bugfix. All listeners need a context class loader set.
+DONE - update outputstream to do include stacking internally, rather than returning new streams for each level
+DONE - fixed some nasty web.xml parsing bugs
+
+v0.8
+DONE - Remove resource bundles as arguments. Declare statically in class
+DONE - DB connection pool keep-alive support, etc
+DONE - Cache filter matching calcs for various URLs
+DONE - Virtual host support
+DONE - Access log. Apache style if possible, minimal config.
+DONE - Fix for davenport and jakarta slide webdav applications
+DONE - Check for warfile, properties file inside classpath, so that we can pack an app in a single jar
+
+v0.7
+DONE - Fixed load-on-startup optional content bug (thanks to Matthias Wuttke)
+DONE - Fixed the "error request loses attributes when forwarded" bug
+DONE - Upgraded to maven build process, ant is deprecated
+DONE - Reformatted source using eclipse source formatter
+DONE - Added better resolution of paths in static resource servlet, so that spaces etc in paths are handled properly
+DONE - Multiple webapp support
+DONE - Fix for JamVM JNDI properties bug (thanks Martin Cordova)
+DONE - SSL Key manager factory selector (thanks Martin Cordova)
+DONE - TCK compliance testing
+DONE - Added optional gzip and multipart upload filters
+DONE - Fixed session bugs in SSL (thanks Martin Cordova)
+
+v0.6.4
+DONE - Added HTTPS listener class
+DONE - Fixed the path separator bug in the classpath under linux
+DONE - Changed default hostname lookups to off (more stable).
+
+v0.6.3
+DONE - Fixed the errorPage directive bug
+DONE - Fixed bugs related to requestDispatcher and non-existants urls
+DONE - Fixed querystring parsing error when non-latin1 encoding
+
+v0.6.2
+DONE - Move all debugging message lookups into logger (performance)
+DONE - Made invoker servlet on by default
+
+v0.6.1
+DONE - Fix VariableInfo and BodyContent api errors for jsps
+DONE - Fix WinstoneDataSource lockup problem
+
+v0.6
+DONE - Create winstone local jsp 2.0 api classes
+DONE - Update to v2.4 servlet api classes
+DONE - Refactor to winstone package, not com.rickknowles.winstone package
+DONE - Test with Apache Struts framework
+DONE - Added logfile directive
+DONE - Fixed request/response locale setting
+DONE - Fixed jsp include bugs
+DONE - Fixed http session bugs
+DONE - Added simple test application
+DONE - Java wrapper for control operations, such as shutdown or flush
+DONE - Additional control port options, such as manual webapp forced reload operation
+DONE - Added 206 Partial Content (ie restartable downloads) to static servlet
+DONE - Added interface specific binding for ajp13 and http listeners
+DONE - Add additional listener class calls for request + attributes
+DONE - Update to make winstone completely compliant with servlet 2.4 spec
+
+(non-compliance with 2.4 spec parts completed in v0.6)
+DONE - 1.6.1 Session Destroyed call timing is not called at correct time
+DONE - 2.3.2.1 Error handling in servlet.init() - UnavailableException
+DONE - 2.3.3.2 Error handling in servlet.service() - UnavailableException
+DONE - 2.3.4 Calling destroy incorrectly - wait for all threads to finish
+DONE - 3.5 Resource URLs
+DONE - 4.1.1 Parse conditions for POST parameters
+DONE - 4.4 Context Path / Servlet Path / Path Info values wrong
+DONE - 4.5 Path translation methods incorrect
+DONE - 4.7 Add SSL request attribute (javax.servlet.request.key_size)
+DONE - 4.9 Request Encoding
+DONE - 4.10 Implement request listeners
+DONE - 4.10 Implement request attribute listeners
+DONE - 5.1 Reset / Buffer management
+DONE - 5.2 X-Powered-By
+DONE - 5.3 Redirect URLs must be absolute
+DONE - 5.4 Locale mapping implementation
+DONE - 6.2.1 Filter init() error handling
+DONE - 6.2.4 Build filter chain in reverse order
+DONE - 6.2.5 Filter config for dispatcher
+DONE - 7.1.1 Session cookie name
+DONE - 7.4 Check order of session binding listeners
+DONE - 7.6 Session accessed time
+DONE - 7.7.2 Errors in distributed sessions
+DONE - 8.1 Return null request dispatcher when no url found
+DONE - 8.1 Request vs Context Dispatchers
+DONE - 8.1.1 Query string in request dispatchers
+DONE - 8.3 Request attributes for include dispatches
+DONE - 8.3.1 getNamedDispatcher
+DONE - 8.4.2 Forward request attributes
+DONE - 8.5 Errors in dispatch
+DONE - 9.5 404 for WEB-INF
+DONE - 9.6 404 for META-INF
+DONE - 9.7.1 Shared library classloader (common/lib)
+IGNR - 9.7.1 Manifest depend libraries
+DONE - 9.9.1 Error request attributes
+DONE - 9.9.2 Error page matching
+DONE - 9.9.3 Error filters
+DONE - 9.10 Welcome file match
+DONE - 9.12 Order of startup
+DONE - 10.3.2 Order of listener invokation
+DONE - 10.3.4 Session then context listeners
+DONE - 10.6 Listener exceptions
+DONE - 10.8 Can determine invalidate or timeout on session
+DONE - 11.1 Rule order for URL match
+DONE - 11.2 default mapping of /
+DONE - 11.2.1 *.jsp mapping is overrideable
+DONE - 12.2 Security on incoming only
+DONE - 12.3 Match security-role-ref in IsUserInRole
+IGNR - 12.7 run-as element in servlet
+DONE - 12.8.1 * = all roles
+DONE - 13.1 Locale-mapping element
+IGNR - 13.2 Canonical paths in web.xml
+
+v0.5
+DONE - Implement session clustering between multiple Winstone instances
+DONE - Make the core distribution jar smaller, with optional components detached
+DONE - Add CLIENT-CERT authentication handler
+DONE - Add DIGEST authentication handler
+DONE - Add optional JNDI support for env-refs and jdbc datasource / mail session support
+
+v0.4
+DONE - Implement errorPage directives in web.xml
+DONE - Add in request/response object pools to improve execution time
+DONE - Add command line arguments to control handler thread startup/max-idle/max
+DONE - Add servlet reloading to the WinstoneClassLoader
+DONE - Add authentication/security model - pluggable if possible, so Winstone can work in non-security mode
+DONE - Add xml-file-based realm support
+DONE - Add FORM based authentication
+
+v0.3
+DONE - Modify the request handler thread to survive beyond a single request cycle
+DONE - Add auto WAR extract instead of webroot
+DONE - Change build process to use external ant
+DONE - Add listener handlers, etc
+DONE - Add filter handling code
+DONE - Refactor HttpConnector links, and build an ajp13 connector
