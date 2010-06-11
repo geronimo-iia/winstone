@@ -15,7 +15,7 @@
     
   <filter>
 		<filter-name>TimingFilter</filter-name>
-		<filter-class>winstone.testApplication.filters.TimingFilter</filter-class>
+		<filter-class>net.winstone.testApplication.filters.TimingFilter</filter-class>
 		<init-param>
 			<param-name>dumpRequestParameters</param-name>
 			<param-value>true</param-value>
@@ -23,7 +23,7 @@
 	</filter>
   <filter>
 		<filter-name>WriteAfterServletFilter</filter-name>
-		<filter-class>winstone.testApplication.filters.WriteAfterServletFilter</filter-class>
+		<filter-class>net.winstone.testApplication.filters.WriteAfterServletFilter</filter-class>
 	</filter>
   <filter-mapping>        
 		<filter-name>WriteAfterServletFilter</filter-name>       
@@ -31,12 +31,12 @@
 	</filter-mapping>
 	
   <listener>
-		<listener-class>winstone.testApplication.listeners.SessionListener</listener-class>
+		<listener-class>net.winstone.testApplication.listeners.SessionListener</listener-class>
   </listener>
 
 	<servlet>
 		<servlet-name>CountRequestsServlet</servlet-name>
-		<servlet-class>winstone.testApplication.servlets.CountRequestsServlet</servlet-class>    
+		<servlet-class>net.winstone.testApplication.servlets.CountRequestsServlet</servlet-class>    
 		<init-param>
 			<param-name>offset</param-name>
 			<param-value>1000</param-value>
@@ -46,7 +46,7 @@
 	
 	<servlet>
 		<servlet-name>UnavailableAtInitServlet</servlet-name>
-		<servlet-class>winstone.testApplication.servlets.UnavailableServlet</servlet-class>    
+		<servlet-class>net.winstone.testApplication.servlets.UnavailableServlet</servlet-class>    
 		<init-param>
 			<param-name>errorTime</param-name>
 			<param-value>init</param-value>
@@ -55,7 +55,7 @@
 	
 	<servlet>
 		<servlet-name>UnavailableAtGetServlet</servlet-name>
-		<servlet-class>winstone.testApplication.servlets.UnavailableServlet</servlet-class>    
+		<servlet-class>net.winstone.testApplication.servlets.UnavailableServlet</servlet-class>    
 		<init-param>
 			<param-name>errorTime</param-name>
 			<param-value>get</param-value>
