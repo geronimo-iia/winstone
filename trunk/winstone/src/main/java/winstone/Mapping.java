@@ -194,7 +194,7 @@ public class Mapping implements java.util.Comparator<Mapping> {
         return this.linkName != null ? "Link:" + this.linkName : "URLPattern:type=" + this.patternType + ",pattern=" + this.urlPattern;
     }
     
-    @Override
+     
     public int compare(Mapping one, Mapping two) {
         Integer intOne = new Integer(one.getPatternType());
         Integer intTwo = new Integer(two.getPatternType());
