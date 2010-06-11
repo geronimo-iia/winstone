@@ -47,7 +47,6 @@ public class MimeTypes implements FileNameMap {
         return contentType;
     }
     
-    @Override
     public String getContentTypeFor(final String fileName) {
         int dotPos = fileName.lastIndexOf('.');
         if ((dotPos != -1) && (dotPos != fileName.length() - 1)) {

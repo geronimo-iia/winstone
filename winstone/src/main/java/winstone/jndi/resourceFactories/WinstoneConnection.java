@@ -148,7 +148,7 @@ public class WinstoneConnection implements Connection {
         this.realConnection.releaseSavepoint(sp);
     }
     
-    @Override
+    
     public Map<String, Class<?>> getTypeMap() throws SQLException {
         return this.realConnection.getTypeMap();
     }
@@ -205,72 +205,72 @@ public class WinstoneConnection implements Connection {
         return this.realConnection.prepareStatement(sql, columnNames);
     }
     
-    @Override
+    
     public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
         return this.realConnection.createArrayOf(typeName, elements);
     }
     
-    @Override
+    
     public Blob createBlob() throws SQLException {
         return this.realConnection.createBlob();
     }
     
-    @Override
+    
     public Clob createClob() throws SQLException {
         return this.realConnection.createClob();
     }
     
-    @Override
+    
     public NClob createNClob() throws SQLException {
         return this.realConnection.createNClob();
     }
     
-    @Override
+    
     public SQLXML createSQLXML() throws SQLException {
         return this.realConnection.createSQLXML();
     }
     
-    @Override
+    
     public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
         return this.realConnection.createStruct(typeName, attributes);
     }
     
-    @Override
+    
     public Properties getClientInfo() throws SQLException {
         return this.realConnection.getClientInfo();
     }
     
-    @Override
+    
     public String getClientInfo(String name) throws SQLException {
         return this.realConnection.getClientInfo(name);
     }
     
-    @Override
+    
     public boolean isValid(int timeout) throws SQLException {
         return this.realConnection.isValid(timeout);
     }
     
-    @Override
+    
     public void setClientInfo(Properties properties) throws SQLClientInfoException {
         this.realConnection.setClientInfo(properties);
     }
     
-    @Override
+    
     public void setClientInfo(String name, String value) throws SQLClientInfoException {
         this.realConnection.setClientInfo(name, value);
     }
     
-    @Override
+    
     public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
         this.realConnection.setTypeMap(map);
     }
     
-    @Override
+    
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return this.realConnection.isWrapperFor(iface);
     }
     
-    @Override
+    
     public <T> T unwrap(Class<T> iface) throws SQLException {
         return this.realConnection.unwrap(iface);
     }
