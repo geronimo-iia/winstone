@@ -7,17 +7,13 @@
     <packaging>jar</packaging>
 
     <name>Winstone</name>
-    <url>http://winstone.sourceforge.net/</url>
+    <url>http://code.google.com/p/winstone/</url>
     <description>Winstone is a servlet container that was written out of a desire to provide servlet functionality without the bloat that full J2EE compliance introduces.</description>
 
     <licenses>
         <license>
             <name>GNU Lesser General Public License version 2.1</name>
             <url>http://www.gnu.org/licenses/lgpl.html</url>
-        </license>
-        <license>
-            <name>COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0</name>
-            <url>http://www.sun.com/cddl/cddl.html</url>
         </license>
     </licenses>
 <!-- 
@@ -67,10 +63,6 @@
                     <source>1.5</source>
                     <target>1.5</target>
                     <encoding>UTF-8</encoding>
-                    <includes>
-                        <include>javax/**</include>
-                        <include>winstone/*.*</include>
-                    </includes>
                     <testExcludes>
                         <testExclude>winstone/testCase/Base64Test.java</testExclude>
                         <testExclude>winstone/testCase/NamingTest.java</testExclude>
