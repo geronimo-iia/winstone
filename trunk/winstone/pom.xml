@@ -16,12 +16,11 @@
             <url>http://www.gnu.org/licenses/lgpl.html</url>
         </license>
     </licenses>
-<!-- 
     <scm>
-        <connection>scm:cvs:pserver:anonymous:@winstone.cvs.sourceforge.net:/cvsroot/winstone:winstone</connection>
-        <url>http://winstone.cvs.sourceforge.net/winstone/winstone</url>
+        <connection>scm:svn:https://winstone.googlecode.com/svn/trunk/winstone</connection>
+        <url>https://winstone.googlecode.com/svn/trunk/winstone</url>
     </scm>
- -->    
+
     <repositories>
         <repository>
             <id>JBOSS</id>
@@ -164,8 +163,6 @@
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
-            <systemPath>${basedir}/lib/servlet-2_5-api.jar</systemPath>
-            <scope>system</scope>
         </dependency>
         <!-- 
         <dependency>
@@ -180,22 +177,6 @@
             <version>1.0</version>
             <type>jar</type>
         </dependency>
- 
-        <dependency>
-            <groupId>javolution</groupId>
-            <artifactId>javolution</artifactId>
-            <version>5.5.1</version>
-            <scope>test</scope>
-        </dependency>
-
-<!-- 
-        <dependency>
-            <groupId>org.picocontainer</groupId>
-            <artifactId>picocontainer</artifactId>
-            <version>2.10.2</version>
-            <scope>test</scope>
-        </dependency>
- -->
     </dependencies>
 
 
