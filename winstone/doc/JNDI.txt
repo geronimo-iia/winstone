@@ -1,6 +1,14 @@
 
 JNDI support
 
+A good maybe simple article on it in memory implementation.
+http://en.newinstance.it/2009/03/27/mocking-jndi/
+
+A simplier poolf of datasource? 
+http://www.codeweblog.com/a-similar-dbcp-data-source-connection-pool-and-implementation-on/
+
+
+
 I know that in the introduction I said that Winstone was only going to support the core servlet APIs, but I've since discovered that most people use just a little more than the core servlet API offers. For example, some people use just a JNDI JavaMail session to send administrator error mails, while others want to offer a simple servlet over SSL (and hence need Apache), still others use just a JNDI DataSource to keep a reference to the connection pool.
 
 For this reason I've included a really basic optional JNDI service within Winstone. For the moment, it supports simple operations (such as bind, lookup, rebind, etc) and allows you to store references to environment variables (drawn from the env-entry elements in web.xml and/or command line arguments).
