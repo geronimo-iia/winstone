@@ -23,6 +23,10 @@
 
     <repositories>
         <repository>
+            <id>google-maven-repository</id>
+            <url>http://google-maven-repository.googlecode.com/svn/repository/</url>
+        </repository>
+        <repository>
             <id>JBOSS</id>
             <name>JBoss Repository</name>
             <url>http://repository.jboss.org/maven2/</url>
