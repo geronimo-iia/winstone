@@ -1,0 +1,26 @@
+onnecting to Apache
+
+These instructions are for beginners: if you know your way around Apache and Tomcat, you'll know what's going on here.
+
+Download and install Apache for your platform (and obviously Winstone too), then follow these steps:
+
+   1. Download mod_jk.dll/so into the apache modules directory
+   2. Add the following to the apache conf file (httpd.conf):
+
+      LoadModule jk_module modules/mod_jk.dll
+
+      <Location "/<Winstone Prefix>/*">
+      JkMount /* ajp13
+      </Location>
+
+   3. Create a new file called workers.properties in the apache conf directory, with the following contents
+
+      worker.list=ajp13
+      worker.ajp13.port=8009
+      worker.ajp13.host=localhost
+      worker.ajp13.type=ajp13
+
+   4. Start up Winstone, ensuring that the --ajp13Port=8009 is in the startup args. It's set to this by default, but it's worth confirming.
+   5. Start up Apache and try connecting to your webapp on the apache port, with the Winstone URL prefix. If it doesn't work, try looking at the apache error.log file for hints. If you get hex dumps, mail them to the winstone-devel list, together with any stack traces winstone generated.
+
+Please note this is not an optimal configuration for production uses. This is provided purely for those who need some help to get started. Read the mod_jk documentation with Tomcat for more detailed info. Additionally, Costin Manolache of the Tomcat team suggested I point out that the "jvmRoute" feature (used for managing sticky session behaviour when clustering multiple Winstone's behind a single Apache) is not supported. This may change in the future - we'll see how it goes.

@@ -1,0 +1,23 @@
+
+Embedding Winstone
+
+The design of Winstone has always allowed its easy embedding within another application. It's as simple as:
+
+ // at startup
+Map args = new HashMap();
+args.put("webroot", "<my webroot dir>"); // or any other command line args, eg port
+Launcher.initLogger(args);
+Launcher winstone = new Launcher(args); // spawns threads, so your application doesn't block
+
+... (your application code)
+
+// before shutdown
+winstone.shutdown(); 
+
+From v0.8 though, there is also the ability to embed in the opposite direction: that is, to embed your warfile into the winstone JAR itself. This allows an all-in-one container plus web-application JAR file to be downloaded, and then unpacked at execution time.
+
+To use this, simply unpack the winstone JAR, and place your WAR file inside the unpacked folder at the top level (with the same parent as the folder named "winstone"). Then rename your WAR file to "embedded.war", and repack the jar as before (make sure to preserve the META-INF and manifest).
+
+Now if you type: "java -jar winstone.jar", your application should automatically deploy as the ROOT web application. Try http://localhost:8080/ to check it out.
+
+If you need to add any default command-line arguments (eg ports or prefixes), you can embed a properties file in exactly the same way, except that the file must be named "embedded.properties".

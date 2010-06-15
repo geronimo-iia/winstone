@@ -1,0 +1,52 @@
+
+JNDI support
+
+I know that in the introduction I said that Winstone was only going to support the core servlet APIs, but I've since discovered that most people use just a little more than the core servlet API offers. For example, some people use just a JNDI JavaMail session to send administrator error mails, while others want to offer a simple servlet over SSL (and hence need Apache), still others use just a JNDI DataSource to keep a reference to the connection pool.
+
+For this reason I've included a really basic optional JNDI service within Winstone. For the moment, it supports simple operations (such as bind, lookup, rebind, etc) and allows you to store references to environment variables (drawn from the env-entry elements in web.xml and/or command line arguments).
+
+NOTE: JNDI support is disabled by default. It must be enabled using --useJNDI=true
+
+Configuration can be done in two ways:
+
+    * <env-entry> elements - This is the standard way to add simple objects, such as sql strings or configuration integers/strings. For example:
+
+        <env-entry>
+          <env-entry-name>test/hello</env-entry-name>
+          <env-entry-type>java.lang.Integer</env-entry-type>
+          <env-entry-value>45</env-entry-value>
+        </env-entry>
+
+    * Command line arguments - This is for more complex objects that require attributes to be created (JDBC DataSources for example). The syntax here involves adding a clause of the kind --jndi.resource.<resName>=<className> for each object to create, followed by --jndi.param.<resName>.<attName>=<attValue> for each attribute required. For example:
+
+      java -jar winstone.jar ...< other options > ... \
+                              --useJNDI=true \
+                              --jndi.resource.test=java.lang.Float \
+                              --jndi.param.test.value=45.56
+
+Additionally, it includes a JDBC DataSource object which can be used as a wrapper around normal JDBC drivers. This is fairly simple for now, but it meets the requirements I mentioned above. Options are as follows:
+
+   1. url (REQUIRED) - JDBC URL (jdbc:mysql://db.widgets.com/db)
+   2. driverClassName (REQUIRED) - JDBC Driver name (eg com.mysql.jdbc.Driver)
+   3. username - username for database authentication
+   4. password - password for database authentication
+   5. maxConnections - Maximum number of connections allowed in the pool. Default is 20
+   6. maxIdle - Maximum number of idle connections allowed in the pool. Default is 10
+   7. startConnections - The number of connections to open the pool with. Deafault is 2
+   8. keepAliveSQL - The sql to execute on keep-alive (or checkBeforeGet) operations. Default is empty
+   9. checkBeforeGet - If true, executes the keepAliveSQL before any connection is returned from the pool. Default is true if the keepAliveSQL is defined
+  10. keepAlivePeriod - Execute the keepAliveSQL on all unused connection every n minutes. Default is disabled
+  11. killInactivePeriod - Kills excess unused connections every n minutes. Default is disabled
+  12. retryCount - When the pool is maxed out, block and retry n times. Default is 1 retry
+  13. retryPeriod - The period (in ms) over which the retry blocks. Default is 1000ms
+
+For example to create a DataSource object at the JNDI location java:/comp/env/jdbc/connPool, use the following command line (or config file) options:
+
+java -jar winstone.jar ...< other options > ... \
+                        --useJNDI=true \
+                        --jndi.resource.jdbc/connPool=javax.sql.DataSource \
+                        --jndi.param.jdbc/connPool.url=jdbc:mysql://db.widgets.com/db \
+                        --jndi.param.jdbc/connPool.driverClassName=com.mysql.jdbc.Driver \
+                        --jndi.param.jdbc/connPool.username=foo \
+                        --jndi.param.jdbc/connPool.password=bar
+
