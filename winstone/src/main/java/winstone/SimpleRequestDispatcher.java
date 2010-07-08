@@ -18,15 +18,15 @@ import javax.servlet.ServletResponse;
 import javax.servlet.ServletResponseWrapper;
 
 /**
- * This class implements both the RequestDispatcher and FilterChain components. On 
+ * This class implements both the SimpleRequestDispatcher and FilterChain components. On 
  * the first call to include() or forward(), it starts the filter chain execution
  * if one exists. On the final doFilter() or if there is no chain, we call the include()
  * or forward() again, and the servlet is executed.
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
- * @version $Id: RequestDispatcher.java,v 1.18 2007/04/23 02:55:35 rickknowles Exp $
+ * @version $Id: SimpleRequestDispatcher.java,v 1.18 2007/04/23 02:55:35 rickknowles Exp $
  */
-public class RequestDispatcher implements javax.servlet.RequestDispatcher,
+public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
         javax.servlet.FilterChain {
     
     static final String INCLUDE_REQUEST_URI = "javax.servlet.include.request_uri";
@@ -79,7 +79,7 @@ public class RequestDispatcher implements javax.servlet.RequestDispatcher,
      * needed to handle a servlet excecution, such as security constraints,
      * filters, etc.
      */
-    public RequestDispatcher(WebAppConfiguration webAppConfig, ServletConfiguration servletConfig) {
+    public SimpleRequestDispatcher(WebAppConfiguration webAppConfig, ServletConfiguration servletConfig) {
         this.servletConfig = servletConfig;
         this.webAppConfig = webAppConfig;
 
@@ -160,7 +160,7 @@ public class RequestDispatcher implements javax.servlet.RequestDispatcher,
         // On the first call, log and initialise the filter chain
         if (this.doInclude == null) {
             Logger.log(Logger.DEBUG, Launcher.RESOURCES,
-                    "RequestDispatcher.IncludeMessage", new String[] {
+                    "SimpleRequestDispatcher.IncludeMessage", new String[] {
                             getName(), this.requestURI });
             
             WinstoneRequest wr = getUnwrappedRequest(request);
@@ -257,11 +257,11 @@ public class RequestDispatcher implements javax.servlet.RequestDispatcher,
         // Only on the first call to forward, we should set any forwarding attributes
         if (this.doInclude == null) {
             Logger.log(Logger.DEBUG, Launcher.RESOURCES,
-                    "RequestDispatcher.ForwardMessage", new String[] {
+                    "SimpleRequestDispatcher.ForwardMessage", new String[] {
                     getName(), this.requestURI });
             if (response.isCommitted()) {
                 throw new IllegalStateException(Launcher.RESOURCES.getString(
-                        "RequestDispatcher.ForwardCommitted"));
+                        "SimpleRequestDispatcher.ForwardCommitted"));
             }
             
             WinstoneRequest req = getUnwrappedRequest(request);
@@ -364,7 +364,7 @@ public class RequestDispatcher implements javax.servlet.RequestDispatcher,
             
             FilterConfiguration filter = this.matchingFilters[this.matchingFiltersEvaluated++]; 
             Logger.log(Logger.DEBUG, Launcher.RESOURCES,
-                    "RequestDispatcher.ExecutingFilter", filter.getFilterName());
+                    "SimpleRequestDispatcher.ExecutingFilter", filter.getFilterName());
             filter.execute(request, response, this);
             return;
         }
@@ -398,7 +398,7 @@ public class RequestDispatcher implements javax.servlet.RequestDispatcher,
             matchingFilters = (FilterConfiguration []) cache.get(cacheKey); 
             if (matchingFilters == null) {
                 Logger.log(Logger.FULL_DEBUG, Launcher.RESOURCES, 
-                        "RequestDispatcher.CalcFilterChain", cacheKey);
+                        "SimpleRequestDispatcher.CalcFilterChain", cacheKey);
                 List<FilterConfiguration>outFilters = new ArrayList<FilterConfiguration>();
                 for (int n = 0; n < filterPatterns.length; n++) {
                     // Get the pattern and eval it, bumping up the eval'd count
@@ -420,7 +420,7 @@ public class RequestDispatcher implements javax.servlet.RequestDispatcher,
                 cache.put(cacheKey, matchingFilters);
             } else {
                 Logger.log(Logger.FULL_DEBUG, Launcher.RESOURCES, 
-                        "RequestDispatcher.UseCachedFilterChain", cacheKey);
+                        "SimpleRequestDispatcher.UseCachedFilterChain", cacheKey);
             }
         }
         return matchingFilters;

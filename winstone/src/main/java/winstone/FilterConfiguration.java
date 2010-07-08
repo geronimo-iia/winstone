@@ -181,7 +181,7 @@ public class FilterConfiguration implements javax.servlet.FilterConfig {
             getFilter().doFilter(request, response, chain);
         } catch (UnavailableException err) {
             setUnavailable();
-            throw new ServletException(Launcher.RESOURCES.getString("RequestDispatcher.FilterError"), err);
+            throw new ServletException(Launcher.RESOURCES.getString("SimpleRequestDispatcher.FilterError"), err);
         } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }

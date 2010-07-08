@@ -218,7 +218,7 @@ public class ServletConfiguration implements javax.servlet.ServletConfig, Compar
         if (this.unavailable) {
             // ((HttpServletResponse) response).sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
             // resources.getString("StaticResourceServlet.PathNotFound", requestURI));
-            RequestDispatcher rd = this.webAppConfig.getErrorDispatcherByClass(this.unavailableException);
+            SimpleRequestDispatcher rd = this.webAppConfig.getErrorDispatcherByClass(this.unavailableException);
             rd.forward(request, response);
             return;
         }
@@ -242,7 +242,7 @@ public class ServletConfiguration implements javax.servlet.ServletConfig, Compar
             setUnavailable(this.instance);
             ((HttpServletResponse)response).sendError(HttpServletResponse.SC_NOT_FOUND, Launcher.RESOURCES.getString("StaticResourceServlet.PathNotFound", requestURI));
             // throw new ServletException(resources.getString(
-            // "RequestDispatcher.ForwardError"), err);
+            // "SimpleRequestDispatcher.ForwardError"), err);
         } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }

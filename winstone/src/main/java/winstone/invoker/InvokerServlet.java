@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import winstone.WinstoneResourceBundle;
 import winstone.Logger;
 import winstone.Mapping;
-import winstone.RequestDispatcher;
+import winstone.SimpleRequestDispatcher;
 import winstone.ServletConfiguration;
 import winstone.WebAppConfiguration;
 
@@ -120,7 +120,7 @@ public class InvokerServlet extends HttpServlet {
             Logger.log(Logger.WARNING, INVOKER_RESOURCES, "InvokerServlet.NoMatchingServletFound", servletName);
             rsp.sendError(HttpServletResponse.SC_NOT_FOUND, INVOKER_RESOURCES.getString("InvokerServlet.NoMatchingServletFound", servletName));
         } else {
-            RequestDispatcher rd = new RequestDispatcher((WebAppConfiguration)getServletContext(), invokedServlet);
+            SimpleRequestDispatcher rd = new SimpleRequestDispatcher((WebAppConfiguration)getServletContext(), invokedServlet);
             rd.setForNamedDispatcher(new Mapping[0], new Mapping[0]);
             rd.forward(req, rsp);
         }
