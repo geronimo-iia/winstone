@@ -763,7 +763,7 @@ public class WinstoneResponse implements HttpServletResponse {
         
         if ((this.webAppConfig != null) && (this.req != null)) {
             
-            RequestDispatcher rd = this.webAppConfig.getErrorDispatcherByCode(sc, msg, null);
+            SimpleRequestDispatcher rd = this.webAppConfig.getErrorDispatcherByCode(sc, msg, null);
             if (rd != null) {
                 try {
                     rd.forward(this.req, this);

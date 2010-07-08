@@ -232,7 +232,7 @@ public class RequestHandlerThread implements Runnable {
      */
     private void processRequest(WebAppConfiguration webAppConfig, WinstoneRequest req, 
             WinstoneResponse rsp, String path) throws IOException, ServletException {
-        RequestDispatcher rd = null;
+        SimpleRequestDispatcher rd = null;
         javax.servlet.RequestDispatcher rdError = null;
         try {
             rd = webAppConfig.getInitialDispatcher(path, req, rsp);

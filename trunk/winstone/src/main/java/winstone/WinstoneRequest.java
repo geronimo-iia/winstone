@@ -774,19 +774,19 @@ public class WinstoneRequest implements HttpServletRequest {
     public void addIncludeAttributes(String requestURI, String contextPath, String servletPath, String pathInfo, String queryString) {
         Map<String, Object> includeAttributes = new HashMap<String, Object>();
         if (requestURI != null) {
-            includeAttributes.put(RequestDispatcher.INCLUDE_REQUEST_URI, requestURI);
+            includeAttributes.put(SimpleRequestDispatcher.INCLUDE_REQUEST_URI, requestURI);
         }
         if (contextPath != null) {
-            includeAttributes.put(RequestDispatcher.INCLUDE_CONTEXT_PATH, contextPath);
+            includeAttributes.put(SimpleRequestDispatcher.INCLUDE_CONTEXT_PATH, contextPath);
         }
         if (servletPath != null) {
-            includeAttributes.put(RequestDispatcher.INCLUDE_SERVLET_PATH, servletPath);
+            includeAttributes.put(SimpleRequestDispatcher.INCLUDE_SERVLET_PATH, servletPath);
         }
         if (pathInfo != null) {
-            includeAttributes.put(RequestDispatcher.INCLUDE_PATH_INFO, pathInfo);
+            includeAttributes.put(SimpleRequestDispatcher.INCLUDE_PATH_INFO, pathInfo);
         }
         if (queryString != null) {
-            includeAttributes.put(RequestDispatcher.INCLUDE_QUERY_STRING, queryString);
+            includeAttributes.put(SimpleRequestDispatcher.INCLUDE_QUERY_STRING, queryString);
         }
         this.attributesStack.push(includeAttributes);
     }

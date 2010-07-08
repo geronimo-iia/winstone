@@ -1401,7 +1401,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     public javax.servlet.RequestDispatcher getNamedDispatcher(String name) {
         ServletConfiguration servlet = this.servletInstances.get(name);
         if (servlet != null) {
-            RequestDispatcher rd = new RequestDispatcher(this, servlet);
+            SimpleRequestDispatcher rd = new SimpleRequestDispatcher(this, servlet);
             if (rd != null) {
                 rd.setForNamedDispatcher(this.filterPatternsForward, this.filterPatternsInclude);
                 return rd;
@@ -1435,7 +1435,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         StringBuffer pathInfo = new StringBuffer();
         ServletConfiguration servlet = urlMatch(uriInsideWebapp, servletPath, pathInfo);
         if (servlet != null) {
-            RequestDispatcher rd = new RequestDispatcher(this, servlet);
+            SimpleRequestDispatcher rd = new SimpleRequestDispatcher(this, servlet);
             if (rd != null) {
                 rd.setForURLDispatcher(servletPath.toString(), pathInfo.toString().equals("") ? null : pathInfo.toString(), queryString, uriInsideWebapp, this.filterPatternsForward, this.filterPatternsInclude);
                 return rd;
@@ -1450,7 +1450,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
      * request attributes for a forward. Also, we can't return a null dispatcher in error case - instead we have to return a dispatcher
      * pre-init'd for showing an error page (eg 404). A null dispatcher is interpreted to mean a successful 302 has occurred.
      */
-    public RequestDispatcher getInitialDispatcher(String uriInsideWebapp, WinstoneRequest request, WinstoneResponse response) throws IOException {
+    public SimpleRequestDispatcher getInitialDispatcher(String uriInsideWebapp, WinstoneRequest request, WinstoneResponse response) throws IOException {
         if (!uriInsideWebapp.equals("") && !uriInsideWebapp.startsWith("/")) {
             return this.getErrorDispatcherByCode(HttpServletResponse.SC_BAD_REQUEST, Launcher.RESOURCES.getString("WebAppConfig.InvalidURI", uriInsideWebapp), null);
         } else if (this.contextStartupError != null) {
@@ -1508,7 +1508,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 }
             }
             
-            RequestDispatcher rd = new RequestDispatcher(this, servlet);
+            SimpleRequestDispatcher rd = new SimpleRequestDispatcher(this, servlet);
             rd.setForInitialDispatcher(servletPath.toString(), pathInfo.toString().equals("") ? null : pathInfo.toString(), queryString, uriInsideWebapp, this.filterPatternsRequest, this.authenticationHandler);
             return rd;
         }
@@ -1520,7 +1520,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     /**
      * Gets a dispatcher, set up for error dispatch.
      */
-    public RequestDispatcher getErrorDispatcherByClass(Throwable exception) {
+    public SimpleRequestDispatcher getErrorDispatcherByClass(Throwable exception) {
         
         // Check for exception class match
         Class<?> exceptionClasses[] = this.errorPagesByExceptionKeysSorted;
@@ -1539,7 +1539,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 if (exceptionClasses[n].isInstance(errWrapper)) {
                     String errorURI = (String)this.errorPagesByException.get(exceptionClasses[n]);
                     if (errorURI != null) {
-                        RequestDispatcher rd = buildErrorDispatcher(errorURI, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, null, errWrapper);
+                        SimpleRequestDispatcher rd = buildErrorDispatcher(errorURI, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, null, errWrapper);
                         if (rd != null) {
                             return rd;
                         }
@@ -1562,11 +1562,11 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         return getErrorDispatcherByCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, null, errPassDown);
     }
     
-    public RequestDispatcher getErrorDispatcherByCode(int statusCode, String summaryMessage, Throwable exception) {
+    public SimpleRequestDispatcher getErrorDispatcherByCode(int statusCode, String summaryMessage, Throwable exception) {
         // Check for status code match
         String errorURI = (String)getErrorPagesByCode().get("" + statusCode);
         if (errorURI != null) {
-            RequestDispatcher rd = buildErrorDispatcher(errorURI, statusCode, summaryMessage, exception);
+            SimpleRequestDispatcher rd = buildErrorDispatcher(errorURI, statusCode, summaryMessage, exception);
             if (rd != null) {
                 return rd;
             }
@@ -1575,7 +1575,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         // If no dispatcher available, return a dispatcher to the default error formatter
         ServletConfiguration errorServlet = this.servletInstances.get(this.errorServletName);
         if (errorServlet != null) {
-            RequestDispatcher rd = new RequestDispatcher(this, errorServlet);
+            SimpleRequestDispatcher rd = new SimpleRequestDispatcher(this, errorServlet);
             if (rd != null) {
                 rd.setForErrorDispatcher(null, null, null, statusCode, summaryMessage, exception, null, this.filterPatternsError);
                 return rd;
@@ -1590,7 +1590,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     /**
      * Build a dispatcher to the error handler if it's available. If it fails, return null.
      */
-    private RequestDispatcher buildErrorDispatcher(String errorURI, int statusCode, String summaryMessage, Throwable exception) {
+    private SimpleRequestDispatcher buildErrorDispatcher(String errorURI, int statusCode, String summaryMessage, Throwable exception) {
         // Parse the url for query string, etc
         String queryString = "";
         int questionPos = errorURI.indexOf('?');
@@ -1620,7 +1620,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         StringBuffer pathInfo = new StringBuffer();
         ServletConfiguration servlet = urlMatch(errorURI, servletPath, pathInfo);
         if (servlet != null) {
-            RequestDispatcher rd = new RequestDispatcher(this, servlet);
+            SimpleRequestDispatcher rd = new SimpleRequestDispatcher(this, servlet);
             if (rd != null) {
                 rd.setForErrorDispatcher(servletPath.toString(), pathInfo.toString().equals("") ? null : pathInfo.toString(), queryString, statusCode, summaryMessage, exception, errorURI, this.filterPatternsError);
                 return rd;
