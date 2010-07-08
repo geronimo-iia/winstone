@@ -28,8 +28,8 @@ public class WinstoneNameParser implements NameParser {
         syntax.put("jndi.syntax.escape", "\\");
         syntax.put("jndi.syntax.beginquote", "'");
     }
-
+    
     public Name parse(final String name) throws NamingException {
-        return new CompoundName(name, syntax);
+        return new CompoundName(name != null ? name : "", syntax);
     }
 }
