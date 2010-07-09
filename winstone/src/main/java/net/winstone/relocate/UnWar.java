@@ -10,7 +10,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import net.winstone.utilities.FileUtils;
+import net.winstone.util.FileUtils;
 
 /**
  * Explode war file format in a specified directory.

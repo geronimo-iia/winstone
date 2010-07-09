@@ -8,7 +8,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import net.winstone.utilities.Function;
+import net.winstone.util.Function;
 
 /**
  * A simple object pool.
