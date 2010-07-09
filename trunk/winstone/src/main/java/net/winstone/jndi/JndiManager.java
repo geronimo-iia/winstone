@@ -19,7 +19,7 @@ import javax.naming.NamingException;
 
 import net.winstone.jndi.resources.DataSourceConfig;
 import net.winstone.jndi.resources.SimpleDatasource;
-import net.winstone.utilities.LifeCycle;
+import net.winstone.util.LifeCycle;
 
 /**
  * Jndi Manager

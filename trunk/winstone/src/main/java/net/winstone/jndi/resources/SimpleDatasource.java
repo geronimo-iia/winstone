@@ -21,7 +21,7 @@ import javax.sql.DataSource;
 
 import net.winstone.pool.ResourceFactory;
 import net.winstone.pool.SimplePool;
-import net.winstone.utilities.Function;
+import net.winstone.util.Function;
 
 /**
  * DataSource Implementation.
