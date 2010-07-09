@@ -9,11 +9,11 @@ import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 
 /**
- * Files class group some utilities methods around file management.
+ * FileUtils class group some utilities methods around file management.
  * 
  * @author Jerome Guibert
  */
-public class Files {
+public class FileUtils {
     /**
      * Copy source file to destination. If destination is a path then source file name is appended. If destination file exists then:
      * overwrite=true - destination file is replaced; overwrite=false - exception is thrown. For larger files (20Mb) we use streams copy,

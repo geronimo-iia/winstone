@@ -7,7 +7,7 @@ import java.util.Map;
  * 
  * @author Jerome Guibert
  */
-public class Strings {
+public class StringUtils {
     
     public static final boolean booleanArg(final Map<String, String> args, final String name, final boolean defaultTrue) {
         String value = args.get(name);

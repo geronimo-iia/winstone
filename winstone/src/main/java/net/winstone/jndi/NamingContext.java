@@ -70,7 +70,7 @@ public class NamingContext implements Context {
     private static final transient String FIRST_CHILD = "comp";
     private static final transient String BODGED_PREFIX = "java:comp";
     
-    protected final static transient NameParser nameParser = new WinstoneNameParser();
+    protected final static transient NameParser nameParser = new SimpleNameParser();
     /** environnement Map (using lazy instanciation) */
     protected Hashtable<String, Object> environnement;
     /** binding map */
