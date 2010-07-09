@@ -28,9 +28,7 @@ import net.winstone.utilities.Function;
  * 
  * @author Jerome Guibert
  */
-public class WinstoneDatasource implements DataSource, ResourceFactory<Connection> {
-    public final static transient String IsValid = "isValid";
-    public final static transient String IsClosed = "isClosed";
+public class SimpleDatasource implements DataSource, ResourceFactory<Connection> {
     
     private final SimplePool<Connection> pool;
     private final String name;
@@ -50,7 +48,7 @@ public class WinstoneDatasource implements DataSource, ResourceFactory<Connectio
      * @throws IllegalArgumentException if config url parameter is null or empty, or validationTimeOut<=0,or keepAliveTimeOut<=0
      * @throws IllegalStateException if database driver cannot be loaded
      */
-    public WinstoneDatasource(final DataSourceConfig config, final ClassLoader loader) throws IllegalArgumentException, IllegalStateException {
+    public SimpleDatasource(final DataSourceConfig config, final ClassLoader loader) throws IllegalArgumentException, IllegalStateException {
         super();
         logWriter = null;
         // Set datasource name
@@ -259,7 +257,7 @@ public class WinstoneDatasource implements DataSource, ResourceFactory<Connectio
     
     @Override
     public String toString() {
-        return "WinstoneDatasource [name=" + name + "]";
+        return "SimpleDatasource [name=" + name + "]";
     }
     
     /**
@@ -270,13 +268,13 @@ public class WinstoneDatasource implements DataSource, ResourceFactory<Connectio
      */
     private boolean validate(final Connection connection) {
         try {
-            if (IsValid.equals(validationQuery)) {
+            if ("isValid".equals(validationQuery)) {
                 try {
                     return ((Boolean)connection.getClass().getMethod("isValid", int.class).invoke(10));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            } else if (IsClosed.equals(validationQuery)) {
+            } else if ("isClosed".equals(validationQuery)) {
                 return (connection.isClosed() == false);
             } else {
                 // validation task

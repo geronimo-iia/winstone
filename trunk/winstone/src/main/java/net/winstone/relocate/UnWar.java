@@ -10,7 +10,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import net.winstone.utilities.Files;
+import net.winstone.utilities.FileUtils;
 
 /**
  * Explode war file format in a specified directory.
@@ -99,7 +99,7 @@ public class UnWar {
                     try {
                         os = new FileOutputStream(outFile);
                         is = zipFile.getInputStream(ze);
-                        Files.copyStream(is, os);
+                        FileUtils.copyStream(is, os);
                         outFile.setLastModified(ze.getTime());
                     } catch (IOException ioe2) {
                         // server.log("Problem in extracting " + en + " " + ioe2);

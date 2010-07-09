@@ -18,7 +18,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 
 import net.winstone.jndi.resources.DataSourceConfig;
-import net.winstone.jndi.resources.WinstoneDatasource;
+import net.winstone.jndi.resources.SimpleDatasource;
 import net.winstone.utilities.LifeCycle;
 
 /**
@@ -70,9 +70,9 @@ public class JndiManager implements LifeCycle {
                         NameClassPair pair = names.next();
                         Object object = jdbc.lookup(pair.getName());
                         // is a winstone datasource ?
-                        if (object instanceof WinstoneDatasource) {
+                        if (object instanceof SimpleDatasource) {
                             // close it
-                            ((WinstoneDatasource)object).close();
+                            ((SimpleDatasource)object).close();
                         }
                         // unbind datasource
                         jdbc.unbind(pair.getName());
@@ -106,7 +106,7 @@ public class JndiManager implements LifeCycle {
      * @throws NamingException If binding already exists.
      */
     public void bind(final DataSourceConfig dataSourceConfig, final ClassLoader loader) throws IllegalStateException, NamingException {
-        final WinstoneDatasource dataSource = new WinstoneDatasource(dataSourceConfig, loader);
+        final SimpleDatasource dataSource = new SimpleDatasource(dataSourceConfig, loader);
         String jndiName = dataSource.getName();
         if (jndiName.startsWith("jdbc/"))
             jndiName = "java:/comp/env/" + jndiName;

@@ -7,7 +7,6 @@
 package winstone;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
@@ -47,14 +46,15 @@ public class ServletConfiguration implements javax.servlet.ServletConfig, Compar
     final transient String JSP_FILE = "org.apache.catalina.jsp_file";
     
     private String servletName;
-    private String classFile;
+    private String className;
     private Servlet instance;
-    private final Map<String, String> initParameters;
+    private final Hashtable<String, String> initParams;
     private final WebAppConfiguration webAppConfig;
     private int loadOnStartup;
     private String jspFile;
     // private String runAsRole;
     private final Map<String, String> securityRoleRefs;
+    /** runtime memeber */
     private Object servletSemaphore = new Boolean(true);
     private boolean isSingleThreadModel = false;
     private boolean unavailable = false;
@@ -62,17 +62,18 @@ public class ServletConfiguration implements javax.servlet.ServletConfig, Compar
     
     protected ServletConfiguration(final WebAppConfiguration webAppConfig) {
         this.webAppConfig = webAppConfig;
-        this.initParameters = new Hashtable<String, String>();
+        this.initParams = new Hashtable<String, String>();
         this.loadOnStartup = -1;
         this.securityRoleRefs = new Hashtable<String, String>();
     }
     
     public ServletConfiguration(final WebAppConfiguration webAppConfig, final String servletName, final String className, final Map<String, String> initParams, final int loadOnStartup) {
         this(webAppConfig);
-        if (initParams != null)
-            this.initParameters.putAll(initParams);
+        if (initParams != null) {
+            this.initParams.putAll(initParams);
+        }
         this.servletName = servletName;
-        this.classFile = className;
+        this.className = className;
         this.jspFile = null;
         this.loadOnStartup = loadOnStartup;
     }
@@ -91,7 +92,7 @@ public class ServletConfiguration implements javax.servlet.ServletConfig, Compar
             if (nodeName.equals(ELEM_NAME))
                 this.servletName = WebAppConfiguration.getTextFromNode(child);
             else if (nodeName.equals(ELEM_CLASS))
-                this.classFile = WebAppConfiguration.getTextFromNode(child);
+                this.className = WebAppConfiguration.getTextFromNode(child);
             else if (nodeName.equals(ELEM_JSP_FILE))
                 this.jspFile = WebAppConfiguration.getTextFromNode(child);
             else if (nodeName.equals(ELEM_LOAD_ON_STARTUP)) {
@@ -110,7 +111,7 @@ public class ServletConfiguration implements javax.servlet.ServletConfig, Compar
                         paramValue = WebAppConfiguration.getTextFromNode(paramNode);
                 }
                 if (!paramName.equals("")) {
-                    this.initParameters.put(paramName, paramValue);
+                    this.initParams.put(paramName, paramValue);
                 }
             } else if (nodeName.equals(ELEM_RUN_AS)) {
                 for (int m = 0; m < child.getChildNodes().getLength(); m++) {
@@ -132,17 +133,33 @@ public class ServletConfiguration implements javax.servlet.ServletConfig, Compar
                         link = WebAppConfiguration.getTextFromNode(roleRefNode);
                 }
                 if (!name.equals("") && !link.equals(""))
-                    this.initParameters.put(name, link);
+                    this.initParams.put(name, link);
             }
         }
         
-        if ((this.jspFile != null) && (this.classFile == null)) {
-            this.classFile = WebAppConfiguration.JSP_SERVLET_CLASS;
-            WebAppConfiguration.addJspServletParams(this.initParameters);
+        if ((this.jspFile != null) && (this.className == null)) {
+            this.className = WebAppConfiguration.JSP_SERVLET_CLASS;
+            WebAppConfiguration.addJspServletParams(this.initParams);
         }
         Logger.log(Logger.FULL_DEBUG, Launcher.RESOURCES, "ServletConfiguration.DeployedInstance", new String[] {
-            this.servletName, this.classFile
+            this.servletName, this.className
         });
+    }
+    
+    public String getInitParameter(String name) {
+        return initParams.get(name);
+    }
+    
+    public Enumeration<?> getInitParameterNames() {
+        return initParams.keys();
+    }
+    
+    public ServletContext getServletContext() {
+        return this.webAppConfig;
+    }
+    
+    public String getServletName() {
+        return this.servletName;
     }
     
     public void ensureInitialization() {
@@ -169,7 +186,7 @@ public class ServletConfiguration implements javax.servlet.ServletConfig, Compar
             Servlet newInstance = null;
             Throwable otherError = null;
             try {
-                Class<?> servletClass = Class.forName(classFile, true, this.webAppConfig.getLoader());
+                Class<?> servletClass = Class.forName(className, true, this.webAppConfig.getLoader());
                 newInstance = (Servlet)servletClass.newInstance();
                 this.isSingleThreadModel = Class.forName("javax.servlet.SingleThreadModel").isInstance(newInstance);
                 
@@ -178,15 +195,15 @@ public class ServletConfiguration implements javax.servlet.ServletConfig, Compar
                 newInstance.init(this);
                 this.instance = newInstance;
             } catch (ClassNotFoundException err) {
-                Logger.log(Logger.WARNING, Launcher.RESOURCES, "ServletConfiguration.ClassLoadError", this.classFile, err);
+                Logger.log(Logger.WARNING, Launcher.RESOURCES, "ServletConfiguration.ClassLoadError", this.className, err);
                 setUnavailable(newInstance);
                 this.unavailableException = err;
             } catch (IllegalAccessException err) {
-                Logger.log(Logger.WARNING, Launcher.RESOURCES, "ServletConfiguration.ClassLoadError", this.classFile, err);
+                Logger.log(Logger.WARNING, Launcher.RESOURCES, "ServletConfiguration.ClassLoadError", this.className, err);
                 setUnavailable(newInstance);
                 this.unavailableException = err;
             } catch (InstantiationException err) {
-                Logger.log(Logger.WARNING, Launcher.RESOURCES, "ServletConfiguration.ClassLoadError", this.classFile, err);
+                Logger.log(Logger.WARNING, Launcher.RESOURCES, "ServletConfiguration.ClassLoadError", this.className, err);
                 setUnavailable(newInstance);
                 this.unavailableException = err;
             } catch (ServletException err) {
@@ -250,22 +267,6 @@ public class ServletConfiguration implements javax.servlet.ServletConfig, Compar
     
     public int getLoadOnStartup() {
         return this.loadOnStartup;
-    }
-    
-    public String getInitParameter(String name) {
-        return (String)this.initParameters.get(name);
-    }
-    
-    public Enumeration<String> getInitParameterNames() {
-        return Collections.enumeration(this.initParameters.keySet());
-    }
-    
-    public ServletContext getServletContext() {
-        return this.webAppConfig;
-    }
-    
-    public String getServletName() {
-        return this.servletName;
     }
     
     public Map<String, String> getSecurityRoleRefs() {
