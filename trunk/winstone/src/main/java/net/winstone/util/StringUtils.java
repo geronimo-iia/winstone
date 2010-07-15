@@ -95,22 +95,34 @@ public class StringUtils {
     /**
      * replace substrings within string.
      */
-    public static String replace(String s, String sub, String with) {
+    public static String replace(final String s, final String sub, final String with) {
         int fromIndex = 0;
-        int i = s.indexOf(sub, fromIndex);
-        if (i == -1) {
+        int index = s.indexOf(sub, fromIndex);
+        if (index == -1) {
             return s;
         }
         StringBuffer buf = new StringBuffer(s.length() + with.length());
         do {
-            buf.append(s.substring(fromIndex, i));
+            buf.append(s.substring(fromIndex, index));
             buf.append(with);
-            fromIndex = i + sub.length();
-        } while ((i = s.indexOf(sub, fromIndex)) != -1);
+            fromIndex = index + sub.length();
+        } while ((index = s.indexOf(sub, fromIndex)) != -1);
         
         if (fromIndex < s.length()) {
             buf.append(s.substring(fromIndex, s.length()));
         }
         return buf.toString();
+    }
+
+    public static String replace(final String input, final String[][] tokens) {
+        if (tokens != null) {
+            String out = input;
+            for (int n = 0; n < tokens.length; n++) {
+                out = replace(out, tokens[n][0], tokens[n][1]);
+            }
+            return out;
+        } else {
+            return input;
+        }
     }
 }

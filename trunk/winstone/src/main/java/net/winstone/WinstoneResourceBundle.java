@@ -52,7 +52,7 @@ public class WinstoneResourceBundle {
      * Perform a string replace for a single from/to pair.
      */
     public String getString(final String key, final String parameter) {
-        return StringUtils.globalReplace(this.resources.get(key), "[#0]", parameter);
+        return StringUtils.replace(this.resources.get(key), "[#0]", parameter);
     }
     
     /**
@@ -67,7 +67,7 @@ public class WinstoneResourceBundle {
                     "[#" + n + "]", parameters[n]
                 };
             }
-            myCopy = StringUtils.globalReplace(myCopy, tokens);
+            myCopy = StringUtils.replace(myCopy, tokens);
         }
         return myCopy;
     }
