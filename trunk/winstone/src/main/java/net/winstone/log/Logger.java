@@ -6,6 +6,7 @@ package net.winstone.log;
  * @author Jerome Guibert
  */
 public interface Logger {
+    
     public void info(final String msg);
     
     public void info(final String msg, final Throwable t);
