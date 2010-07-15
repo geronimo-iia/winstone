@@ -18,6 +18,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.winstone.WinstoneResourceBundle;
+
 /**
  * A utility class for logging event and status messages. It maintains a
  * collection of streams for different types of messages, but any messages with

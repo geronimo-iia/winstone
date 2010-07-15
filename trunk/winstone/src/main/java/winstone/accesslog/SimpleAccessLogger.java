@@ -16,8 +16,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
+import net.winstone.WinstoneResourceBundle;
+import net.winstone.util.StringUtils;
+
 import winstone.AccessLogger;
-import winstone.WinstoneResourceBundle;
 import winstone.Logger;
 import winstone.WebAppConfiguration;
 import winstone.WinstoneRequest;
@@ -64,7 +66,7 @@ public class SimpleAccessLogger implements AccessLogger {
         // Get filename
         String filePattern = WebAppConfiguration.stringArg(startupArgs, "simpleAccessLogger.file", 
                 "logs/###host###/###webapp###_access.log");
-        this.fileName = WinstoneResourceBundle.globalReplace(filePattern, 
+        this.fileName = StringUtils.globalReplace(filePattern, 
                 new String [][] {{"###host###", webAppConfig.getOwnerHostname()},
                     {"###webapp###", webAppConfig.getContextName()}});
         
@@ -86,7 +88,7 @@ public class SimpleAccessLogger implements AccessLogger {
         synchronized (DF) {
             date = DF.format(new Date());
         }
-        String logLine = WinstoneResourceBundle.globalReplace(this.pattern, new String[][] {
+        String logLine = StringUtils.globalReplace(this.pattern, new String[][] {
                 {"###ip###", request.getRemoteHost()},
                 {"###user###", nvl(request.getRemoteUser())},
                 {"###time###", "[" + date + "]"},

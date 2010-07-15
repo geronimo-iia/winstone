@@ -22,6 +22,8 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import net.winstone.util.StringUtils;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -235,7 +237,7 @@ public class HostConfiguration implements Runnable {
                     tempFile.delete();
                     String userName = System.getProperty("user.name");
                     if (userName != null) {
-                        child += WinstoneResourceBundle.globalReplace(userName, new String[][] {
+                        child += StringUtils.globalReplace(userName, new String[][] {
                             {
                                 "/", ""
                             }, {

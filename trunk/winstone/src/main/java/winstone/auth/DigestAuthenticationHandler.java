@@ -19,11 +19,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
+import net.winstone.util.StringUtils;
+
 import org.w3c.dom.Node;
 
 import winstone.AuthenticationPrincipal;
 import winstone.AuthenticationRealm;
-import winstone.WinstoneResourceBundle;
 import winstone.Logger;
 import winstone.WinstoneRequest;
 
@@ -102,31 +103,31 @@ public class DigestAuthenticationHandler extends BaseAuthenticationHandler {
             int equalPos = token.indexOf('=');
             String paramName = token.substring(0, equalPos);
             if (paramName.equals("username"))
-                userName = WinstoneResourceBundle.globalReplace(token
+                userName = StringUtils.globalReplace(token
                         .substring(equalPos + 1).trim(), "\"", "");
             else if (paramName.equals("realm"))
-                realm = WinstoneResourceBundle.globalReplace(token.substring(
+                realm = StringUtils.globalReplace(token.substring(
                         equalPos + 1).trim(), "\"", "");
             else if (paramName.equals("qop"))
-                qop = WinstoneResourceBundle.globalReplace(token.substring(
+                qop = StringUtils.globalReplace(token.substring(
                         equalPos + 1).trim(), "\"", "");
             else if (paramName.equals("algorithm"))
-                algorithm = WinstoneResourceBundle.globalReplace(token
+                algorithm = StringUtils.globalReplace(token
                         .substring(equalPos + 1).trim(), "\"", "");
             else if (paramName.equals("uri"))
-                uri = WinstoneResourceBundle.globalReplace(token.substring(
+                uri = StringUtils.globalReplace(token.substring(
                         equalPos + 1).trim(), "\"", "");
             else if (paramName.equals("nonce"))
-                nOnce = WinstoneResourceBundle.globalReplace(token.substring(
+                nOnce = StringUtils.globalReplace(token.substring(
                         equalPos + 1).trim(), "\"", "");
             else if (paramName.equals("nc"))
-                nc = WinstoneResourceBundle.globalReplace(token.substring(
+                nc = StringUtils.globalReplace(token.substring(
                         equalPos + 1).trim(), "\"", "");
             else if (paramName.equals("cnonce"))
-                cnOnce = WinstoneResourceBundle.globalReplace(token.substring(
+                cnOnce = StringUtils.globalReplace(token.substring(
                         equalPos + 1).trim(), "\"", "");
             else if (paramName.equals("response"))
-                clientResponseDigest = WinstoneResourceBundle.globalReplace(
+                clientResponseDigest = StringUtils.globalReplace(
                         token.substring(equalPos + 1).trim(), "\"", "");
         }
 

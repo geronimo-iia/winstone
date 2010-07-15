@@ -44,6 +44,9 @@ import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
+import net.winstone.MimeTypes;
+import net.winstone.util.StringUtils;
+
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -650,7 +653,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             if (authMethod == null) {
                 authMethod = "BASIC";
             } else {
-                authMethod = WinstoneResourceBundle.globalReplace(authMethod, "-", "");
+                authMethod = StringUtils.globalReplace(authMethod, "-", "");
             }
             String realmClassName = stringArg(startupArgs, "realmClassName", DEFAULT_REALM_CLASS).trim();
             String authClassName = "winstone.auth." + authMethod.substring(0, 1).toUpperCase() + authMethod.substring(1).toLowerCase() + "AuthenticationHandler";

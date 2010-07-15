@@ -19,7 +19,8 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import winstone.WinstoneResourceBundle;
+import net.winstone.WinstoneResourceBundle;
+
 import winstone.Logger;
 import winstone.WebAppConfiguration;
 

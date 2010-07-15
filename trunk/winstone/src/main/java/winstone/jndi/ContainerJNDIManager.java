@@ -22,9 +22,10 @@ import javax.naming.InitialContext;
 import javax.naming.Name;
 import javax.naming.NamingException;
 
+import net.winstone.WinstoneResourceBundle;
+
 import org.w3c.dom.Node;
 
-import winstone.WinstoneResourceBundle;
 import winstone.JNDIManager;
 import winstone.Logger;
 import winstone.jndi.resourceFactories.WinstoneDataSource;

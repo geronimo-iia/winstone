@@ -20,12 +20,13 @@ import java.util.StringTokenizer;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import net.winstone.WinstoneResourceBundle;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import winstone.AuthenticationPrincipal;
 import winstone.AuthenticationRealm;
-import winstone.WinstoneResourceBundle;
 import winstone.Logger;
 import winstone.WinstoneException;
 

@@ -16,11 +16,12 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.winstone.WinstoneResourceBundle;
+
 import org.w3c.dom.Node;
 
 import winstone.AuthenticationHandler;
 import winstone.AuthenticationRealm;
-import winstone.WinstoneResourceBundle;
 import winstone.Logger;
 import winstone.WebAppConfiguration;
 
