@@ -21,4 +21,5 @@ public class LoggerTestCase extends TestCase {
         assertNotNull(logger);
         logger.error("this is a fake error message", new Exception("Fake message exception"));
     }
+    
 }
