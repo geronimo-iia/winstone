@@ -6,32 +6,32 @@
  */
 package net.winstone.testCase;
 
+import net.winstone.util.StringUtils;
 import junit.framework.TestCase;
-import winstone.WinstoneResourceBundle;
 
 /**
  * Simple tests for the string replacer
- *  
+ * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: WinstoneResourceBundleTest.java,v 1.1 2006/11/09 05:39:43 rickknowles Exp $
  */
 public class WinstoneResourceBundleTest extends TestCase {
-
+    
     public static void testGlobalReplaceFromWinstoneResourceBundle() throws Exception {
-        assertEquals("One token", "Foo = bar squared", WinstoneResourceBundle.globalReplace(
-                "Foo = [#0] squared", "[#0]", "bar"));
-        assertEquals("Repeated token", "Foo = bar bar squared", WinstoneResourceBundle.globalReplace(
-                "Foo = [#0] [#0] squared", "[#0]", "bar"));
-        assertEquals("Two tokens", "Foo = blah bar squared", WinstoneResourceBundle.globalReplace(
-                "Foo = [#1] [#0] squared", new String[][] {{"[#0]", "bar"}, {"[#1]", "blah"}}));
+        assertEquals("One token", "Foo = bar squared", StringUtils.globalReplace("Foo = [#0] squared", "[#0]", "bar"));
+        assertEquals("Repeated token", "Foo = bar bar squared", StringUtils.globalReplace("Foo = [#0] [#0] squared", "[#0]", "bar"));
+        assertEquals("Two tokens", "Foo = blah bar squared", StringUtils.globalReplace("Foo = [#1] [#0] squared", new String[][] {
+            {
+                "[#0]", "bar"
+            }, {
+                "[#1]", "blah"
+            }
+        }));
+        
+        
+        System.err.println("One token: " + StringUtils.globalReplace("Foo = [#0] squared", "[#0]", "bar"));
+        System.err.println("One token: " + String.format("Foo = %s squared", "bar"));
+        System.err.println("One token: " + StringUtils.replace("Foo = [#0] squared", "[#0]", "bar"));
     }
-
-    public static void testGlobalReplaceFromHashResourceBundle() throws Exception {
-        assertEquals("One token", "Foo = bar squared", WinstoneResourceBundle.globalReplace(
-                "Foo = [#0] squared", "[#0]", "bar"));
-        assertEquals("Repeated token", "Foo = bar bar squared", WinstoneResourceBundle.globalReplace(
-                "Foo = [#0] [#0] squared", "[#0]", "bar"));
-        assertEquals("Two tokens", "Foo = blah bar squared", WinstoneResourceBundle.globalReplace(
-                "Foo = [#1] [#0] squared", new String[][] {{"[#0]", "bar"}, {"[#1]", "blah"}}));
-    }
+    
 }

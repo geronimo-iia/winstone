@@ -9,9 +9,10 @@ package net.winstone.testCase.load;
 import java.io.IOException;
 import java.io.InputStream;
 
+import net.winstone.WinstoneResourceBundle;
+
 import org.xml.sax.SAXException;
 
-import winstone.WinstoneResourceBundle;
 import winstone.Logger;
 
 import com.meterware.httpunit.GetMethodWebRequest;

@@ -13,7 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import winstone.WinstoneResourceBundle;
+import net.winstone.WinstoneResourceBundle;
+
 import winstone.Logger;
 import winstone.WebAppConfiguration;
 
