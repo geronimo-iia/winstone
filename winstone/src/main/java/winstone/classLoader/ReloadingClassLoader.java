@@ -21,7 +21,9 @@ import java.util.jar.JarFile;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import winstone.WinstoneResourceBundle;
+import net.winstone.WinstoneResourceBundle;
+import net.winstone.util.StringUtils;
+
 import winstone.Logger;
 import winstone.WebAppConfiguration;
 
@@ -201,6 +203,6 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
         if (!name.startsWith("Class:"))
             return name;
         else
-            return WinstoneResourceBundle.globalReplace(name.substring(6), ".", "/") + ".class";
+            return StringUtils.globalReplace(name.substring(6), ".", "/") + ".class";
     }
 }

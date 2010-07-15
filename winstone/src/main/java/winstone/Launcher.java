@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import net.winstone.WinstoneResourceBundle;
+
 /**
  * Implements the main launcher daemon thread. This is the class that gets launched by the command line, and owns the server socket, etc.
  * 

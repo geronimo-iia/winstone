@@ -12,7 +12,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Map;
 
-import winstone.WinstoneResourceBundle;
+import net.winstone.WinstoneResourceBundle;
+
 import winstone.Launcher;
 import winstone.Logger;
 import winstone.WebAppConfiguration;

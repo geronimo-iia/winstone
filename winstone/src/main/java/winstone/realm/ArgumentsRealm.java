@@ -15,9 +15,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import net.winstone.WinstoneResourceBundle;
+
 import winstone.AuthenticationPrincipal;
 import winstone.AuthenticationRealm;
-import winstone.WinstoneResourceBundle;
 import winstone.Logger;
 import winstone.WebAppConfiguration;
 

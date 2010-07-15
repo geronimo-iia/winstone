@@ -17,7 +17,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import winstone.WinstoneResourceBundle;
+import net.winstone.WinstoneResourceBundle;
+
 import winstone.Logger;
 import winstone.Mapping;
 import winstone.SimpleRequestDispatcher;

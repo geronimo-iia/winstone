@@ -24,8 +24,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import net.winstone.WinstoneResourceBundle;
+
 import winstone.Cluster;
-import winstone.WinstoneResourceBundle;
 import winstone.HostConfiguration;
 import winstone.HostGroup;
 import winstone.Logger;

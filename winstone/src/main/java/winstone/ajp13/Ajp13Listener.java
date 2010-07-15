@@ -23,8 +23,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
+import net.winstone.WinstoneResourceBundle;
+
 import winstone.AuthenticationPrincipal;
-import winstone.WinstoneResourceBundle;
 import winstone.HostGroup;
 import winstone.Launcher;
 import winstone.Listener;
