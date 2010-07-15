@@ -6,8 +6,8 @@
  */
 package net.winstone.testCase;
 
-import net.winstone.util.StringUtils;
 import junit.framework.TestCase;
+import net.winstone.util.StringUtils;
 
 /**
  * Simple tests for the string replacer
@@ -18,9 +18,9 @@ import junit.framework.TestCase;
 public class WinstoneResourceBundleTest extends TestCase {
     
     public static void testGlobalReplaceFromWinstoneResourceBundle() throws Exception {
-        assertEquals("One token", "Foo = bar squared", StringUtils.globalReplace("Foo = [#0] squared", "[#0]", "bar"));
-        assertEquals("Repeated token", "Foo = bar bar squared", StringUtils.globalReplace("Foo = [#0] [#0] squared", "[#0]", "bar"));
-        assertEquals("Two tokens", "Foo = blah bar squared", StringUtils.globalReplace("Foo = [#1] [#0] squared", new String[][] {
+        assertEquals("One token", "Foo = bar squared", StringUtils.replace("Foo = [#0] squared", "[#0]", "bar"));
+        assertEquals("Repeated token", "Foo = bar bar squared", StringUtils.replace("Foo = [#0] [#0] squared", "[#0]", "bar"));
+        assertEquals("Two tokens", "Foo = blah bar squared", StringUtils.replace("Foo = [#1] [#0] squared", new String[][] {
             {
                 "[#0]", "bar"
             }, {
@@ -29,9 +29,9 @@ public class WinstoneResourceBundleTest extends TestCase {
         }));
         
         
-        System.err.println("One token: " + StringUtils.globalReplace("Foo = [#0] squared", "[#0]", "bar"));
-        System.err.println("One token: " + String.format("Foo = %s squared", "bar"));
-        System.err.println("One token: " + StringUtils.replace("Foo = [#0] squared", "[#0]", "bar"));
+//        System.err.println("One token: " + StringUtils.globalReplace("Foo = [#0] squared", "[#0]", "bar"));
+//        System.err.println("One token: " + String.format("Foo = %s squared", "bar"));
+//        System.err.println("One token: " + StringUtils.replace("Foo = [#0] squared", "[#0]", "bar"));
     }
     
 }
