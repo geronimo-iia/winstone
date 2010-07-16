@@ -14,11 +14,12 @@ import java.util.Map;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import net.winstone.log.Logger;
+import net.winstone.log.LoggerFactory;
 
 import org.xml.sax.SAXException;
 
-import winstone.Launcher;
-import winstone.Logger;
+import winstone.Launcher; 
 
 import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.WebConversation;
@@ -34,6 +35,7 @@ import com.meterware.httpunit.WebResponse;
  * @version $Id: HttpConnectorTest.java,v 1.8 2007/04/23 15:06:22 rickknowles Exp $
  */
 public class HttpConnectorTest extends TestCase {
+    protected Logger logger = LoggerFactory.getLogger(getClass());
     public static Test suite() {
         return (new TestSuite(HttpConnectorTest.class));
     }
@@ -58,8 +60,7 @@ public class HttpConnectorTest extends TestCase {
         args.put("ajp13Port", "-1");
         args.put("controlPort", "-1");
         args.put("debug", "8");
-        args.put("logThrowingLineNo", "true");
-        Logger.init(Logger.FULL_DEBUG, System.out, true);
+        args.put("logThrowingLineNo", "true"); 
         Launcher winstone = new Launcher(args);
 
         // Check for a simple connection
@@ -87,8 +88,7 @@ public class HttpConnectorTest extends TestCase {
         args.put("ajp13Port", "-1");
         args.put("controlPort", "-1");
         args.put("debug", "8");
-        args.put("logThrowingLineNo", "true");
-        Logger.init(Logger.FULL_DEBUG, System.out, true);
+        args.put("logThrowingLineNo", "true"); 
         Launcher winstone = new Launcher(args);
 
         // Check for a simple connection
@@ -124,8 +124,7 @@ public class HttpConnectorTest extends TestCase {
         args.put("ajp13Port", "-1");
         args.put("controlPort", "-1");
         args.put("debug", "8");
-        args.put("logThrowingLineNo", "true");
-        Logger.init(Logger.FULL_DEBUG, System.out, true);
+        args.put("logThrowingLineNo", "true"); 
         Launcher winstone = new Launcher(args);
 
         // Check for a simple connection
@@ -133,7 +132,7 @@ public class HttpConnectorTest extends TestCase {
         WebRequest wreq = new GetMethodWebRequest(
                 "http://localhost:10005/examples/TestWriteAfterServlet");
         WebResponse wresp1 = wc.getResponse(wreq);
-        Logger.logDirectMessage(Logger.INFO, "log", "Output: " + wresp1.getText(), null);
+        logger.info("Output: " + wresp1.getText());
         assertTrue(wresp1.getText().endsWith("Hello"));
         winstone.shutdown();
         Thread.sleep(500);
