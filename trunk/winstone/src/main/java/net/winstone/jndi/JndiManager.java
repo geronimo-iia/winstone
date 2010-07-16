@@ -19,6 +19,8 @@ import javax.naming.NamingException;
 
 import net.winstone.jndi.resources.DataSourceConfig;
 import net.winstone.jndi.resources.SimpleDatasource;
+import net.winstone.log.Logger;
+import net.winstone.log.LoggerFactory;
 import net.winstone.util.LifeCycle;
 
 /**
@@ -27,6 +29,7 @@ import net.winstone.util.LifeCycle;
  * @author Jerome Guibert
  */
 public class JndiManager implements LifeCycle {
+    protected Logger logger = LoggerFactory.getLogger(getClass());
     
     protected InitialContext initialContext;
     protected ScheduledExecutorService scheduler;
@@ -52,6 +55,7 @@ public class JndiManager implements LifeCycle {
         } catch (NamingException e) {
             throw new IllegalStateException(e);
         }
+        logger.info("jndi context initialized");
     }
     
     /**
@@ -95,6 +99,7 @@ public class JndiManager implements LifeCycle {
             // stop scheduled
             scheduler.shutdownNow();
         }
+        logger.info("jndi context destroyed");
     }
     
     /**
