@@ -17,6 +17,9 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 
+import net.winstone.log.AccessLogger;
+
+
 /**
  * The threads to which incoming requests get allocated.
  * 

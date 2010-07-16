@@ -45,10 +45,12 @@ import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
 import net.winstone.MimeTypes;
+import net.winstone.log.AccessLogger;
 import net.winstone.util.StringUtils;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 
 /**
  * Models the web.xml file's details ... basically just a bunch of configuration details, plus the actual instances of mounted servlets.
