@@ -4,19 +4,19 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package net.winstone.log;
+package net.winstone.accesslog;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
 
+import net.winstone.log.Logger;
+import net.winstone.log.LoggerFactory;
 import net.winstone.util.StringUtils;
-import winstone.WebAppConfiguration;
 import winstone.WinstoneRequest;
 import winstone.WinstoneResponse;
 
@@ -37,10 +37,9 @@ public class SimpleAccessLogger implements AccessLogger {
     private PrintWriter outWriter;
     private String pattern;
     
-    public SimpleAccessLogger(WebAppConfiguration webAppConfig, Map<String, String> startupArgs) throws IOException {
+    SimpleAccessLogger(final String host, final String webapp, final String patternType, final String filePattern) {
         
         // Get pattern
-        String patternType = WebAppConfiguration.stringArg(startupArgs, "simpleAccessLogger.format", "combined");
         if (patternType.equalsIgnoreCase("combined")) {
             this.pattern = COMBINED;
         } else if (patternType.equalsIgnoreCase("common")) {
@@ -52,23 +51,34 @@ public class SimpleAccessLogger implements AccessLogger {
         }
         
         // Get filename
-        String filePattern = WebAppConfiguration.stringArg(startupArgs, "simpleAccessLogger.file", "logs/###host###/###webapp###_access.log");
+        // String filePattern = WebAppConfiguration.stringArg(startupArgs, "simpleAccessLogger.file",
+        // "logs/###host###/###webapp###_access.log");
         String fileName = StringUtils.replace(filePattern, new String[][] {
             {
-                "###host###", webAppConfig.getOwnerHostname()
+                "###host###", host
+            // webAppConfig.getOwnerHostname()
             }, {
-                "###webapp###", webAppConfig.getContextName()
+                "###webapp###", webapp
+            // webAppConfig.getContextName()
             }
         });
         
         File file = new File(fileName);
         file.getParentFile().mkdirs();
-        this.outWriter = new PrintWriter(new FileOutputStream(file, true), true);
+        try {
+            this.outWriter = new PrintWriter(new FileOutputStream(file, true), true);
+        } catch (FileNotFoundException e) {
+            logger.error("Unable to open " + fileName, e);
+            outWriter = null;
+        }
         
         logger.info(String.format("Initialized access log at %s (format: %s)", fileName, patternType));
     }
     
     public void log(final String originalURL, final WinstoneRequest request, final WinstoneResponse response) {
+        if (outWriter == null) {
+            return;
+        }
         String uriLine = request.getMethod() + " " + originalURL + " " + request.getProtocol();
         int status = response.getErrorStatusCode() == null ? response.getStatus() : response.getErrorStatusCode().intValue();
         int size = response.getWinstoneOutputStream().getBytesCommitted();
@@ -99,6 +109,14 @@ public class SimpleAccessLogger implements AccessLogger {
         return input == null ? "-" : input;
     }
     
+    public static String getCurrentAccessDate() {
+        String result = null;
+        synchronized (accessFormat) {
+            result = accessFormat.format(new Date());
+        }
+        return result;
+    }
+    
     public void destroy() {
         logger.info("Closed access log");
         if (this.outWriter != null) {
@@ -108,11 +126,4 @@ public class SimpleAccessLogger implements AccessLogger {
         }
     }
     
-    public static String getCurrentAccessDate() {
-        String result = null;
-        synchronized (accessFormat) {
-            result = accessFormat.format(new Date());
-        }
-        return result;
-    }
 }
