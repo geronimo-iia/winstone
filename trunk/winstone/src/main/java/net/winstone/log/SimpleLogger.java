@@ -84,4 +84,14 @@ public class SimpleLogger implements Logger, LoggerProvider {
     public Logger getLogger(Class<?> className) {
         return className != null ? new SimpleLogger(className.getName()) : new SimpleLogger();
     }
+
+    @Override
+    public void debug(String msg) {
+        log(":DEBUG", msg, null);
+    }
+
+    @Override
+    public void debug(String msg, Throwable t) {
+        log(":DEBUG", msg, t);
+    }
 }

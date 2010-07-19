@@ -18,5 +18,8 @@ public interface Logger {
     public void error(final String msg);
     
     public void error(final String msg, final Throwable t);
+
+    public void debug(final String msg);
     
+    public void debug(final String msg, final Throwable t);
 }
