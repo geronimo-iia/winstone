@@ -20,13 +20,15 @@ public final class MapLoader {
      * @return a <code>Map</code> instance representing key/value found in the specified resource bundle.
      */
     public final static Map<String, String> load(final ResourceBundle resourceBundle) {
-        Enumeration<String> keys = resourceBundle.getKeys();
         Map<String, String> resources = Maps.newHashMap();
-        String key = null;
-        while (keys.hasMoreElements()) {
-            key = (String)keys.nextElement();
-            String value = resourceBundle.getString(key);
-            resources.put(key, value);
+        if (resourceBundle != null) {
+            Enumeration<String> keys = resourceBundle.getKeys();
+            String key = null;
+            while (keys.hasMoreElements()) {
+                key = (String)keys.nextElement();
+                String value = resourceBundle.getString(key);
+                resources.put(key, value);
+            }
         }
         return resources;
     }

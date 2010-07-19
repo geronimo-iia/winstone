@@ -10,6 +10,7 @@ public class DateUtils {
     private static final DateFormat gmtFormat;
     private static final SimpleDateFormat shortFormat;
     private static final SimpleDateFormat longFormat;
+    
     static {
         shortFormat = new SimpleDateFormat("MMM dd HH:mm");
         longFormat = new SimpleDateFormat("MMM dd yyyy");
@@ -37,4 +38,5 @@ public class DateUtils {
         }
         return longFormat.format(date);
     }
+    
 }

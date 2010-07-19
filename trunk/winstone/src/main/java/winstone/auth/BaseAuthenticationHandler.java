@@ -26,31 +26,26 @@ import winstone.Logger;
 import winstone.WebAppConfiguration;
 
 /**
- * Base class for managers of authentication within Winstone. This class also
- * acts as a factory, loading the appropriate subclass for the requested auth
- * type.
+ * Base class for managers of authentication within Winstone. This class also acts as a factory, loading the appropriate subclass for the
+ * requested auth type.
  * 
  * @author mailto: <a href="rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: BaseAuthenticationHandler.java,v 1.6 2006/02/28 07:32:47 rickknowles Exp $
  */
-public abstract class BaseAuthenticationHandler implements
-        AuthenticationHandler {
+public abstract class BaseAuthenticationHandler implements AuthenticationHandler {
     static final String ELEM_REALM_NAME = "realm-name";
     
     protected SecurityConstraint constraints[];
     protected AuthenticationRealm realm;
     protected String realmName;
     public final static WinstoneResourceBundle AUTH_RESOURCES = new WinstoneResourceBundle("winstone.auth.LocalStrings");
-
+    
     /**
-     * Factory method - this parses the web.xml nodes and builds the correct
-     * subclass for handling that auth type.
+     * Factory method - this parses the web.xml nodes and builds the correct subclass for handling that auth type.
      */
-    protected BaseAuthenticationHandler(Node loginConfigNode,
-            List constraintNodes, Set rolesAllowed,
-            AuthenticationRealm realm) {
+    protected BaseAuthenticationHandler(Node loginConfigNode, List constraintNodes, Set rolesAllowed, AuthenticationRealm realm) {
         this.realm = realm;
-
+        
         for (int m = 0; m < loginConfigNode.getChildNodes().getLength(); m++) {
             Node loginElm = loginConfigNode.getChildNodes().item(m);
             if (loginElm.getNodeType() != Node.ELEMENT_NODE)
@@ -58,30 +53,25 @@ public abstract class BaseAuthenticationHandler implements
             else if (loginElm.getNodeName().equals(ELEM_REALM_NAME))
                 realmName = WebAppConfiguration.getTextFromNode(loginElm);
         }
-
+        
         // Build security constraints
         this.constraints = new SecurityConstraint[constraintNodes.size()];
         for (int n = 0; n < constraints.length; n++)
-            this.constraints[n] = new SecurityConstraint((Node) constraintNodes
-                    .get(n), rolesAllowed, n);
+            this.constraints[n] = new SecurityConstraint((Node)constraintNodes.get(n), rolesAllowed, n);
     }
-
+    
     /**
-     * Evaluates any authentication constraints, intercepting if auth is
-     * required. The relevant authentication handler subclass's logic is used to
-     * actually authenticate.
+     * Evaluates any authentication constraints, intercepting if auth is required. The relevant authentication handler subclass's logic is
+     * used to actually authenticate.
      * 
      * @return A boolean indicating whether to continue after this request
      */
-    public boolean processAuthentication(ServletRequest inRequest,
-            ServletResponse inResponse, String pathRequested)
-            throws IOException, ServletException {
-        Logger.log(Logger.FULL_DEBUG, AUTH_RESOURCES,
-                "BaseAuthenticationHandler.StartAuthCheck");
-
-        HttpServletRequest request = (HttpServletRequest) inRequest;
-        HttpServletResponse response = (HttpServletResponse) inResponse;
-
+    public boolean processAuthentication(ServletRequest inRequest, ServletResponse inResponse, String pathRequested) throws IOException, ServletException {
+        Logger.log(Logger.FULL_DEBUG, AUTH_RESOURCES, "BaseAuthenticationHandler.StartAuthCheck");
+        
+        HttpServletRequest request = (HttpServletRequest)inRequest;
+        HttpServletResponse response = (HttpServletResponse)inResponse;
+        
         // Give previous attempts a chance to be validated
         if (!validatePossibleAuthenticationResponse(request, response, pathRequested)) {
             return false;
@@ -89,31 +79,21 @@ public abstract class BaseAuthenticationHandler implements
             return doRoleCheck(request, response, pathRequested);
         }
     }
-
-    protected boolean doRoleCheck(HttpServletRequest request,
-            HttpServletResponse response, String pathRequested) 
-            throws IOException, ServletException {
+    
+    protected boolean doRoleCheck(HttpServletRequest request, HttpServletResponse response, String pathRequested) throws IOException, ServletException {
         // Loop through constraints
         boolean foundApplicable = false;
         for (int n = 0; (n < this.constraints.length) && !foundApplicable; n++) {
-            Logger.log(Logger.FULL_DEBUG, AUTH_RESOURCES,
-                    "BaseAuthenticationHandler.EvalConstraint",
-                    this.constraints[n].getName());
-
+            Logger.log(Logger.FULL_DEBUG, AUTH_RESOURCES, "BaseAuthenticationHandler.EvalConstraint", this.constraints[n].getName());
+            
             // Find one that applies, then
             if (this.constraints[n].isApplicable(pathRequested, request.getMethod())) {
-                Logger.log(Logger.FULL_DEBUG, AUTH_RESOURCES,
-                        "BaseAuthenticationHandler.ApplicableConstraint",
-                        this.constraints[n].getName());
+                Logger.log(Logger.FULL_DEBUG, AUTH_RESOURCES, "BaseAuthenticationHandler.ApplicableConstraint", this.constraints[n].getName());
                 foundApplicable = true;
-
+                
                 if (this.constraints[n].needsSSL() && !request.isSecure()) {
-                    Logger.log(Logger.DEBUG, AUTH_RESOURCES,
-                            "BaseAuthenticationHandler.ConstraintNeedsSSL",
-                            this.constraints[n].getName());
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, 
-                            AUTH_RESOURCES.getString("BaseAuthenticationHandler.ConstraintNeedsSSL", 
-                                    this.constraints[n].getName()));
+                    Logger.log(Logger.DEBUG, AUTH_RESOURCES, "BaseAuthenticationHandler.ConstraintNeedsSSL", this.constraints[n].getName());
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, AUTH_RESOURCES.getString("BaseAuthenticationHandler.ConstraintNeedsSSL", this.constraints[n].getName()));
                     return false;
                 }
 
@@ -139,18 +119,14 @@ public abstract class BaseAuthenticationHandler implements
         response.setHeader("Cache-Control", "No-cache");
         response.setDateHeader("Expires", 1);
     }
-
+    
     /**
      * The actual auth request implementation.
      */
-    protected abstract void requestAuthentication(HttpServletRequest request,
-            HttpServletResponse response, String pathRequested)
-            throws IOException, ServletException;
-
+    protected abstract void requestAuthentication(HttpServletRequest request, HttpServletResponse response, String pathRequested) throws IOException, ServletException;
+    
     /**
      * Handling the (possible) response
      */
-    protected abstract boolean validatePossibleAuthenticationResponse(
-            HttpServletRequest request, HttpServletResponse response,
-            String pathRequested) throws ServletException, IOException;
+    protected abstract boolean validatePossibleAuthenticationResponse(HttpServletRequest request, HttpServletResponse response, String pathRequested) throws ServletException, IOException;
 }
