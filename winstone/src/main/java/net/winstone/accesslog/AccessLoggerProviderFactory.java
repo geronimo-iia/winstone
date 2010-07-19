@@ -16,7 +16,7 @@ public class AccessLoggerProviderFactory {
         private static AccessLoggerProviderFactory loggerFactory = new AccessLoggerProviderFactory();
     }
     
-    public static AccessLogger getAccessLogger(final String host, final String webapp, final String patternType, final String filePattern) {
+    public static AccessLogger getAccessLogger(final String host, final String webapp, final PatternType patternType, final String filePattern) {
         return AccessLoggerProviderFactoryHolder.loggerFactory.provider.getAccessLogger(host, webapp, patternType, filePattern);
     }
     

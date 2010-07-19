@@ -7,7 +7,7 @@ package net.winstone.accesslog;
  */
 public interface AccessLoggerProvider {
     
-    public AccessLogger getAccessLogger(final String host, final String webapp, final String patternType, final String filePattern);
+    public AccessLogger getAccessLogger(final String host, final String webapp, final PatternType patternType, final String filePattern);
     
     public void destroy(AccessLogger accessLogger);
 }
