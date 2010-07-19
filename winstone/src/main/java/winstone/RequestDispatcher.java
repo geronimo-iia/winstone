@@ -16,6 +16,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestWrapper;
 import javax.servlet.ServletResponse;
 import javax.servlet.ServletResponseWrapper;
+import winstone.auth.AuthenticationHandler;
 
 /**
  * This class implements both the RequestDispatcher and FilterChain components. On 
