@@ -21,7 +21,7 @@ public class SimpleAccessLoggerProvider implements AccessLoggerProvider {
     }
     
     @Override
-    public AccessLogger getAccessLogger(final String host, final String webapp, final String patternType, final String filePattern) {
+    public AccessLogger getAccessLogger(final String host, final String webapp, final PatternType patternType, final String filePattern) {
         return new SimpleAccessLogger(host, webapp, patternType, filePattern);
     }
 }

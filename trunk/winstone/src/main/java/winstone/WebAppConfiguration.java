@@ -47,6 +47,7 @@ import javax.servlet.http.HttpSessionListener;
 import net.winstone.MimeTypes;
 import net.winstone.accesslog.AccessLogger;
 import net.winstone.accesslog.AccessLoggerProviderFactory;
+import net.winstone.accesslog.PatternType;
 import net.winstone.util.StringUtils;
 
 import org.w3c.dom.Node;
@@ -713,7 +714,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         if (!loggerClassName.equals("")) {
             try {
                 
-                this.accessLogger = AccessLoggerProviderFactory.getAccessLogger(this.getOwnerHostname(), this.getContextName(), WebAppConfiguration.stringArg(startupArgs, "simpleAccessLogger.format", "combined"), WebAppConfiguration
+                this.accessLogger = AccessLoggerProviderFactory.getAccessLogger(this.getOwnerHostname(), this.getContextName(), PatternType.valueOf(WebAppConfiguration.stringArg(startupArgs, "simpleAccessLogger.format", "combined")), WebAppConfiguration
                     .stringArg(startupArgs, "simpleAccessLogger.file", "logs/###host###/###webapp###_access.log"));
                 
             } catch (Throwable err) {
