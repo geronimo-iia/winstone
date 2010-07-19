@@ -17,6 +17,14 @@ public class WinstoneResourceBundle {
     
     protected final Map<String, String> resources;
     
+    private static class WinstoneResourceBundleHolder {
+        private static WinstoneResourceBundle bundle = new WinstoneResourceBundle("net.winstone.winstone");
+    }
+    
+    public static WinstoneResourceBundle getInstance() {
+        return WinstoneResourceBundleHolder.bundle;
+    }
+    
     /**
      * Constructor
      */
@@ -59,17 +67,7 @@ public class WinstoneResourceBundle {
      * Perform a string replace for a set of from/to pairs.
      */
     public String getString(final String key, final String... parameters) {
-        String myCopy = this.resources.get(key);
-        if (parameters != null) {
-            String tokens[][] = new String[parameters.length][2];
-            for (int n = 0; n < parameters.length; n++) {
-                tokens[n] = new String[] {
-                    "[#" + n + "]", parameters[n]
-                };
-            }
-            myCopy = StringUtils.replace(myCopy, tokens);
-        }
-        return myCopy;
+        return StringUtils.replaceToken(this.resources.get(key), parameters);
     }
     
     /**

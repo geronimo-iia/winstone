@@ -44,6 +44,10 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import winstone.auth.AuthenticationPrincipal;
+
+import net.winstone.WinstoneException;
+
 /**
  * Implements the request interface required by the servlet spec.
  * 

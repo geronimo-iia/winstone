@@ -84,7 +84,7 @@ List of other things to do:
 	
 	java.lang.IllegalStateException: Called RequestDispatcher.forward() on committed response
 	at winstone.RequestDispatcher.forward(RequestDispatcher.java:263)
-	at winstone.invoker.InvokerServlet.doGet(InvokerServlet.java:134)
+	at net.winstone.servlet.InvokerServlet.doGet(InvokerServlet.java:134)
 	at javax.servlet.http.HttpServlet.service(HttpServlet.java:104)
 	at javax.servlet.http.HttpServlet.service(HttpServlet.java:45)
 	at winstone.ServletConfiguration.execute(ServletConfiguration.java:249)
@@ -94,7 +94,7 @@ List of other things to do:
 	at javax.servlet.http.HttpServlet.service(HttpServlet.java:45)
 	at winstone.ServletConfiguration.execute(ServletConfiguration.java:249)
 	at winstone.RequestDispatcher.forward(RequestDispatcher.java:335)
-	at winstone.invoker.InvokerServlet.doGet(InvokerServlet.java:134)
+	at net.winstone.servlet.InvokerServlet.doGet(InvokerServlet.java:134)
 	at javax.servlet.http.HttpServlet.service(HttpServlet.java:104)
 	at javax.servlet.http.HttpServlet.service(HttpServlet.java:45)
 	at winstone.ServletConfiguration.execute(ServletConfiguration.java:249)

@@ -17,10 +17,10 @@ import java.util.StringTokenizer;
 
 import net.winstone.WinstoneResourceBundle;
 
-import winstone.AuthenticationPrincipal;
-import winstone.AuthenticationRealm;
 import winstone.Logger;
 import winstone.WebAppConfiguration;
+import winstone.auth.AuthenticationPrincipal;
+import winstone.auth.AuthenticationRealm;
 
 /**
  * Base class for authentication realms. Subclasses provide the source of authentication roles, usernames, passwords, etc, and when asked

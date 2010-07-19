@@ -14,6 +14,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import winstone.cluster.Cluster;
+
+import net.winstone.WinstoneException;
+
 /**
  * Manages the references to individual hosts within the container. This object handles the mapping of ip addresses and hostnames to groups
  * of webapps, and init and shutdown of any hosts it manages.

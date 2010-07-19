@@ -20,6 +20,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.UnavailableException;
 
+import net.winstone.WinstoneException;
+
 import org.w3c.dom.Node;
 
 /**

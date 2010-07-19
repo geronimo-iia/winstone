@@ -4,38 +4,34 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone.classLoader;
+package net.winstone.loader;
 
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
 
-import net.winstone.WinstoneResourceBundle;
-
-import winstone.Logger;
+import net.winstone.log.Logger;
+import net.winstone.log.LoggerFactory;
+import net.winstone.util.StringUtils;
 
 /**
- * Implements the servlet spec model (v2.3 section 9.7.2) for classloading, which
- * is different to the standard JDK model in that it delegates *after* checking
- * local repositories. This has the effect of isolating copies of classes that exist
- * in 2 webapps from each other.
- * 
- * Thanks to James Berry for the changes to use the system classloader to prevent 
- * loading servlet spec or system classpath classes again.  
+ * Implements the servlet spec model (v2.3 section 9.7.2) for classloading, which is different to the standard JDK model in that it
+ * delegates *after* checking local repositories. This has the effect of isolating copies of classes that exist in 2 webapps from each
+ * other. Thanks to James Berry for the changes to use the system classloader to prevent loading servlet spec or system classpath classes
+ * again.<br />
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: WebappClassLoader.java,v 1.4 2008/02/04 00:03:43 rickknowles Exp $
  */
 public class WebappClassLoader extends URLClassLoader {
-    private static final WinstoneResourceBundle CL_RESOURCES = new WinstoneResourceBundle("winstone.classLoader.LocalStrings");
-    
+    protected Logger logger = LoggerFactory.getLogger(getClass());
     protected ClassLoader system = getSystemClassLoader();
-
+    
     public WebappClassLoader(URL[] urls) {
         super(urls);
     }
-
+    
     public WebappClassLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
     }
@@ -43,7 +39,7 @@ public class WebappClassLoader extends URLClassLoader {
     public WebappClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
         super(urls, parent, factory);
     }
-
+    
     protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         // First, check if the class has already been loaded
         Class<?> c = findLoadedClass(name);
@@ -55,7 +51,7 @@ public class WebappClassLoader extends URLClassLoader {
             try {
                 c = system.loadClass(name);
                 if (c != null) {
-                    Logger.log(Logger.MAX, CL_RESOURCES, "WebappClassLoader.LoadedBySystemCL", name);
+                    logger.debug(StringUtils.replace("Webapp classloader deferred to system classloader for loading [#0]", "[#0]", name));
                 }
             } catch (ClassNotFoundException e) {
                 c = null;
@@ -68,7 +64,7 @@ public class WebappClassLoader extends URLClassLoader {
                 // If still not found, then invoke findClass in order to find the class.
                 c = findClass(name);
                 if (c != null) {
-                    Logger.log(Logger.MAX, CL_RESOURCES, "WebappClassLoader.LoadedByThisCL", name);
+                    logger.debug(StringUtils.replace("Webapp classloader found class locally when loading [#0]", "[#0]", name));
                 }
             } catch (ClassNotFoundException e) {
                 c = null;
@@ -83,7 +79,7 @@ public class WebappClassLoader extends URLClassLoader {
             if (parent != null) {
                 c = parent.loadClass(name);
                 if (c != null) {
-                    Logger.log(Logger.MAX, CL_RESOURCES, "WebappClassLoader.LoadedByParentCL", name);
+                    logger.debug(StringUtils.replace("Webapp classloader deferred to parent for loading [#0]", "[#0]", name));
                 }
             } else {
                 // We have no other hope for loading the class, so throw the class not found exception
@@ -96,7 +92,7 @@ public class WebappClassLoader extends URLClassLoader {
         }
         return c;
     }
-
+    
     public InputStream getResourceAsStream(String name) {
         if ((name != null) && name.startsWith("/")) {
             name = name.substring(1);

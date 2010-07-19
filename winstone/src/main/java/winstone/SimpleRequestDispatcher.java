@@ -17,36 +17,36 @@ import javax.servlet.ServletRequestWrapper;
 import javax.servlet.ServletResponse;
 import javax.servlet.ServletResponseWrapper;
 
+import winstone.auth.AuthenticationHandler;
+
 /**
- * This class implements both the SimpleRequestDispatcher and FilterChain components. On 
- * the first call to include() or forward(), it starts the filter chain execution
- * if one exists. On the final doFilter() or if there is no chain, we call the include()
- * or forward() again, and the servlet is executed.
+ * This class implements both the SimpleRequestDispatcher and FilterChain components. On the first call to include() or forward(), it starts
+ * the filter chain execution if one exists. On the final doFilter() or if there is no chain, we call the include() or forward() again, and
+ * the servlet is executed.
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: SimpleRequestDispatcher.java,v 1.18 2007/04/23 02:55:35 rickknowles Exp $
  */
-public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
-        javax.servlet.FilterChain {
+public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher, javax.servlet.FilterChain {
     
-    static final String INCLUDE_REQUEST_URI = "javax.servlet.include.request_uri";
-    static final String INCLUDE_CONTEXT_PATH = "javax.servlet.include.context_path";
-    static final String INCLUDE_SERVLET_PATH = "javax.servlet.include.servlet_path";
-    static final String INCLUDE_PATH_INFO = "javax.servlet.include.path_info";
-    static final String INCLUDE_QUERY_STRING = "javax.servlet.include.query_string";
-
-    static final String FORWARD_REQUEST_URI = "javax.servlet.forward.request_uri";
-    static final String FORWARD_CONTEXT_PATH = "javax.servlet.forward.context_path";
-    static final String FORWARD_SERVLET_PATH = "javax.servlet.forward.servlet_path";
-    static final String FORWARD_PATH_INFO = "javax.servlet.forward.path_info";
-    static final String FORWARD_QUERY_STRING = "javax.servlet.forward.query_string";
-
-    static final String ERROR_STATUS_CODE = "javax.servlet.error.status_code";
-    static final String ERROR_EXCEPTION_TYPE = "javax.servlet.error.exception_type";
-    static final String ERROR_MESSAGE = "javax.servlet.error.message";
-    static final String ERROR_EXCEPTION = "javax.servlet.error.exception";
-    static final String ERROR_REQUEST_URI = "javax.servlet.error.request_uri";
-    static final String ERROR_SERVLET_NAME = "javax.servlet.error.servlet_name";
+    public static final transient String INCLUDE_REQUEST_URI = "javax.servlet.include.request_uri";
+    public static final transient String INCLUDE_CONTEXT_PATH = "javax.servlet.include.context_path";
+    public static final transient String INCLUDE_SERVLET_PATH = "javax.servlet.include.servlet_path";
+    public static final transient String INCLUDE_PATH_INFO = "javax.servlet.include.path_info";
+    public static final transient String INCLUDE_QUERY_STRING = "javax.servlet.include.query_string";
+    
+    public static final transient String FORWARD_REQUEST_URI = "javax.servlet.forward.request_uri";
+    public static final transient String FORWARD_CONTEXT_PATH = "javax.servlet.forward.context_path";
+    public static final transient String FORWARD_SERVLET_PATH = "javax.servlet.forward.servlet_path";
+    public static final transient String FORWARD_PATH_INFO = "javax.servlet.forward.path_info";
+    public static final transient String FORWARD_QUERY_STRING = "javax.servlet.forward.query_string";
+    
+    public static final transient String ERROR_STATUS_CODE = "javax.servlet.error.status_code";
+    public static final transient String ERROR_EXCEPTION_TYPE = "javax.servlet.error.exception_type";
+    public static final transient String ERROR_MESSAGE = "javax.servlet.error.message";
+    public static final transient String ERROR_EXCEPTION = "javax.servlet.error.exception";
+    public static final transient String ERROR_REQUEST_URI = "javax.servlet.error.request_uri";
+    public static final transient String ERROR_SERVLET_NAME = "javax.servlet.error.servlet_name";
     
     private WebAppConfiguration webAppConfig;
     private ServletConfiguration servletConfig;
@@ -75,93 +75,77 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
     private ServletConfiguration includedServletConfig;
     
     /**
-     * Constructor. This initializes the filter chain and sets up the details
-     * needed to handle a servlet excecution, such as security constraints,
-     * filters, etc.
+     * Constructor. This initializes the filter chain and sets up the details needed to handle a servlet excecution, such as security
+     * constraints, filters, etc.
      */
     public SimpleRequestDispatcher(WebAppConfiguration webAppConfig, ServletConfiguration servletConfig) {
         this.servletConfig = servletConfig;
         this.webAppConfig = webAppConfig;
-
+        
         this.matchingFiltersEvaluated = 0;
     }
-
-    public void setForNamedDispatcher(Mapping forwardFilterPatterns[],
-            Mapping includeFilterPatterns[]) {
+    
+    public void setForNamedDispatcher(Mapping forwardFilterPatterns[], Mapping includeFilterPatterns[]) {
         this.forwardFilterPatterns = forwardFilterPatterns;
         this.includeFilterPatterns = includeFilterPatterns;
         this.matchingFilters = null; // set after the call to forward or include
         this.useRequestAttributes = false;
         this.isErrorDispatch = false;
     }
-
-    public void setForURLDispatcher(String servletPath, String pathInfo,
-            String queryString, String requestURIInsideWebapp,
-            Mapping forwardFilterPatterns[], Mapping includeFilterPatterns[]) {
+    
+    public void setForURLDispatcher(String servletPath, String pathInfo, String queryString, String requestURIInsideWebapp, Mapping forwardFilterPatterns[], Mapping includeFilterPatterns[]) {
         this.servletPath = servletPath;
         this.pathInfo = pathInfo;
         this.queryString = queryString;
         this.requestURI = requestURIInsideWebapp;
-
+        
         this.forwardFilterPatterns = forwardFilterPatterns;
         this.includeFilterPatterns = includeFilterPatterns;
         this.matchingFilters = null; // set after the call to forward or include
         this.useRequestAttributes = true;
         this.isErrorDispatch = false;
     }
-
-    public void setForErrorDispatcher(String servletPath, String pathInfo,
-            String queryString, int statusCode, String summaryMessage, 
-            Throwable exception, String errorHandlerURI, 
-            Mapping errorFilterPatterns[]) {
+    
+    public void setForErrorDispatcher(String servletPath, String pathInfo, String queryString, int statusCode, String summaryMessage, Throwable exception, String errorHandlerURI, Mapping errorFilterPatterns[]) {
         this.servletPath = servletPath;
         this.pathInfo = pathInfo;
         this.queryString = queryString;
         this.requestURI = errorHandlerURI;
-
+        
         this.errorStatusCode = new Integer(statusCode);
         this.errorException = exception;
         this.errorSummaryMessage = summaryMessage;
-        this.matchingFilters = getMatchingFilters(errorFilterPatterns, this.webAppConfig, 
-                servletPath + (pathInfo == null ? "" : pathInfo), 
-                getName(), "ERROR", (servletPath != null));
+        this.matchingFilters = getMatchingFilters(errorFilterPatterns, this.webAppConfig, servletPath + (pathInfo == null ? "" : pathInfo), getName(), "ERROR", (servletPath != null));
         this.useRequestAttributes = true;
         this.isErrorDispatch = true;
     }
-
-    public void setForInitialDispatcher(String servletPath, String pathInfo, 
-            String queryString, String requestURIInsideWebapp, Mapping requestFilterPatterns[],
-            AuthenticationHandler authHandler) {
+    
+    public void setForInitialDispatcher(String servletPath, String pathInfo, String queryString, String requestURIInsideWebapp, Mapping requestFilterPatterns[], AuthenticationHandler authHandler) {
         this.servletPath = servletPath;
         this.pathInfo = pathInfo;
         this.queryString = queryString;
         this.requestURI = requestURIInsideWebapp;
         this.authHandler = authHandler;
-        this.matchingFilters = getMatchingFilters(requestFilterPatterns, this.webAppConfig, 
-                servletPath + (pathInfo == null ? "" : pathInfo), 
-                getName(), "REQUEST", (servletPath != null));
+        this.matchingFilters = getMatchingFilters(requestFilterPatterns, this.webAppConfig, servletPath + (pathInfo == null ? "" : pathInfo), getName(), "REQUEST", (servletPath != null));
         this.useRequestAttributes = false;
         this.isErrorDispatch = false;
     }
-
+    
     public String getName() {
         return this.servletConfig.getServletName();
     }
-
+    
     /**
-     * Includes the execution of a servlet into the current request
-     * 
-     * Note this method enters itself twice: once with the initial call, and once again 
-     * when all the filters have completed.
+     * Includes the execution of a servlet into the current request Note this method enters itself twice: once with the initial call, and
+     * once again when all the filters have completed.
      */
-    public void include(ServletRequest request, ServletResponse response)
-            throws ServletException, IOException {
-
+    public void include(ServletRequest request, ServletResponse response) throws ServletException, IOException {
+        
         // On the first call, log and initialise the filter chain
         if (this.doInclude == null) {
-            Logger.log(Logger.DEBUG, Launcher.RESOURCES,
-                    "SimpleRequestDispatcher.IncludeMessage", new String[] {
-                            getName(), this.requestURI });
+            Logger.log(Logger.DEBUG, Launcher.RESOURCES, "SimpleRequestDispatcher.IncludeMessage", new String[] {
+                getName(), this.requestURI
+            });
             
             WinstoneRequest wr = getUnwrappedRequest(request);
             // Add the query string to the included query string stack
@@ -169,8 +153,7 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
             
             // Set request attributes
             if (useRequestAttributes) {
-                wr.addIncludeAttributes(this.webAppConfig.getContextPath() + this.requestURI, 
-                        this.webAppConfig.getContextPath(), this.servletPath, this.pathInfo, this.queryString);
+                wr.addIncludeAttributes(this.webAppConfig.getContextPath() + this.requestURI, this.webAppConfig.getContextPath(), this.servletPath, this.pathInfo, this.queryString);
             }
             // Add another include buffer to the response stack
             WinstoneResponse wresp = getUnwrappedResponse(response);
@@ -186,9 +169,7 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
         }
         
         if (this.matchingFilters == null) {
-            this.matchingFilters = getMatchingFilters(this.includeFilterPatterns, this.webAppConfig, 
-                    this.servletPath + (this.pathInfo == null ? "" : this.pathInfo), 
-                    getName(), "INCLUDE", (this.servletPath != null));
+            this.matchingFilters = getMatchingFilters(this.includeFilterPatterns, this.webAppConfig, this.servletPath + (this.pathInfo == null ? "" : this.pathInfo), getName(), "INCLUDE", (this.servletPath != null));
         }
         try {
             // Make sure the filter chain is exhausted first
@@ -197,8 +178,7 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
                 finishInclude(request, response);
             } else {
                 try {
-                    this.servletConfig.execute(request, response, 
-                            this.webAppConfig.getContextPath() + this.requestURI);
+                    this.servletConfig.execute(request, response, this.webAppConfig.getContextPath() + this.requestURI);
                 } finally {
                     if (this.matchingFilters.length == 0) {
                         finishInclude(request, response);
@@ -208,19 +188,18 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
         } catch (Throwable err) {
             finishInclude(request, response);
             if (err instanceof ServletException) {
-                throw (ServletException) err;
+                throw (ServletException)err;
             } else if (err instanceof IOException) {
-                throw (IOException) err;
+                throw (IOException)err;
             } else if (err instanceof Error) {
-                throw (Error) err;
+                throw (Error)err;
             } else {
-                throw (RuntimeException) err;
+                throw (RuntimeException)err;
             }
         }
     }
-
-    private void finishInclude(ServletRequest request, ServletResponse response) 
-            throws IOException {
+    
+    private void finishInclude(ServletRequest request, ServletResponse response) throws IOException {
         WinstoneRequest wr = getUnwrappedRequest(request);
         wr.removeIncludeQueryString();
         
@@ -245,23 +224,18 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
     }
     
     /**
-     * Forwards to another servlet, and when it's finished executing that other
-     * servlet, cut off execution.
-     * 
-     * Note this method enters itself twice: once with the initial call, and once again 
-     * when all the filters have completed.
+     * Forwards to another servlet, and when it's finished executing that other servlet, cut off execution. Note this method enters itself
+     * twice: once with the initial call, and once again when all the filters have completed.
      */
-    public void forward(ServletRequest request, ServletResponse response) 
-            throws ServletException, IOException {
-
+    public void forward(ServletRequest request, ServletResponse response) throws ServletException, IOException {
+        
         // Only on the first call to forward, we should set any forwarding attributes
         if (this.doInclude == null) {
-            Logger.log(Logger.DEBUG, Launcher.RESOURCES,
-                    "SimpleRequestDispatcher.ForwardMessage", new String[] {
-                    getName(), this.requestURI });
+            Logger.log(Logger.DEBUG, Launcher.RESOURCES, "SimpleRequestDispatcher.ForwardMessage", new String[] {
+                getName(), this.requestURI
+            });
             if (response.isCommitted()) {
-                throw new IllegalStateException(Launcher.RESOURCES.getString(
-                        "SimpleRequestDispatcher.ForwardCommitted"));
+                throw new IllegalStateException(Launcher.RESOURCES.getString("SimpleRequestDispatcher.ForwardCommitted"));
             }
             
             WinstoneRequest req = getUnwrappedRequest(request);
@@ -283,8 +257,7 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
                 if (this.isErrorDispatch) {
                     req.setAttribute(ERROR_REQUEST_URI, req.getRequestURI());
                     req.setAttribute(ERROR_STATUS_CODE, this.errorStatusCode);
-                    req.setAttribute(ERROR_MESSAGE, 
-                            errorSummaryMessage != null ? errorSummaryMessage : "");
+                    req.setAttribute(ERROR_MESSAGE, errorSummaryMessage != null ? errorSummaryMessage : "");
                     if (req.getServletConfig() != null) {
                         req.setAttribute(ERROR_SERVLET_NAME, req.getServletConfig().getServletName());
                     }
@@ -310,14 +283,12 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
             req.setRequestAttributeListeners(this.webAppConfig.getRequestAttributeListeners());
             
             rsp.setWebAppConfig(this.webAppConfig);
-
+            
             // Forwards haven't set up the filter pattern set yet
             if (this.matchingFilters == null) {
-                this.matchingFilters = getMatchingFilters(this.forwardFilterPatterns, this.webAppConfig, 
-                        this.servletPath + (this.pathInfo == null ? "" : this.pathInfo), 
-                        getName(), "FORWARD", (this.servletPath != null));
+                this.matchingFilters = getMatchingFilters(this.forwardFilterPatterns, this.webAppConfig, this.servletPath + (this.pathInfo == null ? "" : this.pathInfo), getName(), "FORWARD", (this.servletPath != null));
             }
-            
+
             // Otherwise we are an initial or error dispatcher, so check security if initial -
             // if we should not continue, return
             else if (!this.isErrorDispatch && !continueAfterSecurityCheck(request, response)) {
@@ -326,7 +297,7 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
             
             this.doInclude = Boolean.FALSE;
         }
-
+        
         // Make sure the filter chain is exhausted first
         boolean outsideFilter = (this.matchingFiltersEvaluated == 0);
         if (this.matchingFiltersEvaluated < this.matchingFilters.length) {
@@ -341,34 +312,29 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
             rsp.getWinstoneOutputStream().setClosed(true);
         }
     }
-
-    private boolean continueAfterSecurityCheck(ServletRequest request,
-            ServletResponse response) throws IOException, ServletException {
+    
+    private boolean continueAfterSecurityCheck(ServletRequest request, ServletResponse response) throws IOException, ServletException {
         // Evaluate security constraints
         if (this.authHandler != null) {
-            return this.authHandler.processAuthentication(request, response,
-                    this.servletPath + (this.pathInfo == null ? "" : this.pathInfo));
+            return this.authHandler.processAuthentication(request, response, this.servletPath + (this.pathInfo == null ? "" : this.pathInfo));
         } else {
             return true;
         }
     }
-
+    
     /**
-     * Handles the processing of the chain of filters, so that we process them
-     * all, then pass on to the main servlet
+     * Handles the processing of the chain of filters, so that we process them all, then pass on to the main servlet
      */
-    public void doFilter(ServletRequest request, ServletResponse response)
-            throws ServletException, IOException {
+    public void doFilter(ServletRequest request, ServletResponse response) throws ServletException, IOException {
         // Loop through the filter mappings until we hit the end
         while (this.matchingFiltersEvaluated < this.matchingFilters.length) {
             
-            FilterConfiguration filter = this.matchingFilters[this.matchingFiltersEvaluated++]; 
-            Logger.log(Logger.DEBUG, Launcher.RESOURCES,
-                    "SimpleRequestDispatcher.ExecutingFilter", filter.getFilterName());
+            FilterConfiguration filter = this.matchingFilters[this.matchingFiltersEvaluated++];
+            Logger.log(Logger.DEBUG, Launcher.RESOURCES, "SimpleRequestDispatcher.ExecutingFilter", filter.getFilterName());
             filter.execute(request, response, this);
             return;
         }
-
+        
         // Forward / include as requested in the beginning
         if (this.doInclude == null)
             return; // will never happen, because we can't call doFilter before forward/include
@@ -377,14 +343,11 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
         else
             forward(request, response);
     }
-
+    
     /**
-     * Caches the filter matching, so that if the same URL is requested twice, we don't recalculate the
-     * filter matching every time. 
+     * Caches the filter matching, so that if the same URL is requested twice, we don't recalculate the filter matching every time.
      */
-    private static FilterConfiguration[] getMatchingFilters(Mapping filterPatterns[], 
-            WebAppConfiguration webAppConfig, String fullPath, String servletName,
-            String filterChainType, boolean isURLBasedMatch) {
+    private static FilterConfiguration[] getMatchingFilters(Mapping filterPatterns[], WebAppConfiguration webAppConfig, String fullPath, String servletName, String filterChainType, boolean isURLBasedMatch) {
         
         String cacheKey = null;
         if (isURLBasedMatch) {
@@ -393,34 +356,29 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
             cacheKey = filterChainType + ":Servlet:" + servletName;
         }
         FilterConfiguration matchingFilters[] = null;
-        Map<String, FilterConfiguration []> cache = webAppConfig.getFilterMatchCache();
+        Map<String, FilterConfiguration[]> cache = webAppConfig.getFilterMatchCache();
         synchronized (cache) {
-            matchingFilters = (FilterConfiguration []) cache.get(cacheKey); 
+            matchingFilters = (FilterConfiguration[])cache.get(cacheKey);
             if (matchingFilters == null) {
-                Logger.log(Logger.FULL_DEBUG, Launcher.RESOURCES, 
-                        "SimpleRequestDispatcher.CalcFilterChain", cacheKey);
-                List<FilterConfiguration>outFilters = new ArrayList<FilterConfiguration>();
+                Logger.log(Logger.FULL_DEBUG, Launcher.RESOURCES, "SimpleRequestDispatcher.CalcFilterChain", cacheKey);
+                List<FilterConfiguration> outFilters = new ArrayList<FilterConfiguration>();
                 for (int n = 0; n < filterPatterns.length; n++) {
                     // Get the pattern and eval it, bumping up the eval'd count
                     Mapping filterPattern = filterPatterns[n];
-
+                    
                     // If the servlet name matches this name, execute it
-                    if ((filterPattern.getLinkName() != null)
-                            && (filterPattern.getLinkName().equals(servletName) ||
-                                    filterPattern.getLinkName().equals("*"))) {
+                    if ((filterPattern.getLinkName() != null) && (filterPattern.getLinkName().equals(servletName) || filterPattern.getLinkName().equals("*"))) {
                         outFilters.add(webAppConfig.getFilters().get(filterPattern.getMappedTo()));
                     }
                     // If the url path matches this filters mappings
-                    else if ((filterPattern.getLinkName() == null) && isURLBasedMatch
-                            && filterPattern.match(fullPath, null, null)) {
+                    else if ((filterPattern.getLinkName() == null) && isURLBasedMatch && filterPattern.match(fullPath, null, null)) {
                         outFilters.add(webAppConfig.getFilters().get(filterPattern.getMappedTo()));
                     }
                 }
-                matchingFilters = (FilterConfiguration []) outFilters.toArray(new FilterConfiguration[0]);
+                matchingFilters = (FilterConfiguration[])outFilters.toArray(new FilterConfiguration[0]);
                 cache.put(cacheKey, matchingFilters);
             } else {
-                Logger.log(Logger.FULL_DEBUG, Launcher.RESOURCES, 
-                        "SimpleRequestDispatcher.UseCachedFilterChain", cacheKey);
+                Logger.log(Logger.FULL_DEBUG, Launcher.RESOURCES, "SimpleRequestDispatcher.UseCachedFilterChain", cacheKey);
             }
         }
         return matchingFilters;
@@ -432,19 +390,19 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
     protected WinstoneRequest getUnwrappedRequest(ServletRequest request) {
         ServletRequest workingRequest = request;
         while (workingRequest instanceof ServletRequestWrapper) {
-            workingRequest = ((ServletRequestWrapper) workingRequest).getRequest();
+            workingRequest = ((ServletRequestWrapper)workingRequest).getRequest();
         }
-        return (WinstoneRequest) workingRequest;
+        return (WinstoneRequest)workingRequest;
     }
-
+    
     /**
      * Unwrap back to the original container allocated response object
      */
     protected WinstoneResponse getUnwrappedResponse(ServletResponse response) {
         ServletResponse workingResponse = response;
         while (workingResponse instanceof ServletResponseWrapper) {
-            workingResponse = ((ServletResponseWrapper) workingResponse).getResponse();
+            workingResponse = ((ServletResponseWrapper)workingResponse).getResponse();
         }
-        return (WinstoneResponse) workingResponse;
+        return (WinstoneResponse)workingResponse;
     }
 }

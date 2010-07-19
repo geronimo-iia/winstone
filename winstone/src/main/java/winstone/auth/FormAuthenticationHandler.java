@@ -20,8 +20,6 @@ import javax.servlet.http.HttpSession;
 
 import org.w3c.dom.Node;
 
-import winstone.AuthenticationPrincipal;
-import winstone.AuthenticationRealm;
 import winstone.Logger;
 import winstone.WebAppConfiguration;
 import winstone.WinstoneRequest;
