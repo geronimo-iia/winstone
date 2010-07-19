@@ -45,12 +45,12 @@ import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
 import net.winstone.MimeTypes;
-import net.winstone.log.AccessLogger;
+import net.winstone.accesslog.AccessLogger;
+import net.winstone.accesslog.AccessLoggerProviderFactory;
 import net.winstone.util.StringUtils;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 
 /**
  * Models the web.xml file's details ... basically just a bunch of configuration details, plus the actual instances of mounted servlets.
@@ -655,7 +655,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             if (authMethod == null) {
                 authMethod = "BASIC";
             } else {
-                authMethod = StringUtils.globalReplace(authMethod, "-", "");
+                authMethod = StringUtils.replace(authMethod, "-", "");
             }
             String realmClassName = stringArg(startupArgs, "realmClassName", DEFAULT_REALM_CLASS).trim();
             String authClassName = "winstone.auth." + authMethod.substring(0, 1).toUpperCase() + authMethod.substring(1).toLowerCase() + "AuthenticationHandler";
@@ -712,14 +712,10 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         String loggerClassName = stringArg(startupArgs, "accessLoggerClassName", "").trim();
         if (!loggerClassName.equals("")) {
             try {
-                // Build the realm
-                Class<?> loggerClass = Class.forName(loggerClassName, true, parentClassLoader);
-                Constructor<?> loggerConstr = loggerClass.getConstructor(new Class[] {
-                    WebAppConfiguration.class, Map.class
-                });
-                this.accessLogger = (AccessLogger)loggerConstr.newInstance(new Object[] {
-                    this, startupArgs
-                });
+                
+                this.accessLogger = AccessLoggerProviderFactory.getAccessLogger(this.getOwnerHostname(), this.getContextName(), WebAppConfiguration.stringArg(startupArgs, "simpleAccessLogger.format", "combined"), WebAppConfiguration
+                    .stringArg(startupArgs, "simpleAccessLogger.file", "logs/###host###/###webapp###_access.log"));
+                
             } catch (Throwable err) {
                 Logger.log(Logger.ERROR, Launcher.RESOURCES, "WebAppConfig.LoggerError", loggerClassName, err);
             }
@@ -1142,7 +1138,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         
         // Kill JNDI manager if we have one
         if (this.accessLogger != null) {
-            this.accessLogger.destroy();
+            AccessLoggerProviderFactory.destroy(accessLogger);
             this.accessLogger = null;
         }
     }

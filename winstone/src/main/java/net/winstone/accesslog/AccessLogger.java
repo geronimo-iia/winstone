@@ -4,7 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package net.winstone.log;
+package net.winstone.accesslog;
 
 import winstone.WinstoneRequest;
 import winstone.WinstoneResponse;
@@ -26,5 +26,5 @@ public interface AccessLogger {
      */
     public void log(String originalURL, WinstoneRequest request, WinstoneResponse response);
     
-    public void destroy();
+ 
 }
