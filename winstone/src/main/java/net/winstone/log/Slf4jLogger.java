@@ -39,6 +39,16 @@ public class Slf4jLogger implements Logger, LoggerProvider {
     }
     
     @Override
+    public void debug(String msg) {
+        logger.debug(msg);
+    }
+    
+    @Override
+    public void debug(String msg, Throwable t) {
+        logger.debug(msg, t);
+    }
+    
+    @Override
     public Logger getLogger(Class<?> className) {
         return className != null ? new Slf4jLogger(className.getName()) : new Slf4jLogger();
     }
