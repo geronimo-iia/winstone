@@ -63,8 +63,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.0.2</version>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                     <encoding>UTF-8</encoding>
                     <testExcludes>
                         <testExclude>winstone/testCase/Base64Test.java</testExclude>
@@ -156,7 +156,7 @@
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
         </dependency>
-
+ 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -175,7 +175,7 @@
             <version>1.0</version>
             <type>jar</type>
         </dependency>
-
+ 
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
