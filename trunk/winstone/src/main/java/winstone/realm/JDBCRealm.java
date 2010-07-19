@@ -16,8 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import winstone.AuthenticationPrincipal;
-import winstone.AuthenticationRealm;
+import winstone.auth.AuthenticationPrincipal;
+import winstone.auth.AuthenticationRealm;
 
 /**
  * A JDBC authentication realm to be used with Winstone Servelet container.

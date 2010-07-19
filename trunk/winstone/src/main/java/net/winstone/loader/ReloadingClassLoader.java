@@ -4,7 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone.classLoader;
+package net.winstone.loader;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,35 +21,36 @@ import java.util.jar.JarFile;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import net.winstone.WinstoneResourceBundle;
+import net.winstone.log.Logger;
+import net.winstone.log.LoggerFactory;
 import net.winstone.util.StringUtils;
-
-import winstone.Logger;
 import winstone.WebAppConfiguration;
 
 /**
- * This subclass of WinstoneClassLoader is the reloading version. It runs a
- * monitoring thread in the background that checks for updates to any files in
- * the class path.
+ * This subclass of WinstoneClassLoader is the reloading version. It runs a monitoring thread in the background that checks for updates to
+ * any files in the class path.
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: ReloadingClassLoader.java,v 1.11 2007/02/17 01:55:12 rickknowles Exp $
  */
 public class ReloadingClassLoader extends WebappClassLoader implements ServletContextListener, Runnable {
+    
+    protected Logger logger = LoggerFactory.getLogger(getClass());
+    
     private static final int RELOAD_SEARCH_SLEEP = 10;
-    private static final WinstoneResourceBundle CL_RESOURCES = new WinstoneResourceBundle("winstone.classLoader.LocalStrings");
+    
     private boolean interrupted;
     private WebAppConfiguration webAppConfig;
     private Set<String> loadedClasses;
     private File classPaths[];
     private int classPathsLength;
-
+    
     public ReloadingClassLoader(URL urls[], ClassLoader parent) {
         super(urls, parent);
         this.loadedClasses = new HashSet<String>();
         if (urls != null) {
             this.classPaths = new File[urls.length];
-            for (int n = 0 ; n < urls.length; n++) {
+            for (int n = 0; n < urls.length; n++) {
                 this.classPaths[this.classPathsLength++] = new File(urls[n].getFile());
             }
         }
@@ -63,26 +64,25 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
                 this.classPathsLength = 0;
             } else if (this.classPathsLength == (this.classPaths.length - 1)) {
                 File temp[] = this.classPaths;
-                this.classPaths = new File[(int) (this.classPathsLength * 1.75)];
+                this.classPaths = new File[(int)(this.classPathsLength * 1.75)];
                 System.arraycopy(temp, 0, this.classPaths, 0, this.classPathsLength);
             }
             this.classPaths[this.classPathsLength++] = new File(url.getFile());
         }
     }
-
+    
     public void contextInitialized(ServletContextEvent sce) {
-        this.webAppConfig = (WebAppConfiguration) sce.getServletContext();
+        this.webAppConfig = (WebAppConfiguration)sce.getServletContext();
         this.interrupted = false;
         synchronized (this) {
             this.loadedClasses.clear();
         }
-        Thread thread = new Thread(this, CL_RESOURCES
-                .getString("ReloadingClassLoader.ThreadName"));
+        Thread thread = new Thread(this, "WinstoneClassLoader Reloading Monitor Thread");
         thread.setDaemon(true);
         thread.setPriority(Thread.MIN_PRIORITY);
         thread.start();
     }
-
+    
     public void contextDestroyed(ServletContextEvent sce) {
         this.interrupted = true;
         this.webAppConfig = null;
@@ -90,15 +90,14 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
             this.loadedClasses.clear();
         }
     }
-
+    
     /**
-     * The maintenance thread. This makes sure that any changes in the files in
-     * the classpath trigger a classLoader self destruct and recreate.
+     * The maintenance thread. This makes sure that any changes in the files in the classpath trigger a classLoader self destruct and
+     * recreate.
      */
     public void run() {
-        Logger.log(Logger.FULL_DEBUG, CL_RESOURCES,
-                "ReloadingClassLoader.MaintenanceThreadStarted");
-
+        logger.info("WinstoneClassLoader reloading monitor thread started");
+        
         Map<String, Long> classDateTable = new HashMap<String, Long>();
         Map<String, File> classLocationTable = new HashMap<String, File>();
         Set<String> lostClasses = new HashSet<String>();
@@ -106,13 +105,13 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
             try {
                 String loadedClassesCopy[] = null;
                 synchronized (this) {
-                    loadedClassesCopy = (String []) this.loadedClasses.toArray(new String[0]);
+                    loadedClassesCopy = (String[])this.loadedClasses.toArray(new String[0]);
                 }
-
+                
                 for (int n = 0; (n < loadedClassesCopy.length) && !interrupted; n++) {
                     Thread.sleep(RELOAD_SEARCH_SLEEP);
                     String className = transformToFileFormat(loadedClassesCopy[n]);
-                    File location = (File) classLocationTable.get(className);
+                    File location = (File)classLocationTable.get(className);
                     Long classDate = null;
                     if ((location == null) || !location.exists()) {
                         for (int j = 0; (j < this.classPaths.length) && (classDate == null); j++) {
@@ -133,76 +132,68 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
                         }
                     } else if (location.exists())
                         classDate = new Long(location.lastModified());
-
+                    
                     // Has class vanished ? Leave a note and skip over it
                     if (classDate == null) {
                         if (!lostClasses.contains(className)) {
                             lostClasses.add(className);
-                            Logger.log(Logger.DEBUG, CL_RESOURCES,
-                                    "ReloadingClassLoader.ClassLost", className);
+                            logger.debug(StringUtils.replace("WARNING: Maintenance thread can't find class [#0] - Lost ? Ignoring", "[#0]", className));
                         }
                         continue;
                     }
                     if ((classDate != null) && lostClasses.contains(className)) {
                         lostClasses.remove(className);
                     }
-
+                    
                     // Stash date of loaded files, and compare with last
                     // iteration
-                    Long oldClassDate = (Long) classDateTable.get(className);
+                    Long oldClassDate = (Long)classDateTable.get(className);
                     if (oldClassDate == null) {
                         classDateTable.put(className, classDate);
                     } else if (oldClassDate.compareTo(classDate) != 0) {
                         // Trigger reset of webAppConfig
-                        Logger.log(Logger.INFO, CL_RESOURCES, 
-                                "ReloadingClassLoader.ReloadRequired",
-                                new String[] {className, 
-                                        "" + new Date(classDate.longValue()),
-                                        "" + new Date(oldClassDate.longValue()) });
+                        logger.info(StringUtils.replaceToken("Class [#0] changed at [#1] (old date [#2]) - reloading", className, new Date(classDate.longValue()).toString(), new Date(oldClassDate.longValue()).toString()));
                         this.webAppConfig.resetClassLoader();
                     }
                 }
             } catch (Throwable err) {
-                Logger.log(Logger.ERROR, CL_RESOURCES,
-                        "ReloadingClassLoader.MaintenanceThreadError", err);
+                logger.error("Error in WinstoneClassLoader reloading monitor thread", err);
             }
         }
-        Logger.log(Logger.FULL_DEBUG, CL_RESOURCES,
-                "ReloadingClassLoader.MaintenanceThreadFinished");
+        logger.info("WinstoneClassLoader reloading monitor thread finished");
     }
-
+    
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         synchronized (this) {
             this.loadedClasses.add("Class:" + name);
         }
         return super.findClass(name);
     }
-
+    
     public URL findResource(String name) {
         synchronized (this) {
             this.loadedClasses.add(name);
         }
         return super.findResource(name);
     }
-
+    
     /**
      * Iterates through a jar file searching for a class. If found, it returns that classes date
      */
-    private Long searchJarPath(String classResourceName, File path)
-            throws IOException, InterruptedException {
+    private Long searchJarPath(String classResourceName, File path) throws IOException, InterruptedException {
         JarFile jar = new JarFile(path);
         for (Enumeration<JarEntry> e = jar.entries(); e.hasMoreElements() && !interrupted;) {
-            JarEntry entry = (JarEntry) e.nextElement();
+            JarEntry entry = (JarEntry)e.nextElement();
             if (entry.getName().equals(classResourceName))
                 return new Long(path.lastModified());
         }
         return null;
     }
-
+    
     private static String transformToFileFormat(String name) {
         if (!name.startsWith("Class:"))
             return name;
         else
-            return StringUtils.globalReplace(name.substring(6), ".", "/") + ".class";
+            return StringUtils.replace(name.substring(6), ".", "/") + ".class";
     }
 }

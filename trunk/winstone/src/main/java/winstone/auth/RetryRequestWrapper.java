@@ -25,9 +25,10 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
+import net.winstone.WinstoneException;
+
 import winstone.Launcher;
 import winstone.Logger;
-import winstone.WinstoneException;
 import winstone.WinstoneInputStream;
 import winstone.WinstoneRequest;
 

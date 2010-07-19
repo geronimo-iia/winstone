@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.winstone.WinstoneException;
+
 /**
  * Holds the object pooling code for Winstone. Presently this is only responses and requests, but may increase.
  * 

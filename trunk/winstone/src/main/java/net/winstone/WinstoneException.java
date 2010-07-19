@@ -4,7 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone;
+package net.winstone;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -19,7 +19,7 @@ import java.io.PrintWriter;
 public class WinstoneException extends RuntimeException {
     
     private static final long serialVersionUID = 3080421704084165118L;
-    private final Throwable nestedError ;
+    private final Throwable nestedError;
     
     /**
      * Create an exception with a useful message for the system administrator.
@@ -27,8 +27,7 @@ public class WinstoneException extends RuntimeException {
      * @param message Error message for to be used for administrative troubleshooting
      */
     public WinstoneException(final String message) {
-        super(message);
-        this.nestedError = null;
+        this(message, null);
     }
     
     /**
@@ -52,22 +51,25 @@ public class WinstoneException extends RuntimeException {
     }
     
     public void printStackTrace(PrintWriter p) {
-        if (this.nestedError != null)
+        if (this.nestedError != null) {
             this.nestedError.printStackTrace(p);
+        }
         p.write("\n");
         super.printStackTrace(p);
     }
     
     public void printStackTrace(PrintStream p) {
-        if (this.nestedError != null)
+        if (this.nestedError != null) {
             this.nestedError.printStackTrace(p);
+        }
         p.println("\n");
         super.printStackTrace(p);
     }
     
     public void printStackTrace() {
-        if (this.nestedError != null)
+        if (this.nestedError != null) {
             this.nestedError.printStackTrace();
+        }
         super.printStackTrace();
     }
 }

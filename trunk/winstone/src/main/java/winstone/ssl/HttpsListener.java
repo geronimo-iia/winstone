@@ -26,6 +26,7 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
+import net.winstone.WinstoneException;
 import net.winstone.WinstoneResourceBundle;
 
 import winstone.HostGroup;
@@ -33,7 +34,6 @@ import winstone.HttpListener;
 import winstone.Logger;
 import winstone.ObjectPool;
 import winstone.WebAppConfiguration;
-import winstone.WinstoneException;
 import winstone.WinstoneRequest;
 
 /**

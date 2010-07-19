@@ -4,12 +4,16 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone;
+package winstone.cluster;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+
+import winstone.HostGroup;
+import winstone.WebAppConfiguration;
+import winstone.WinstoneSession;
 
 /**
  * Represents a cluster implementation, which is basically the communication

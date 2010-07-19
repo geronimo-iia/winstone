@@ -45,6 +45,7 @@ import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
 import net.winstone.MimeTypes;
+import net.winstone.WinstoneException;
 import net.winstone.accesslog.AccessLogger;
 import net.winstone.accesslog.AccessLoggerProviderFactory;
 import net.winstone.accesslog.PatternType;
@@ -52,6 +53,10 @@ import net.winstone.util.StringUtils;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import winstone.auth.AuthenticationHandler;
+import winstone.auth.AuthenticationRealm;
+import winstone.cluster.Cluster;
 
 /**
  * Models the web.xml file's details ... basically just a bunch of configuration details, plus the actual instances of mounted servlets.

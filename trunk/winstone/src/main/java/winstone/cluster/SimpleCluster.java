@@ -26,7 +26,6 @@ import java.util.StringTokenizer;
 
 import net.winstone.WinstoneResourceBundle;
 
-import winstone.Cluster;
 import winstone.HostConfiguration;
 import winstone.HostGroup;
 import winstone.Logger;

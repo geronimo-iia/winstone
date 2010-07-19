@@ -9,8 +9,9 @@ package net.winstone.testCase;
 import java.io.File;
 import java.io.IOException;
 
+import net.winstone.servlet.StaticResourceServlet;
+
 import junit.framework.TestCase;
-import winstone.StaticResourceServlet;
 
 /**
  * Automated tests for the url security check inside the static resource servlet

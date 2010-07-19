@@ -6,6 +6,8 @@
  */
 package winstone;
 
+import net.winstone.WinstoneException;
+
 /**
  * Encapsulates the parsing of URL patterns, as well as the mapping of a url pattern to a servlet instance
  * 

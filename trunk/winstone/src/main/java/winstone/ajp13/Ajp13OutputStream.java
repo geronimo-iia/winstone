@@ -16,8 +16,9 @@ import java.util.Map;
 
 import javax.servlet.http.Cookie;
 
+import net.winstone.WinstoneException;
+
 import winstone.Logger;
-import winstone.WinstoneException;
 import winstone.WinstoneOutputStream;
 
 /**

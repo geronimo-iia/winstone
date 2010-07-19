@@ -20,8 +20,6 @@ import net.winstone.WinstoneResourceBundle;
 
 import org.w3c.dom.Node;
 
-import winstone.AuthenticationHandler;
-import winstone.AuthenticationRealm;
 import winstone.Logger;
 import winstone.WebAppConfiguration;
 

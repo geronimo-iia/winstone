@@ -4,7 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone;
+package net.winstone.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,10 +12,15 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Date;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
+
+import net.winstone.WinstoneResourceBundle;
+import net.winstone.util.StringUtils;
+import winstone.SimpleRequestDispatcher;
 
 /**
  * A simple servlet that writes out the body of the error
@@ -26,6 +31,16 @@ import javax.servlet.http.HttpServlet;
 public class ErrorServlet extends HttpServlet {
     
     private static final long serialVersionUID = -1210902945433492424L;
+    
+    private String template;
+    private String serverVersion;
+    
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        template = WinstoneResourceBundle.getInstance().getString("WinstoneResponse.ErrorPage");
+        serverVersion = WinstoneResourceBundle.getInstance().getString("ServerVersion");
+    }
     
     public void service(ServletRequest request, ServletResponse response) throws ServletException, IOException {
         
@@ -41,11 +56,9 @@ public class ErrorServlet extends HttpServlet {
             pw.println("(none)");
         }
         pw.flush();
-        
         // If we are here there was no error servlet, so show the default error page
-        String output = Launcher.RESOURCES.getString("WinstoneResponse.ErrorPage", new String[] {
-            sc + "", (msg == null ? "" : msg), sw.toString(), Launcher.RESOURCES.getString("ServerVersion"), "" + new Date()
-        });
+        String output = StringUtils.replaceToken(template, sc != null ? sc.toString() : "", (msg == null ? "" : msg), sw.toString(), serverVersion, new Date().toString());
+        
         response.setContentLength(output.getBytes(response.getCharacterEncoding()).length);
         Writer out = response.getWriter();
         out.write(output);

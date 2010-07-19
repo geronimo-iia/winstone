@@ -33,6 +33,6 @@ The process here is almost identical to that of Tomcat (I know this because I us
     * The AuthenticationRealm part is Winstone specific. Here you currently have three options:
          1. ArgumentsRealm: Here you simply add additional command line args for each user's password and role list. Passwords are added with --argumentsRealm.passwd.<username>=<password>, and roles are added with --argumentsRealm.roles.<username>=<role1>,<role2>
          2. FileRealm: This is the same as the Tomcat tomcat-users.xml file. Pass in the command line arguments --realmClassName=winstone.realm.FileRealm --fileRealm.configFile=<filename>, and it should work exactly the way Tomcat does by default.
-         3. Write your own: You just have to extend the winstone.AuthenticationRealm class, and override the appropriate methods (as the File and Arguments Realms do), and specify the class name in --realmClassName.
+         3. Write your own: You just have to extend the winstone.auth.AuthenticationRealm class, and override the appropriate methods (as the File and Arguments Realms do), and specify the class name in --realmClassName.
 
 This component is left intentionally fairly simple, and relatively extracted. I'm planning to break the realm and authentication stuff into an optional jar later, since not many webapps I've seen use it.

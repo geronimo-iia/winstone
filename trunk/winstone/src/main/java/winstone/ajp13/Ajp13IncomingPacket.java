@@ -12,9 +12,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
 import java.util.Map;
 
+import net.winstone.WinstoneException;
+
 import winstone.Logger;
 import winstone.RequestHandlerThread;
-import winstone.WinstoneException;
 
 /**
  * Models a single incoming ajp13 packet. Fixes by Cory Osborn 2007/4/3 - IIS related. Thanks

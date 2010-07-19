@@ -23,9 +23,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
+import net.winstone.WinstoneException;
 import net.winstone.WinstoneResourceBundle;
 
-import winstone.AuthenticationPrincipal;
 import winstone.HostGroup;
 import winstone.Launcher;
 import winstone.Listener;
@@ -33,11 +33,11 @@ import winstone.Logger;
 import winstone.ObjectPool;
 import winstone.RequestHandlerThread;
 import winstone.WebAppConfiguration;
-import winstone.WinstoneException;
 import winstone.WinstoneInputStream;
 import winstone.WinstoneOutputStream;
 import winstone.WinstoneRequest;
 import winstone.WinstoneResponse;
+import winstone.auth.AuthenticationPrincipal;
 
 /**
  * Implements the main listener daemon thread. This is the class that gets launched by the command line, and owns the server socket, etc.

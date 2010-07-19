@@ -113,7 +113,7 @@ public class StringUtils {
         }
         return buf.toString();
     }
-
+    
     public static String replace(final String input, final String[][] tokens) {
         if (tokens != null) {
             String out = input;
@@ -125,4 +125,25 @@ public class StringUtils {
             return input;
         }
     }
+    
+    public static String replaceToken(final String input, final String... parameters) {
+        if (parameters != null) {
+            String tokens[][] = new String[parameters.length][2];
+            for (int n = 0; n < parameters.length; n++) {
+                tokens[n] = new String[] {
+                    "[#" + n + "]", parameters[n]
+                };
+            }
+            return StringUtils.replace(input, tokens);
+        }
+        return input;
+    }
+    
+    public static String get(String value, String defaultValue) {
+        if (value == null || "".equals(value)) {
+            return defaultValue;
+        }
+        return value;
+    }
+    
 }
