@@ -26,8 +26,7 @@ public class MimeTypes implements FileNameMap {
      * Build a new instance of MimeTypes.
      */
     private MimeTypes() {
-        super();
-        ressource = Collections.unmodifiableMap(MapLoader.load(ResourceBundle.getBundle("mime")));
+        this(Collections.unmodifiableMap(MapLoader.load(ResourceBundle.getBundle("mime"))));
     }
     
     private MimeTypes(final Map<String, String> ressource) {
