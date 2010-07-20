@@ -29,7 +29,7 @@ import net.winstone.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import winstone.cluster.Cluster;
+import net.winstone.cluster.Cluster;
 
 /**
  * Manages the references to individual webapps within the container. This object handles the mapping of url-prefixes to webapps, and init
