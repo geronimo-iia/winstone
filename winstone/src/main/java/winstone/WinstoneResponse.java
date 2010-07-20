@@ -39,20 +39,8 @@ public class WinstoneResponse implements HttpServletResponse {
         HTTP_DF.setTimeZone(TimeZone.getTimeZone("GMT"));
         VERSION0_DF.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
-    
-    static final transient String CONTENT_LENGTH_HEADER = "Content-Length";
-    static final transient String CONTENT_TYPE_HEADER = "Content-Type";
-    
-    // Response header constants
-    private static final transient String CONTENT_LANGUAGE_HEADER = "Content-Language";
-    private static final transient String KEEP_ALIVE_HEADER = "Connection";
-    private static final transient String KEEP_ALIVE_OPEN = "Keep-Alive";
-    private static final transient String KEEP_ALIVE_CLOSE = "Close";
-    private static final transient String DATE_HEADER = "Date";
-    private static final transient String LOCATION_HEADER = "Location";
-    private static final transient String OUT_COOKIE_HEADER1 = "Set-Cookie";
-    private static final transient String X_POWERED_BY_HEADER = "X-Powered-By";
-    private static final transient String X_POWERED_BY_HEADER_VALUE = Launcher.RESOURCES.getString("PoweredByHeader");
+ 
+    public static final transient String X_POWERED_BY_HEADER_VALUE = Launcher.RESOURCES.getString("PoweredByHeader");
     
     private int statusCode;
     private WinstoneRequest req;
@@ -155,7 +143,7 @@ public class WinstoneResponse implements HttpServletResponse {
     }
     
     public void extractRequestKeepAliveHeader(WinstoneRequest req) {
-        this.reqKeepAliveHeader = req.getHeader(KEEP_ALIVE_HEADER);
+        this.reqKeepAliveHeader = req.getHeader(WinstoneConstant.KEEP_ALIVE_HEADER);
     }
     
     public List<String> getHeaders() {
@@ -221,41 +209,41 @@ public class WinstoneResponse implements HttpServletResponse {
      */
     public void validateHeaders() {
         // Need this block for WebDAV support. "Connection:close" header is ignored
-        String lengthHeader = getHeader(CONTENT_LENGTH_HEADER);
+        String lengthHeader = getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
         if ((lengthHeader == null) && (this.statusCode >= 300)) {
             int bodyBytes = this.outputStream.getOutputStreamLength();
             if (getBufferSize() > bodyBytes) {
                 Logger.log(Logger.FULL_DEBUG, Launcher.RESOURCES, "WinstoneResponse.ForcingContentLength", "" + bodyBytes);
-                forceHeader(CONTENT_LENGTH_HEADER, "" + bodyBytes);
-                lengthHeader = getHeader(CONTENT_LENGTH_HEADER);
+                forceHeader(WinstoneConstant.CONTENT_LENGTH_HEADER, "" + bodyBytes);
+                lengthHeader = getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
             }
         }
         
-        forceHeader(KEEP_ALIVE_HEADER, !closeAfterRequest() ? KEEP_ALIVE_OPEN : KEEP_ALIVE_CLOSE);
-        String contentType = getHeader(CONTENT_TYPE_HEADER);
+        forceHeader(WinstoneConstant.KEEP_ALIVE_HEADER, !closeAfterRequest() ? WinstoneConstant.KEEP_ALIVE_OPEN : WinstoneConstant.KEEP_ALIVE_CLOSE);
+        String contentType = getHeader(WinstoneConstant.CONTENT_TYPE_HEADER);
         if (this.statusCode != SC_MOVED_TEMPORARILY) {
             if (contentType == null) {
                 // Bypass normal encoding
-                forceHeader(CONTENT_TYPE_HEADER, "text/html;charset=" + getCharacterEncoding());
+                forceHeader(WinstoneConstant.CONTENT_TYPE_HEADER, "text/html;charset=" + getCharacterEncoding());
             } else if (contentType.startsWith("text/")) {
                 // replace charset in content
                 StringBuffer remainder = new StringBuffer();
                 getCharsetFromContentTypeHeader(contentType, remainder);
-                forceHeader(CONTENT_TYPE_HEADER, remainder.toString() + ";charset=" + getCharacterEncoding());
+                forceHeader(WinstoneConstant.CONTENT_TYPE_HEADER, remainder.toString() + ";charset=" + getCharacterEncoding());
             }
         }
-        if (getHeader(DATE_HEADER) == null) {
-            forceHeader(DATE_HEADER, formatHeaderDate(new Date()));
+        if (getHeader(WinstoneConstant.DATE_HEADER) == null) {
+            forceHeader(WinstoneConstant.DATE_HEADER, formatHeaderDate(new Date()));
         }
-        if (getHeader(X_POWERED_BY_HEADER) == null) {
-            forceHeader(X_POWERED_BY_HEADER, X_POWERED_BY_HEADER_VALUE);
+        if (getHeader(WinstoneConstant.X_POWERED_BY_HEADER) == null) {
+            forceHeader(WinstoneConstant.X_POWERED_BY_HEADER, X_POWERED_BY_HEADER_VALUE);
         }
         if (this.locale != null) {
             String lang = this.locale.getLanguage();
             if ((this.locale.getCountry() != null) && !this.locale.getCountry().equals("")) {
                 lang = lang + "-" + this.locale.getCountry();
             }
-            forceHeader(CONTENT_LANGUAGE_HEADER, lang);
+            forceHeader(WinstoneConstant.CONTENT_LANGUAGE_HEADER, lang);
         }
         
         // If we don't have a webappConfig, exit here, cause we definitely don't
@@ -310,9 +298,9 @@ public class WinstoneResponse implements HttpServletResponse {
         
         // Set-Cookie or Set-Cookie2
         if (cookie.getVersion() >= 1)
-            out.append(OUT_COOKIE_HEADER1).append(": "); // TCK doesn't like set-cookie2
+            out.append(WinstoneConstant.OUT_COOKIE_HEADER1).append(": "); // TCK doesn't like set-cookie2
         else
-            out.append(OUT_COOKIE_HEADER1).append(": ");
+            out.append(WinstoneConstant.OUT_COOKIE_HEADER1).append(": ");
         
         // name/value pair
         if (cookie.getVersion() == 0)
@@ -403,16 +391,16 @@ public class WinstoneResponse implements HttpServletResponse {
      */
     public boolean closeAfterRequest() {
         String inKeepAliveHeader = this.reqKeepAliveHeader;
-        String outKeepAliveHeader = getHeader(KEEP_ALIVE_HEADER);
-        boolean hasContentLength = (getHeader(CONTENT_LENGTH_HEADER) != null);
+        String outKeepAliveHeader = getHeader(WinstoneConstant.KEEP_ALIVE_HEADER);
+        boolean hasContentLength = (getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER) != null);
         if (this.protocol.startsWith("HTTP/0"))
             return true;
         else if ((inKeepAliveHeader == null) && (outKeepAliveHeader == null))
             return this.protocol.equals("HTTP/1.0") ? true : !hasContentLength;
         else if (outKeepAliveHeader != null)
-            return outKeepAliveHeader.equalsIgnoreCase(KEEP_ALIVE_CLOSE) || !hasContentLength;
+            return outKeepAliveHeader.equalsIgnoreCase(WinstoneConstant.KEEP_ALIVE_CLOSE) || !hasContentLength;
         else if (inKeepAliveHeader != null)
-            return inKeepAliveHeader.equalsIgnoreCase(KEEP_ALIVE_CLOSE) || !hasContentLength;
+            return inKeepAliveHeader.equalsIgnoreCase(WinstoneConstant.KEEP_ALIVE_CLOSE) || !hasContentLength;
         else
             return false;
     }
@@ -452,17 +440,17 @@ public class WinstoneResponse implements HttpServletResponse {
             StringBuffer remainderHeader = new StringBuffer();
             getCharsetFromContentTypeHeader(contentType, remainderHeader);
             if (remainderHeader.length() != 0) {
-                forceHeader(CONTENT_TYPE_HEADER, remainderHeader + ";charset=" + encoding);
+                forceHeader(WinstoneConstant.CONTENT_TYPE_HEADER, remainderHeader + ";charset=" + encoding);
             }
         }
     }
     
     public String getContentType() {
-        return getHeader(CONTENT_TYPE_HEADER);
+        return getHeader(WinstoneConstant.CONTENT_TYPE_HEADER);
     }
     
     public void setContentType(String type) {
-        setHeader(CONTENT_TYPE_HEADER, type);
+        setHeader(WinstoneConstant.CONTENT_TYPE_HEADER, type);
     }
     
     public Locale getLocale() {
@@ -536,7 +524,7 @@ public class WinstoneResponse implements HttpServletResponse {
     }
     
     public void setContentLength(int len) {
-        setIntHeader(CONTENT_LENGTH_HEADER, len);
+        setIntHeader(WinstoneConstant.CONTENT_LENGTH_HEADER, len);
     }
     
     // HttpServletResponse interface methods
@@ -571,7 +559,7 @@ public class WinstoneResponse implements HttpServletResponse {
                 name, value
             });
         } else if (value != null) {
-            if (name.equals(CONTENT_TYPE_HEADER)) {
+            if (name.equals(WinstoneConstant.CONTENT_TYPE_HEADER)) {
                 StringBuffer remainderHeader = new StringBuffer();
                 String headerEncoding = getCharsetFromContentTypeHeader(value, remainderHeader);
                 if (this.outputWriter != null) {
@@ -610,7 +598,7 @@ public class WinstoneResponse implements HttpServletResponse {
                         this.headers.remove(n);
                         continue;
                     }
-                    if (name.equals(CONTENT_TYPE_HEADER)) {
+                    if (name.equals(WinstoneConstant.CONTENT_TYPE_HEADER)) {
                         if (value != null) {
                             StringBuffer remainderHeader = new StringBuffer();
                             String headerEncoding = getCharsetFromContentTypeHeader(value, remainderHeader);
@@ -740,7 +728,7 @@ public class WinstoneResponse implements HttpServletResponse {
             this.req.discardRequestBody();
         }
         this.statusCode = HttpServletResponse.SC_MOVED_TEMPORARILY;
-        setHeader(LOCATION_HEADER, fullLocation.toString());
+        setHeader(WinstoneConstant.LOCATION_HEADER, fullLocation.toString());
         setContentLength(0);
         getWriter().flush();
     }

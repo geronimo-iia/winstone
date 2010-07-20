@@ -15,7 +15,7 @@
  * Version 2 along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package winstone.filters.multipart;
+package net.winstone.filters.multipart;
 
 import java.io.IOException;
 
@@ -41,14 +41,14 @@ public class MultipartRequestFilter implements Filter {
     private int maxContentLength = -1;
     private String tooBigPage;
     private ServletContext context;
-    
+
     public void init(FilterConfig config) throws ServletException {
         this.tooBigPage = config.getInitParameter("tooBigPage");
-        String maxContentLength = config.getInitParameter("maxContentLength");
-        if (maxContentLength == null) {
-            maxContentLength = "-1";
+        String pmaxContentLength = config.getInitParameter("maxContentLength");
+        if (pmaxContentLength == null) {
+            pmaxContentLength = "-1";
         }
-        this.maxContentLength = Integer.parseInt(maxContentLength);
+        this.maxContentLength = Integer.parseInt(pmaxContentLength);
         this.context = config.getServletContext();
     }
 
@@ -60,25 +60,25 @@ public class MultipartRequestFilter implements Filter {
 
     public void doFilter(ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException {
-        String contentType = request.getContentType(); 
+        String contentType = request.getContentType();
         if ((contentType != null) && contentType.startsWith("multipart/form-data")) {
             if (this.maxContentLength >= 0) {
                 int contentLength = request.getContentLength();
                 if ((contentLength != -1) && (contentLength > this.maxContentLength)) {
                     if (this.tooBigPage == null) {
                         ((HttpServletResponse) response).sendError(
-                                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
-                                "Upload size (" + contentLength + " bytes) was larger " +
-                                        "than the maxContentLength (" + this.maxContentLength + 
-                                        " bytes)");
+                                HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                                "Upload size (" + contentLength + " bytes) was larger "
+                                + "than the maxContentLength (" + this.maxContentLength
+                                + " bytes)");
                     } else {
                         RequestDispatcher rdTooBig = context.getRequestDispatcher(this.tooBigPage);
                         if (rdTooBig == null) {
                             ((HttpServletResponse) response).sendError(
-                                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
-                                    "Upload size (" + contentLength + " bytes) was larger " +
-                                            "than the maxContentLength (" + this.maxContentLength + 
-                                            " bytes) - page " + this.tooBigPage + " not found");
+                                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                                    "Upload size (" + contentLength + " bytes) was larger "
+                                    + "than the maxContentLength (" + this.maxContentLength
+                                    + " bytes) - page " + this.tooBigPage + " not found");
                         } else {
                             rdTooBig.forward(request, response);
                         }
@@ -91,6 +91,6 @@ public class MultipartRequestFilter implements Filter {
             }
         } else {
             chain.doFilter(request, response);
-        }                
+        }
     }
 }

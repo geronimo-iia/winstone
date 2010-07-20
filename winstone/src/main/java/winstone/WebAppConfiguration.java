@@ -6,6 +6,7 @@
  */
 package winstone;
 
+import winstone.jndi.JNDIManager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

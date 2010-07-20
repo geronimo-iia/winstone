@@ -26,7 +26,6 @@ import net.winstone.WinstoneResourceBundle;
 
 import org.w3c.dom.Node;
 
-import winstone.JNDIManager;
 import winstone.Logger;
 import winstone.jndi.resourceFactories.WinstoneDataSource;
 
