@@ -19,7 +19,7 @@ import net.winstone.util.Base64;
 import org.w3c.dom.Node;
 
 import winstone.Logger;
-import winstone.WinstoneRequest;
+import net.winstone.core.WinstoneRequest;
 
 /**
  * Handles HTTP basic authentication.

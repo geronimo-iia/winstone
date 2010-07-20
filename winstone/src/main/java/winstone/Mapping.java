@@ -6,6 +6,7 @@
  */
 package winstone;
 
+import net.winstone.core.WinstoneRequest;
 import net.winstone.WinstoneException;
 
 /**

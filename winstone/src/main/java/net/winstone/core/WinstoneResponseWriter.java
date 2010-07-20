@@ -4,12 +4,17 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone;
+package net.winstone.core;
 
+import net.winstone.core.WinstoneResponse;
+import net.winstone.core.WinstoneOutputStream;
+import net.winstone.core.WinstoneConstant;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import winstone.Launcher;
+import winstone.Logger;
 
 /**
  * A hacked print writer that allows us to trigger an automatic flush on 

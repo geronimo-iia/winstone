@@ -6,8 +6,8 @@
  */
 package net.winstone.accesslog;
 
-import winstone.WinstoneRequest;
-import winstone.WinstoneResponse;
+import net.winstone.core.WinstoneRequest;
+import net.winstone.core.WinstoneResponse;
 
 /**
  * Used for logging accesses, eg in Apache access_log style

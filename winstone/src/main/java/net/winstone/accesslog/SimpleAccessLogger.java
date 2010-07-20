@@ -16,8 +16,8 @@ import net.winstone.log.Logger;
 import net.winstone.log.LoggerFactory;
 import net.winstone.util.DateCache;
 import net.winstone.util.StringUtils;
-import winstone.WinstoneRequest;
-import winstone.WinstoneResponse;
+import net.winstone.core.WinstoneRequest;
+import net.winstone.core.WinstoneResponse;
 
 /**
  * Simulates an apache "combined" style logger, which logs User-Agent, Referer, etc

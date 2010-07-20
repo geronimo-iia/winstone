@@ -4,8 +4,10 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone;
+package net.winstone.core;
 
+import net.winstone.core.WinstoneInputStream;
+import net.winstone.core.WinstoneConstant;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +49,13 @@ import javax.servlet.http.HttpSession;
 import winstone.auth.AuthenticationPrincipal;
 
 import net.winstone.WinstoneException;
+import winstone.HostConfiguration;
+import winstone.HostGroup;
+import winstone.Launcher;
+import winstone.Logger;
+import winstone.ServletConfiguration;
+import winstone.WebAppConfiguration;
+import winstone.WinstoneSession;
 
 /**
  * Implements the request interface required by the servlet spec.

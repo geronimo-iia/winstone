@@ -4,8 +4,13 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone;
+package net.winstone.core.listener;
 
+import net.winstone.core.listener.Listener;
+import net.winstone.core.WinstoneResponse;
+import net.winstone.core.WinstoneRequest;
+import net.winstone.core.WinstoneInputStream;
+import net.winstone.core.WinstoneOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -19,6 +24,12 @@ import java.util.List;
 import java.util.Map;
 
 import net.winstone.WinstoneException;
+import winstone.HostGroup;
+import winstone.Launcher;
+import winstone.Logger;
+import winstone.ObjectPool;
+import winstone.RequestHandlerThread;
+import winstone.WebAppConfiguration;
 
 /**
  * Implements the main listener daemon thread. This is the class that gets launched by the command line, and owns the server socket, etc.

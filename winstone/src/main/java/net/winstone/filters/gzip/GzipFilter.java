@@ -29,7 +29,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
-import winstone.WinstoneRequest;
+import net.winstone.core.WinstoneRequest;
 
 /**
  * A filter that checks if the request will accept a gzip encoded response, and if so wraps the response in a gzip encoding response

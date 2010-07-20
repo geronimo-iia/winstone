@@ -6,6 +6,8 @@
  */
 package winstone;
 
+import net.winstone.core.listener.Listener;
+import net.winstone.core.ShutdownHook;
 import winstone.jndi.JNDIManager;
 import java.io.File;
 import java.io.FileInputStream;

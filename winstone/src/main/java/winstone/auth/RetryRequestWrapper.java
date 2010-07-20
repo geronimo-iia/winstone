@@ -29,8 +29,8 @@ import net.winstone.WinstoneException;
 
 import winstone.Launcher;
 import winstone.Logger;
-import winstone.WinstoneInputStream;
-import winstone.WinstoneRequest;
+import net.winstone.core.WinstoneInputStream;
+import net.winstone.core.WinstoneRequest;
 
 
 /**

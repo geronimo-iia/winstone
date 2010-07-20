@@ -6,6 +6,8 @@
  */
 package winstone;
 
+import net.winstone.core.WinstoneResponse;
+import net.winstone.core.WinstoneRequest;
 import winstone.jndi.JNDIManager;
 import java.io.File;
 import java.io.IOException;

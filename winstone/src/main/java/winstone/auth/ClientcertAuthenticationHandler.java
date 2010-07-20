@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.w3c.dom.Node;
 
 import winstone.Logger;
-import winstone.WinstoneRequest;
+import net.winstone.core.WinstoneRequest;
 
 /**
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>

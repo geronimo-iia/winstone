@@ -4,7 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone.ajp13;
+package net.winstone.core.listener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -19,7 +19,7 @@ import javax.servlet.http.Cookie;
 import net.winstone.WinstoneException;
 
 import winstone.Logger;
-import winstone.WinstoneOutputStream;
+import net.winstone.core.WinstoneOutputStream;
 
 /**
  * Extends the winstone output stream, so that the ajp13 protocol requirements

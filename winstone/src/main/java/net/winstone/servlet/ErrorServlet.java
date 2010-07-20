@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServlet;
 import net.winstone.WinstoneResourceBundle;
 import net.winstone.util.StringUtils;
 import winstone.SimpleRequestDispatcher;
-import winstone.WinstoneConstant;
+import net.winstone.core.WinstoneConstant;
 
 /**
  * A simple servlet that writes out the body of the error

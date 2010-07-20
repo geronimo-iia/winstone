@@ -32,7 +32,7 @@ import net.winstone.WinstoneResourceBundle;
 import net.winstone.log.Logger;
 import net.winstone.log.LoggerFactory;
 import net.winstone.util.StringUtils;
-import winstone.WinstoneRequest;
+import net.winstone.core.WinstoneRequest;
 
 /**
  * Servlet to handle static resources. Simply finds and sends them, or dispatches to the error servlet.<br />
