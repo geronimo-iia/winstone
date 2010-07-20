@@ -29,24 +29,7 @@ import winstone.auth.AuthenticationHandler;
  */
 public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher, javax.servlet.FilterChain {
     
-    public static final transient String INCLUDE_REQUEST_URI = "javax.servlet.include.request_uri";
-    public static final transient String INCLUDE_CONTEXT_PATH = "javax.servlet.include.context_path";
-    public static final transient String INCLUDE_SERVLET_PATH = "javax.servlet.include.servlet_path";
-    public static final transient String INCLUDE_PATH_INFO = "javax.servlet.include.path_info";
-    public static final transient String INCLUDE_QUERY_STRING = "javax.servlet.include.query_string";
     
-    public static final transient String FORWARD_REQUEST_URI = "javax.servlet.forward.request_uri";
-    public static final transient String FORWARD_CONTEXT_PATH = "javax.servlet.forward.context_path";
-    public static final transient String FORWARD_SERVLET_PATH = "javax.servlet.forward.servlet_path";
-    public static final transient String FORWARD_PATH_INFO = "javax.servlet.forward.path_info";
-    public static final transient String FORWARD_QUERY_STRING = "javax.servlet.forward.query_string";
-    
-    public static final transient String ERROR_STATUS_CODE = "javax.servlet.error.status_code";
-    public static final transient String ERROR_EXCEPTION_TYPE = "javax.servlet.error.exception_type";
-    public static final transient String ERROR_MESSAGE = "javax.servlet.error.message";
-    public static final transient String ERROR_EXCEPTION = "javax.servlet.error.exception";
-    public static final transient String ERROR_REQUEST_URI = "javax.servlet.error.request_uri";
-    public static final transient String ERROR_SERVLET_NAME = "javax.servlet.error.servlet_name";
     
     private WebAppConfiguration webAppConfig;
     private ServletConfiguration servletConfig;
@@ -248,23 +231,23 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
             
             // Set request attributes (because it's the first step in the filter chain of a forward or error)
             if (useRequestAttributes) {
-                req.setAttribute(FORWARD_REQUEST_URI, req.getRequestURI());
-                req.setAttribute(FORWARD_CONTEXT_PATH, req.getContextPath());
-                req.setAttribute(FORWARD_SERVLET_PATH, req.getServletPath());
-                req.setAttribute(FORWARD_PATH_INFO, req.getPathInfo());
-                req.setAttribute(FORWARD_QUERY_STRING, req.getQueryString());
+                req.setAttribute(WinstoneConstant.FORWARD_REQUEST_URI, req.getRequestURI());
+                req.setAttribute(WinstoneConstant.FORWARD_CONTEXT_PATH, req.getContextPath());
+                req.setAttribute(WinstoneConstant.FORWARD_SERVLET_PATH, req.getServletPath());
+                req.setAttribute(WinstoneConstant.FORWARD_PATH_INFO, req.getPathInfo());
+                req.setAttribute(WinstoneConstant.FORWARD_QUERY_STRING, req.getQueryString());
                 
                 if (this.isErrorDispatch) {
-                    req.setAttribute(ERROR_REQUEST_URI, req.getRequestURI());
-                    req.setAttribute(ERROR_STATUS_CODE, this.errorStatusCode);
-                    req.setAttribute(ERROR_MESSAGE, errorSummaryMessage != null ? errorSummaryMessage : "");
+                    req.setAttribute(WinstoneConstant.ERROR_REQUEST_URI, req.getRequestURI());
+                    req.setAttribute(WinstoneConstant.ERROR_STATUS_CODE, this.errorStatusCode);
+                    req.setAttribute(WinstoneConstant.ERROR_MESSAGE, errorSummaryMessage != null ? errorSummaryMessage : "");
                     if (req.getServletConfig() != null) {
-                        req.setAttribute(ERROR_SERVLET_NAME, req.getServletConfig().getServletName());
+                        req.setAttribute(WinstoneConstant.ERROR_SERVLET_NAME, req.getServletConfig().getServletName());
                     }
                     
                     if (this.errorException != null) {
-                        req.setAttribute(ERROR_EXCEPTION_TYPE, this.errorException.getClass());
-                        req.setAttribute(ERROR_EXCEPTION, this.errorException);
+                        req.setAttribute(WinstoneConstant.ERROR_EXCEPTION_TYPE, this.errorException.getClass());
+                        req.setAttribute(WinstoneConstant.ERROR_EXCEPTION, this.errorException);
                     }
                     
                     // Revert back to the original request and response

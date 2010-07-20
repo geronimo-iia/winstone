@@ -73,7 +73,7 @@ public class WinstoneResponseWriter extends PrintWriter {
     }
 
     protected void simulateAutoFlush() {
-        String contentLengthHeader = response.getHeader(WinstoneResponse.CONTENT_LENGTH_HEADER);
+        String contentLengthHeader = response.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
         if ((contentLengthHeader != null) && 
                 ((this.outputStream.getOutputStreamLength() + this.bytesBuffered) >= 
                         Integer.parseInt(contentLengthHeader))) {

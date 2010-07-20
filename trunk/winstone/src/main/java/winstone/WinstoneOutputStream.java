@@ -135,7 +135,7 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
         if (!this.committed && !this.bodyOnly) {
             this.owner.validateHeaders();
             this.committed = true;
-            String contentLengthHeader = this.owner.getHeader(WinstoneResponse.CONTENT_LENGTH_HEADER);
+            String contentLengthHeader = this.owner.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
             if (contentLengthHeader != null) {
                 this.contentLengthFromHeader = Integer.parseInt(contentLengthHeader);
             }
@@ -216,7 +216,7 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
     }
     
     public void close() throws IOException {
-        if (!isCommitted() && !this.disregardMode && !this.closed && (this.owner.getHeader(WinstoneResponse.CONTENT_LENGTH_HEADER) == null)) {
+        if (!isCommitted() && !this.disregardMode && !this.closed && (this.owner.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER) == null)) {
             if ((this.owner != null) && !this.bodyOnly) {
                 this.owner.setContentLength(getOutputStreamLength());
             }

@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServlet;
 import net.winstone.WinstoneResourceBundle;
 import net.winstone.util.StringUtils;
 import winstone.SimpleRequestDispatcher;
+import winstone.WinstoneConstant;
 
 /**
  * A simple servlet that writes out the body of the error
@@ -44,9 +45,9 @@ public class ErrorServlet extends HttpServlet {
     
     public void service(ServletRequest request, ServletResponse response) throws ServletException, IOException {
         
-        Integer sc = (Integer)request.getAttribute(SimpleRequestDispatcher.ERROR_STATUS_CODE);
-        String msg = (String)request.getAttribute(SimpleRequestDispatcher.ERROR_MESSAGE);
-        Throwable err = (Throwable)request.getAttribute(SimpleRequestDispatcher.ERROR_EXCEPTION);
+        Integer sc = (Integer)request.getAttribute(WinstoneConstant.ERROR_STATUS_CODE);
+        String msg = (String)request.getAttribute(WinstoneConstant.ERROR_MESSAGE);
+        Throwable err = (Throwable)request.getAttribute(WinstoneConstant.ERROR_EXCEPTION);
         
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
