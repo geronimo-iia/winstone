@@ -35,6 +35,7 @@ import com.meterware.httpunit.WebResponse;
  * @version $Id: HttpConnectorTest.java,v 1.8 2007/04/23 15:06:22 rickknowles Exp $
  */
 public class HttpConnectorTest extends TestCase {
+    public static final String WEBROOT = "target/winstone-test-1.0.0-SNAPSHOT";
     protected Logger logger = LoggerFactory.getLogger(getClass());
     public static Test suite() {
         return (new TestSuite(HttpConnectorTest.class));
@@ -54,7 +55,7 @@ public class HttpConnectorTest extends TestCase {
             InterruptedException {
         // Initialise container
         Map<String, String> args = new HashMap<String, String>();
-        args.put("webroot", "target/testwebapp");
+        args.put("webroot", WEBROOT);
         args.put("prefix", "/examples");
         args.put("httpPort", "10003");
         args.put("ajp13Port", "-1");
@@ -82,7 +83,7 @@ public class HttpConnectorTest extends TestCase {
             InterruptedException, SAXException {
         // Initialise container
         Map<String, String> args = new HashMap<String, String>();
-        args.put("webroot", "target/testwebapp");
+        args.put("webroot", WEBROOT);
         args.put("prefix", "/examples");
         args.put("httpPort", "10004");
         args.put("ajp13Port", "-1");
@@ -118,7 +119,7 @@ public class HttpConnectorTest extends TestCase {
             InterruptedException, SAXException {
         // Initialise container
         Map<String, String> args = new HashMap<String, String>();
-        args.put("webroot", "target/testwebapp");
+        args.put("webroot", WEBROOT);
         args.put("prefix", "/examples");
         args.put("httpPort", "10005");
         args.put("ajp13Port", "-1");
