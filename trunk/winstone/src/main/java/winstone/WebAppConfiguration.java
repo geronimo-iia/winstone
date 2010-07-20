@@ -59,7 +59,7 @@ import org.w3c.dom.NodeList;
 
 import winstone.auth.AuthenticationHandler;
 import winstone.auth.AuthenticationRealm;
-import winstone.cluster.Cluster;
+import net.winstone.cluster.Cluster;
 
 /**
  * Models the web.xml file's details ... basically just a bunch of configuration details, plus the actual instances of mounted servlets.
