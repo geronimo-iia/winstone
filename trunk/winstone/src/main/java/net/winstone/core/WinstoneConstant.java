@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package winstone;
+package net.winstone.core;
 
 /**
  * Internal Server Constant.

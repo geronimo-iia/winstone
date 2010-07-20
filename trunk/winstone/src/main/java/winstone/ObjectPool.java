@@ -6,6 +6,9 @@
  */
 package winstone;
 
+import net.winstone.core.listener.Listener;
+import net.winstone.core.WinstoneResponse;
+import net.winstone.core.WinstoneRequest;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;

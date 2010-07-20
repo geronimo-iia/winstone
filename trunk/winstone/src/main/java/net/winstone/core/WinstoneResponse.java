@@ -4,8 +4,10 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone;
+package net.winstone.core;
 
+import net.winstone.core.WinstoneOutputStream;
+import net.winstone.core.WinstoneConstant;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -24,6 +26,12 @@ import java.util.TimeZone;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import winstone.HostConfiguration;
+import winstone.Launcher;
+import winstone.Logger;
+import winstone.SimpleRequestDispatcher;
+import winstone.WebAppConfiguration;
+import winstone.WinstoneSession;
 
 /**
  * Response for servlet

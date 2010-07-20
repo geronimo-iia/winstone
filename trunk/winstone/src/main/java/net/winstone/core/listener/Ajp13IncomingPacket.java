@@ -4,7 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone.ajp13;
+package net.winstone.core.listener;
 
 import java.io.IOException;
 import java.io.InputStream;

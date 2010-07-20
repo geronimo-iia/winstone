@@ -4,13 +4,18 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone;
+package net.winstone.core.listener;
 
+import net.winstone.core.WinstoneResponse;
+import net.winstone.core.WinstoneRequest;
+import net.winstone.core.WinstoneInputStream;
+import net.winstone.core.WinstoneOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import winstone.RequestHandlerThread;
 
 /**
  * Interface that defines the necessary methods for being a connection listener

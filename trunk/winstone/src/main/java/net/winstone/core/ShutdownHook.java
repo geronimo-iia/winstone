@@ -4,7 +4,9 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone;
+package net.winstone.core;
+
+import winstone.Launcher;
 
 /**
  * A jvm hook to force the calling of the web-app destroy before the process terminates

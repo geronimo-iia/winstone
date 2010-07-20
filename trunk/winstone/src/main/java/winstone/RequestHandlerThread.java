@@ -6,6 +6,11 @@
  */
 package winstone;
 
+import net.winstone.core.listener.Listener;
+import net.winstone.core.WinstoneResponse;
+import net.winstone.core.WinstoneRequest;
+import net.winstone.core.WinstoneInputStream;
+import net.winstone.core.WinstoneOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;

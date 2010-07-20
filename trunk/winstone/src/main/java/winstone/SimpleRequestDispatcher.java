@@ -6,6 +6,9 @@
  */
 package winstone;
 
+import net.winstone.core.WinstoneResponse;
+import net.winstone.core.WinstoneRequest;
+import net.winstone.core.WinstoneConstant;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

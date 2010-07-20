@@ -24,7 +24,7 @@ import net.winstone.util.StringUtils;
 import org.w3c.dom.Node;
 
 import winstone.Logger;
-import winstone.WinstoneRequest;
+import net.winstone.core.WinstoneRequest;
 
 /**
  * Implements the MD5 digest version of authentication

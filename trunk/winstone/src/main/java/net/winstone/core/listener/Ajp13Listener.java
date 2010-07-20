@@ -4,7 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone.ajp13;
+package net.winstone.core.listener;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -28,15 +28,15 @@ import net.winstone.WinstoneResourceBundle;
 
 import winstone.HostGroup;
 import winstone.Launcher;
-import winstone.Listener;
+import net.winstone.core.listener.Listener;
 import winstone.Logger;
 import winstone.ObjectPool;
 import winstone.RequestHandlerThread;
 import winstone.WebAppConfiguration;
-import winstone.WinstoneInputStream;
-import winstone.WinstoneOutputStream;
-import winstone.WinstoneRequest;
-import winstone.WinstoneResponse;
+import net.winstone.core.WinstoneInputStream;
+import net.winstone.core.WinstoneOutputStream;
+import net.winstone.core.WinstoneRequest;
+import net.winstone.core.WinstoneResponse;
 import winstone.auth.AuthenticationPrincipal;
 
 /**

@@ -6,6 +6,7 @@
  */
 package winstone;
 
+import net.winstone.core.WinstoneRequest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

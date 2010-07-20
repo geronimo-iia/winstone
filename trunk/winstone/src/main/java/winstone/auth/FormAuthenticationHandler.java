@@ -22,7 +22,7 @@ import org.w3c.dom.Node;
 
 import winstone.Logger;
 import winstone.WebAppConfiguration;
-import winstone.WinstoneRequest;
+import net.winstone.core.WinstoneRequest;
 
 /**
  * Handles FORM based authentication configurations. Fairly simple ... it just
