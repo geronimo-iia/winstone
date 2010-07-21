@@ -19,7 +19,7 @@ import net.winstone.log.LoggerFactory;
 
 import org.xml.sax.SAXException;
 
-import winstone.Launcher; 
+import winstone.Launcher;
 
 import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.WebConversation;
@@ -35,8 +35,10 @@ import com.meterware.httpunit.WebResponse;
  * @version $Id: HttpConnectorTest.java,v 1.8 2007/04/23 15:06:22 rickknowles Exp $
  */
 public class HttpConnectorTest extends TestCase {
+
     public static final String WEBROOT = "target/winstone-test-1.0.0-SNAPSHOT";
     protected Logger logger = LoggerFactory.getLogger(getClass());
+
     public static Test suite() {
         return (new TestSuite(HttpConnectorTest.class));
     }
@@ -61,13 +63,12 @@ public class HttpConnectorTest extends TestCase {
         args.put("ajp13Port", "-1");
         args.put("controlPort", "-1");
         args.put("debug", "8");
-        args.put("logThrowingLineNo", "true"); 
+        args.put("logThrowingLineNo", "true");
         Launcher winstone = new Launcher(args);
 
         // Check for a simple connection
         WebConversation wc = new WebConversation();
-        WebRequest wreq = new GetMethodWebRequest(
-                "http://localhost:10003/examples/CountRequestsServlet");
+        WebRequest wreq = new GetMethodWebRequest("http://localhost:10003/examples/CountRequestsServlet");
         WebResponse wresp = wc.getResponse(wreq);
         InputStream content = wresp.getInputStream();
         assertTrue("Loading CountRequestsServlet", content.available() > 0);
@@ -89,7 +90,7 @@ public class HttpConnectorTest extends TestCase {
         args.put("ajp13Port", "-1");
         args.put("controlPort", "-1");
         args.put("debug", "8");
-        args.put("logThrowingLineNo", "true"); 
+        args.put("logThrowingLineNo", "true");
         Launcher winstone = new Launcher(args);
 
         // Check for a simple connection
@@ -98,20 +99,20 @@ public class HttpConnectorTest extends TestCase {
                 "http://localhost:10004/examples/CountRequestsServlet");
         WebResponse wresp1 = wc.getResponse(wreq);
         WebImage img[] = wresp1.getImages();
-        for (int n = 0; n < img.length; n++)
+        for (int n = 0; n < img.length; n++) {
             wc.getResponse(img[n].getRequest());
+        }
         // Thread.sleep(2000);
         // WebResponse wresp2 = wc.getResponse(wreq);
         // Thread.sleep(2000);
         //WebResponse wresp3 = wc.getResponse(wreq);
         InputStream content = wresp1.getInputStream();
-        assertTrue("Loading CountRequestsServlet + child images", content
-                .available() > 0);
+        assertTrue("Loading CountRequestsServlet + child images", content.available() > 0);
         content.close();
         winstone.shutdown();
         Thread.sleep(500);
     }
-    
+
     /**
      * Test the keep alive case
      */
@@ -125,7 +126,7 @@ public class HttpConnectorTest extends TestCase {
         args.put("ajp13Port", "-1");
         args.put("controlPort", "-1");
         args.put("debug", "8");
-        args.put("logThrowingLineNo", "true"); 
+        args.put("logThrowingLineNo", "true");
         Launcher winstone = new Launcher(args);
 
         // Check for a simple connection
