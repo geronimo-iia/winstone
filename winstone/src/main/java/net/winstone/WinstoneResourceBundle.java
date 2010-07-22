@@ -18,7 +18,7 @@ public class WinstoneResourceBundle {
     protected final Map<String, String> resources;
     
     private static class WinstoneResourceBundleHolder {
-        private static WinstoneResourceBundle bundle = new WinstoneResourceBundle("net.winstone.winstone");
+        private static WinstoneResourceBundle bundle = new WinstoneResourceBundle("net.winstone.winstone-message");
     }
     
     public static WinstoneResourceBundle getInstance() {
