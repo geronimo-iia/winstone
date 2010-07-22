@@ -45,7 +45,9 @@ import net.winstone.util.StringUtils;
  */
 public class Launcher implements Runnable {
 
-    protected net.winstone.log.Logger logger = LoggerFactory.getLogger(getClass());
+    public static final String EMBEDDED_PROPERTIES = "/embedded.properties";
+    public static final String WINSTONE_PROPERTIES = "winstone.properties";
+    protected static net.winstone.log.Logger logger = LoggerFactory.getLogger(Launcher.class);
     static final String HTTP_LISTENER_CLASS = "winstone.HttpListener";
     static final String HTTPS_LISTENER_CLASS = "winstone.ssl.HttpsListener";
     static final String AJP_LISTENER_CLASS = "winstone.ajp13.Ajp13Listener";
@@ -53,6 +55,8 @@ public class Launcher implements Runnable {
     static final String DEFAULT_JNDI_MGR_CLASS = "winstone.jndi.ContainerJNDIManager";
     public static final byte SHUTDOWN_TYPE = (byte) '0';
     public static final byte RELOAD_TYPE = (byte) '4';
+    private static final String EMBEDDED_WAR = "/embedded.war";
+    private static final String WS_EMBEDDED_WAR = "winstoneEmbeddedWAR";
     private int CONTROL_TIMEOUT = 2000; // wait 2s for control connection
     private int DEFAULT_CONTROL_PORT = -1;
     private Thread controlThread;
@@ -129,15 +133,15 @@ public class Launcher implements Runnable {
         // Set up common lib class loader
         String commonLibCLFolder = WebAppConfiguration.stringArg(args, "commonLibFolder", "lib");
         File libFolder = new File(commonLibCLFolder);
-        if (libFolder.exists() && libFolder.isDirectory()) { 
-            logger.debug(StringUtils.replaceToken("Using common lib folder: [#0]" , libFolder.getCanonicalPath()));
+        if (libFolder.exists() && libFolder.isDirectory()) {
+            logger.debug(StringUtils.replaceToken("Using common lib folder: [#0]", libFolder.getCanonicalPath()));
             File children[] = libFolder.listFiles();
             for (int n = 0; n < children.length; n++) {
                 if (children[n].getName().endsWith(".jar") || children[n].getName().endsWith(".zip")) {
                     jars.add(children[n].toURI().toURL());
                     //jars.add(children[n].toURL());
                     commonLibCLPaths.add(children[n]);
-                    logger.debug(StringUtils.replaceToken("Adding [#0] to common classpath" , children[n].getName()));
+                    logger.debug(StringUtils.replaceToken("Adding [#0] to common classpath", children[n].getName()));
                 }
             }
         } else {
@@ -154,7 +158,7 @@ public class Launcher implements Runnable {
         boolean switchOnCluster = (useCluster != null) && (useCluster.equalsIgnoreCase("true") || useCluster.equalsIgnoreCase("yes"));
         if (switchOnCluster) {
             if (this.controlPort < 0) {
-                Logger.log(Logger.INFO, RESOURCES, "Launcher.ClusterOffNoControlPort");
+                logger.info("Clustering disabled - control port must be enabled");
             } else {
                 String clusterClassName = WebAppConfiguration.stringArg(args, "clusterClassName", CLUSTER_CLASS).trim();
                 try {
@@ -166,9 +170,9 @@ public class Launcher implements Runnable {
                                 args, new Integer(this.controlPort)
                             });
                 } catch (ClassNotFoundException err) {
-                    Logger.log(Logger.DEBUG, RESOURCES, "Launcher.ClusterNotFound");
+                    logger.debug("Clustering disabled - cluster implementation class not found");
                 } catch (Throwable err) {
-                    Logger.log(Logger.WARNING, RESOURCES, "Launcher.ClusterStartupError", err);
+                    logger.error("WARNING: Error during startup of cluster implementation - ignoring", err);
                 }
             }
         }
@@ -187,9 +191,9 @@ public class Launcher implements Runnable {
                         });
                 this.globalJndiManager.setup();
             } catch (ClassNotFoundException err) {
-                Logger.log(Logger.DEBUG, RESOURCES, "Launcher.JNDIDisabled");
+                logger.debug("JNDI disabled at container level - can't find JNDI Manager class");
             } catch (Throwable err) {
-                Logger.log(Logger.ERROR, RESOURCES, "Launcher.JNDIError", jndiMgrClassName, err);
+                logger.error(StringUtils.replaceToken("JNDI disabled at container level - couldn't load JNDI Manager: [#0]", jndiMgrClassName), err);
             }
         }
 
@@ -204,7 +208,7 @@ public class Launcher implements Runnable {
             Class.forName("javax.net.ServerSocketFactory");
             spawnListener(HTTPS_LISTENER_CLASS);
         } catch (ClassNotFoundException err) {
-            Logger.log(Logger.DEBUG, RESOURCES, "Launcher.NeedsJDK14", HTTPS_LISTENER_CLASS);
+            logger.debug(StringUtils.replaceToken("Listener class [#0] needs JDK1.4 support. Disabling", HTTPS_LISTENER_CLASS));
         }
 
         this.controlThread = new Thread(this, RESOURCES.getString("Launcher.ThreadName", "" + this.controlPort));
@@ -219,7 +223,7 @@ public class Launcher implements Runnable {
      * Instantiates listeners. Note that an exception thrown in the constructor is interpreted as the listener being disabled, so don't do
      * anything too adventurous in the constructor, or if you do, catch and log any errors locally before rethrowing.
      */
-    protected void spawnListener(String listenerClassName) {
+    protected final void spawnListener(String listenerClassName) {
         try {
             Class<?> listenerClass = Class.forName(listenerClassName);
             Constructor<?> listenerConstructor = listenerClass.getConstructor(new Class[]{
@@ -232,9 +236,9 @@ public class Launcher implements Runnable {
                 this.listeners.add(listener);
             }
         } catch (ClassNotFoundException err) {
-            Logger.log(Logger.INFO, RESOURCES, "Launcher.ListenerNotFound", listenerClassName);
+            logger.info(StringUtils.replaceToken("Listener [#0] not found / disabled - ignoring", listenerClassName));
         } catch (Throwable err) {
-            Logger.log(Logger.ERROR, RESOURCES, "Launcher.ListenerStartupError", listenerClassName, err);
+            logger.error("Error during listener startup" + listenerClassName, err);
         }
     }
 
@@ -260,9 +264,9 @@ public class Launcher implements Runnable {
                 controlSocket.setSoTimeout(CONTROL_TIMEOUT);
             }
 
-            Logger.log(Logger.INFO, RESOURCES, "Launcher.StartupOK", new String[]{
-                        RESOURCES.getString("ServerVersion"), (this.controlPort > 0 ? "" + this.controlPort : RESOURCES.getString("Launcher.ControlDisabled"))
-                    });
+            logger.info(StringUtils.replaceToken("[#0] running: controlPort=[#1]",
+                    WinstoneResourceBundle.getInstance().getString("ServerVersion"), (this.controlPort > 0 ? Integer.toString(this.controlPort) : "disabled")));
+
 
             // Enter the main loop
             while (!interrupted) {
@@ -284,7 +288,7 @@ public class Launcher implements Runnable {
                 } catch (InterruptedException err) {
                     interrupted = true;
                 } catch (Throwable err) {
-                    Logger.log(Logger.ERROR, RESOURCES, "Launcher.ShutdownError", err);
+                    logger.error("Error during listener init or shutdown", err);
                 } finally {
                     if (accepted != null) {
                         try {
@@ -303,9 +307,9 @@ public class Launcher implements Runnable {
                 controlSocket.close();
             }
         } catch (Throwable err) {
-            Logger.log(Logger.ERROR, RESOURCES, "Launcher.ShutdownError", err);
+            logger.error("Error during listener init or shutdown", err);
         }
-        Logger.log(Logger.INFO, RESOURCES, "Launcher.ControlThreadShutdownOK");
+        logger.info("Winstone shutdown successfully");
     }
 
     protected void handleControlRequest(Socket csAccepted) throws IOException {
@@ -316,13 +320,13 @@ public class Launcher implements Runnable {
             inSocket = csAccepted.getInputStream();
             int reqType = inSocket.read();
             if ((byte) reqType == SHUTDOWN_TYPE) {
-                Logger.log(Logger.INFO, RESOURCES, "Launcher.ShutdownRequestReceived");
+                logger.info("Shutdown request received via the controlPort. Commencing Winstone shutdowny");
                 shutdown();
             } else if ((byte) reqType == RELOAD_TYPE) {
                 inControl = new ObjectInputStream(inSocket);
                 String host = inControl.readUTF();
                 String prefix = inControl.readUTF();
-                Logger.log(Logger.INFO, RESOURCES, "Launcher.ReloadRequestReceived", host + prefix);
+                logger.info("Reload request received via the controlPort. Commencing Winstone reload from " + host + prefix);
                 HostConfiguration hostConfig = this.hostGroup.getHostByName(host);
                 hostConfig.reloadWebApp(prefix);
             } else if (this.cluster != null) {
@@ -369,8 +373,7 @@ public class Launcher implements Runnable {
             this.controlThread.interrupt();
         }
         Thread.yield();
-
-        Logger.log(Logger.INFO, RESOURCES, "Launcher.ShutdownOK");
+        logger.info("Winstone shutdown successfully");
     }
 
     public boolean isRunning() {
@@ -401,7 +404,8 @@ public class Launcher implements Runnable {
         try {
             new Launcher(args);
         } catch (Throwable err) {
-            Logger.log(Logger.ERROR, RESOURCES, "Launcher.ContainerStartupError", err);
+            System.err.println("Container startup failed");
+            err.printStackTrace(System.err);
         }
     }
 
@@ -430,7 +434,7 @@ public class Launcher implements Runnable {
         Map<String, String> args = new HashMap<String, String>();
 
         // Load embedded properties file
-        String embeddedPropertiesFilename = RESOURCES.getString("Launcher.EmbeddedPropertiesFile");
+        String embeddedPropertiesFilename = EMBEDDED_PROPERTIES;
 
         InputStream embeddedPropsStream = Launcher.class.getResourceAsStream(embeddedPropertiesFilename);
         if (embeddedPropsStream != null) {
@@ -439,7 +443,7 @@ public class Launcher implements Runnable {
         }
 
         // Get command line args
-        String configFilename = RESOURCES.getString("Launcher.DefaultPropertyFile");
+        String configFilename = WINSTONE_PROPERTIES;
         for (int n = 0; n < argv.length; n++) {
             String option = argv[n];
             if (option.startsWith("--")) {
@@ -465,7 +469,7 @@ public class Launcher implements Runnable {
             loadPropsFromStream(inConfig, args);
             inConfig.close();
             initLogger(args);
-            Logger.log(Logger.DEBUG, RESOURCES, "Launcher.UsingPropertyFile", configFilename);
+            logger.debug(StringUtils.replaceToken("Property file found ([#0]) - loading", configFilename));
         } else {
             initLogger(args);
         }
@@ -473,18 +477,17 @@ public class Launcher implements Runnable {
     }
 
     protected static void deployEmbeddedWarfile(Map<String, String> args) throws IOException {
-        String embeddedWarfileName = RESOURCES.getString("Launcher.EmbeddedWarFile");
+        String embeddedWarfileName = EMBEDDED_WAR;
         InputStream embeddedWarfile = Launcher.class.getResourceAsStream(embeddedWarfileName);
         if (embeddedWarfile != null) {
             File tempWarfile = File.createTempFile("embedded", ".war").getAbsoluteFile();
             tempWarfile.getParentFile().mkdirs();
             tempWarfile.deleteOnExit();
 
-            String embeddedWebroot = RESOURCES.getString("Launcher.EmbeddedWebroot");
+            String embeddedWebroot = WS_EMBEDDED_WAR;
             File tempWebroot = new File(tempWarfile.getParentFile(), embeddedWebroot);
             tempWebroot.mkdirs();
-
-            Logger.log(Logger.DEBUG, RESOURCES, "Launcher.CopyingEmbeddedWarfile", tempWarfile.getAbsolutePath());
+            logger.debug(StringUtils.replaceToken("Extracting embedded warfile to [#0]", tempWarfile.getAbsolutePath()));
             OutputStream out = new FileOutputStream(tempWarfile, true);
             int read = 0;
             byte buffer[] = new byte[2048];
@@ -527,10 +530,10 @@ public class Launcher implements Runnable {
             logStream = System.out;
         }
         // Logger.init(logLevel, logStream, showThrowingLineNo, showThrowingThread);
-        Logger.init(logLevel, logStream, showThrowingThread);
+        //Logger.init(logLevel, logStream, showThrowingThread);
     }
 
     protected static void printUsage() {
-        System.out.println(RESOURCES.getString("Launcher.UsageInstructions", RESOURCES.getString("ServerVersion")));
+        System.out.println(WinstoneResourceBundle.getInstance().getString("UsageInstructions", WinstoneResourceBundle.getInstance().getString("ServerVersion")));
     }
 }
