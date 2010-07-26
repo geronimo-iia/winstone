@@ -6,15 +6,13 @@
  */
 package net.winstone.core;
 
-import net.winstone.core.WinstoneResponse;
-import net.winstone.core.WinstoneOutputStream;
-import net.winstone.core.WinstoneConstant;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import winstone.Launcher;
-import winstone.Logger;
+import net.winstone.log.Logger;
+import net.winstone.log.LoggerFactory;
+import net.winstone.util.StringUtils;
 
 /**
  * A hacked print writer that allows us to trigger an automatic flush on 
@@ -29,23 +27,25 @@ import winstone.Logger;
  */
 public class WinstoneResponseWriter extends PrintWriter {
 
+    protected static Logger logger = LoggerFactory.getLogger(WinstoneResponseWriter.class);
     private WinstoneOutputStream outputStream;
     private WinstoneResponse response;
     private int bytesBuffered;
-    
-    public WinstoneResponseWriter(WinstoneOutputStream out, 
-            WinstoneResponse response) throws UnsupportedEncodingException {
+
+    public WinstoneResponseWriter(WinstoneOutputStream out, WinstoneResponse response) throws UnsupportedEncodingException {
         super(new OutputStreamWriter(out, response.getCharacterEncoding()), false);
         this.outputStream = out;
         this.response = response;
         this.bytesBuffered = 0;
     }
 
+    @Override
     public void write(int c) {
         super.write(c);
         appendByteCount("" + ((char) c));
     }
-    
+
+    @Override
     public void write(char[] buf, int off, int len) {
         super.write(buf, off, len);
         if (buf != null) {
@@ -53,6 +53,7 @@ public class WinstoneResponseWriter extends PrintWriter {
         }
     }
 
+    @Override
     public void write(String s, int off, int len) {
         super.write(s, off, len);
         if (s != null) {
@@ -63,15 +64,19 @@ public class WinstoneResponseWriter extends PrintWriter {
     protected void appendByteCount(String input) {
         try {
             this.bytesBuffered += input.getBytes(response.getCharacterEncoding()).length;
-        } catch (IOException err) {/* impossible */}
+        } catch (IOException err) {/* impossible */
+
+        }
 
     }
-    
+
+    @Override
     public void println() {
         super.println();
         simulateAutoFlush();
     }
 
+    @Override
     public void flush() {
         super.flush();
         this.bytesBuffered = 0;
@@ -79,12 +84,10 @@ public class WinstoneResponseWriter extends PrintWriter {
 
     protected void simulateAutoFlush() {
         String contentLengthHeader = response.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
-        if ((contentLengthHeader != null) && 
-                ((this.outputStream.getOutputStreamLength() + this.bytesBuffered) >= 
-                        Integer.parseInt(contentLengthHeader))) {
-            Logger.log(Logger.FULL_DEBUG, Launcher.RESOURCES, "WinstoneResponseWriter.AutoFlush",
-                    new String[] {contentLengthHeader,
-                    (this.outputStream.getOutputStreamLength() + this.bytesBuffered) + ""});
+        if ((contentLengthHeader != null)
+                && ((this.outputStream.getOutputStreamLength() + this.bytesBuffered)
+                >= Integer.parseInt(contentLengthHeader))) {
+            logger.debug(StringUtils.replaceToken("Checking for auto-flush of print writer: contentLengthHeader=[#0], responseBytes=[#1]", contentLengthHeader, (this.outputStream.getOutputStreamLength() + this.bytesBuffered) + ""));
             flush();
         }
     }

@@ -21,8 +21,10 @@ public class ShutdownHook extends Thread {
         this.launcher = launcher;
     }
 
+    @Override
     public void run() {
-        if (this.launcher != null)
+        if (this.launcher != null) {
             this.launcher.shutdown();
+        }
     }
 }

@@ -35,7 +35,6 @@ public class LoggerFactory {
             try {
                 loggerProvider = iterator.next();
             } catch (Throwable e) {
-                e.printStackTrace();
             }
         }
         if (loggerProvider == null) {

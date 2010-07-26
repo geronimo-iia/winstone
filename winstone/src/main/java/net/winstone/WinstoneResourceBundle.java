@@ -55,13 +55,7 @@ public class WinstoneResourceBundle {
     public String getString(final String key) {
         return this.resources.get(key);
     }
-    
-    /**
-     * Perform a string replace for a single from/to pair.
-     */
-    public String getString(final String key, final String parameter) {
-        return StringUtils.replace(this.resources.get(key), "[#0]", parameter);
-    }
+ 
     
     /**
      * Perform a string replace for a set of from/to pairs.
