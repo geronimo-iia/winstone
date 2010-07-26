@@ -8,16 +8,17 @@ package winstone.auth;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-
 
 /**
  * This is used by the ACL filter to allow a retry by using a key lookup
@@ -29,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class RetryRequestParams implements java.io.Serializable {
 
-  
     private static final long serialVersionUID = 7900915469307853808L;
     private String method;
     private String scheme;
@@ -42,8 +42,8 @@ public class RetryRequestParams implements java.io.Serializable {
     private String contentType;
     private String encoding;
     @SuppressWarnings("unchecked")
-    private Map headers;
-    private Vector<Locale> locales;
+    private Map<String, Enumeration> headers;
+    private List<Locale> locales;
     private Locale locale;
     private byte[] bodyContent;
 
@@ -53,7 +53,7 @@ public class RetryRequestParams implements java.io.Serializable {
     @SuppressWarnings("unchecked")
     public RetryRequestParams(ServletRequest request) throws IOException {
         this.protocol = request.getProtocol();
-        this.locales = new Vector<Locale>(Collections.list(request.getLocales()));
+        this.locales = new ArrayList<Locale>(Collections.list(request.getLocales()));
         this.locale = request.getLocale();
         this.contentLength = request.getContentLength();
         this.contentType = request.getContentType();
@@ -67,13 +67,13 @@ public class RetryRequestParams implements java.io.Serializable {
             this.servletPath = httpRequest.getServletPath();
             this.pathInfo = httpRequest.getPathInfo();
             this.queryString = httpRequest.getQueryString();
-            
+
             for (Enumeration names = httpRequest.getHeaderNames(); names.hasMoreElements();) {
                 String name = (String) names.nextElement();
-                headers.put(name.toLowerCase(), new Vector(Collections.list(httpRequest.getHeaders(name))));
+                headers.put(name.toLowerCase(), httpRequest.getHeaders(name));
             }
         }
-        
+
         if (((this.method == null) || this.method.equalsIgnoreCase("POST")) && (this.contentLength != -1)) {
             InputStream inData = request.getInputStream();
             this.bodyContent = new byte[this.contentLength];
@@ -102,8 +102,7 @@ public class RetryRequestParams implements java.io.Serializable {
         return encoding;
     }
 
-    @SuppressWarnings("unchecked")
-    public Map getHeaders() {
+    public Map<String, Enumeration> getHeaders() {
         return headers;
     }
 
@@ -111,7 +110,7 @@ public class RetryRequestParams implements java.io.Serializable {
         return locale;
     }
 
-    public Vector<Locale> getLocales() {
+    public List<Locale> getLocales() {
         return locales;
     }
 

@@ -10,8 +10,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import winstone.Launcher;
-import winstone.Logger;
+import net.winstone.log.Logger;
+import net.winstone.log.LoggerFactory;
 
 /**
  * The request stream management class.
@@ -20,12 +20,14 @@ import winstone.Logger;
  * @version $Id: WinstoneInputStream.java,v 1.4 2006/02/28 07:32:47 rickknowles Exp $
  */
 public class WinstoneInputStream extends javax.servlet.ServletInputStream {
+
+    protected static Logger logger = LoggerFactory.getLogger(WinstoneInputStream.class);
     final int BUFFER_SIZE = 4096;
     private InputStream inData;
     private Integer contentLength;
     private int readSoFar;
     private ByteArrayOutputStream dump;
-    
+
     /**
      * Constructor
      */
@@ -48,6 +50,7 @@ public class WinstoneInputStream extends javax.servlet.ServletInputStream {
         this.readSoFar = 0;
     }
 
+    @Override
     public int read() throws IOException {
         if (this.contentLength == null) {
             int data = this.inData.read();
@@ -60,8 +63,9 @@ public class WinstoneInputStream extends javax.servlet.ServletInputStream {
             this.dump.write(data);
 //            System.out.println("Char: " + (char) data);
             return data;
-        } else
+        } else {
             return -1;
+        }
     }
 
     public void finishRequest() {
@@ -71,6 +75,7 @@ public class WinstoneInputStream extends javax.servlet.ServletInputStream {
         // content.length);
     }
 
+    @Override
     public int available() throws IOException {
         return this.inData.available();
     }
@@ -83,13 +88,11 @@ public class WinstoneInputStream extends javax.servlet.ServletInputStream {
         byte buffer[] = new byte[BUFFER_SIZE];
         int charsRead = super.readLine(buffer, 0, BUFFER_SIZE);
         if (charsRead == -1) {
-            Logger.log(Logger.DEBUG, Launcher.RESOURCES,
-                    "WinstoneInputStream.EndOfStream");
+            logger.debug("End of stream");
             return new byte[0];
         }
         byte outBuf[] = new byte[charsRead];
         System.arraycopy(buffer, 0, outBuf, 0, charsRead);
         return outBuf;
     }
-
 }

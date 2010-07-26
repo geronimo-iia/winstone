@@ -22,4 +22,10 @@ public interface Logger {
     public void debug(final String msg);
     
     public void debug(final String msg, final Throwable t);
+
+    public void trace(final String msg);
+
+    public boolean isDebugEnabled();
+
+    public boolean isTraceEnabled();
 }

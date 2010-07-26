@@ -61,6 +61,7 @@ public class HttpsListener extends HttpListener {
     /**
      * The default port to use - this is just so that we can override for the SSL connector.
      */
+    @Override
     protected int getDefaultPort() {
         return -1; // https disabled by default
     }
@@ -68,6 +69,7 @@ public class HttpsListener extends HttpListener {
     /**
      * The name to use when getting properties - this is just so that we can override for the SSL connector.
      */
+    @Override
     protected String getConnectorScheme() {
         return "https";
     }
@@ -75,6 +77,7 @@ public class HttpsListener extends HttpListener {
     /**
      * Gets a server socket - this gets as SSL socket instead of the standard socket returned in the base class.
      */
+    @Override
     protected ServerSocket getServerSocket() throws IOException {
         // Just to make sure it's set before we start
         SSLContext context = getSSLContext(this.keystore, this.password);
@@ -89,6 +92,7 @@ public class HttpsListener extends HttpListener {
      * Extracts the relevant socket stuff and adds it to the request object. This method relies on the base class for everything other than
      * SSL related attributes
      */
+    @Override
     protected void parseSocketInfo(Socket socket, WinstoneRequest req) throws IOException {
         super.parseSocketInfo(socket, req);
         if (socket instanceof SSLSocket) {

@@ -15,11 +15,9 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
-import java.util.Vector;
+import java.util.TimeZone; 
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -27,11 +25,10 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 import net.winstone.WinstoneException;
 
-import winstone.Launcher;
-import winstone.Logger;
 import net.winstone.core.WinstoneInputStream;
 import net.winstone.core.WinstoneRequest;
-
+import net.winstone.log.Logger;
+import net.winstone.log.LoggerFactory;
 
 /**
  * This is used by the ACL filter to allow a retry by using a key lookup
@@ -42,19 +39,18 @@ import net.winstone.core.WinstoneRequest;
  * @version $Id: RetryRequestWrapper.java,v 1.3 2007/02/26 00:28:05 rickknowles Exp $
  */
 public class RetryRequestWrapper extends HttpServletRequestWrapper {
+
     protected static final DateFormat headerDF = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+    protected static Logger logger = LoggerFactory.getLogger(RetryRequestWrapper.class);
 
     static {
         headerDF.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
-
     private final static String METHOD_HEAD = "GET";
     private final static String METHOD_GET = "GET";
     private final static String METHOD_POST = "POST";
     private final static String POST_PARAMETERS = "application/x-www-form-urlencoded";
-
     private RetryRequestParams oldRequest;
-
     // PARAMETER/BODY RELATED FUNCTIONS
     private String encoding;
     private Map parsedParams;
@@ -64,7 +60,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
      * Constructor - this populates the wrapper from the object in session
      */
     public RetryRequestWrapper(HttpServletRequest request, RetryRequestParams oldRequest)
-                                 throws IOException {
+            throws IOException {
         super(request);
         this.oldRequest = oldRequest;
         this.encoding = this.oldRequest.getEncoding();
@@ -73,7 +69,8 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
     private boolean hasBeenForwarded() {
         return (super.getAttribute("javax.servlet.forward.request_uri") != null);
     }
-    
+
+    @Override
     public String getScheme() {
         if (hasBeenForwarded()) {
             return super.getScheme();
@@ -82,6 +79,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public String getMethod() {
         if (hasBeenForwarded()) {
             return super.getMethod();
@@ -90,6 +88,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public String getContextPath() {
         if (hasBeenForwarded()) {
             return super.getContextPath();
@@ -98,6 +97,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public String getServletPath() {
         if (hasBeenForwarded()) {
             return super.getServletPath();
@@ -106,6 +106,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public String getPathInfo() {
         if (hasBeenForwarded()) {
             return super.getPathInfo();
@@ -114,6 +115,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public String getQueryString() {
         if (hasBeenForwarded()) {
             return super.getQueryString();
@@ -122,6 +124,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public String getRequestURI() {
         if (hasBeenForwarded()) {
             return super.getRequestURI();
@@ -131,10 +134,11 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
             String pathInfo = this.oldRequest.getPathInfo();
             String queryString = this.oldRequest.getQueryString();
             return contextPath + servletPath + ((pathInfo == null) ? "" : pathInfo)
-                   + ((queryString == null) ? "" : ("?" + queryString));
+                    + ((queryString == null) ? "" : ("?" + queryString));
         }
     }
 
+    @Override
     public String getCharacterEncoding() {
         if (hasBeenForwarded()) {
             return super.getCharacterEncoding();
@@ -143,6 +147,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public void setCharacterEncoding(String encoding) throws UnsupportedEncodingException {
         if (hasBeenForwarded()) {
             super.setCharacterEncoding(encoding);
@@ -151,6 +156,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public int getContentLength() {
         if (hasBeenForwarded()) {
             return super.getContentLength();
@@ -159,6 +165,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public String getContentType() {
         if (hasBeenForwarded()) {
             return super.getContentType();
@@ -167,6 +174,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public Locale getLocale() {
         if (hasBeenForwarded()) {
             return super.getLocale();
@@ -175,16 +183,18 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public Enumeration getLocales() {
         if (hasBeenForwarded()) {
             return super.getLocales();
         } else {
-            return this.oldRequest.getLocales().elements();
+            return Collections.enumeration(this.oldRequest.getLocales());
         }
     }
 
     // -------------------------------------------------------------------
     // HEADER RELATED FUNCTIONS
+    @Override
     public long getDateHeader(String name) {
         if (hasBeenForwarded()) {
             return super.getDateHeader(name);
@@ -203,7 +213,8 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
             }
         }
     }
-    
+
+    @Override
     public int getIntHeader(String name) {
         if (hasBeenForwarded()) {
             return super.getIntHeader(name);
@@ -213,6 +224,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public String getHeader(String name) {
         if (hasBeenForwarded()) {
             return super.getHeader(name);
@@ -222,6 +234,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public Enumeration getHeaderNames() {
         if (hasBeenForwarded()) {
             return super.getHeaderNames();
@@ -230,15 +243,16 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public Enumeration getHeaders(String name) {
         if (hasBeenForwarded()) {
             return super.getHeaders(name);
         } else {
-            Vector result = (Vector) this.oldRequest.getHeaders().get(name.toLowerCase()); 
-            return result == null ? null : result.elements();
+            return this.oldRequest.getHeaders().get(name.toLowerCase());
         }
     }
 
+    @Override
     public String getParameter(String name) {
         if (hasBeenForwarded()) {
             return super.getParameter(name);
@@ -257,6 +271,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public Enumeration getParameterNames() {
         if (hasBeenForwarded()) {
             return super.getParameterNames();
@@ -266,6 +281,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public String[] getParameterValues(String name) {
         if (hasBeenForwarded()) {
             return super.getParameterValues(name);
@@ -275,22 +291,21 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
             if (param == null) {
                 return null;
             } else if (param instanceof String) {
-                return new String[] {(String) param};
+                return new String[]{(String) param};
             } else if (param instanceof String[]) {
                 return (String[]) param;
             } else {
-                throw new WinstoneException(Launcher.RESOURCES.getString(
-                        "WinstoneRequest.UnknownParameterType", name + " - "
-                                + param.getClass()));
+                throw new WinstoneException("Unknown param type: " + name + " - " + param.getClass());
             }
         }
     }
 
+    @Override
     public Map getParameterMap() {
         if (hasBeenForwarded()) {
             return super.getParameterMap();
         } else {
-            Hashtable paramMap = new Hashtable();
+            Map<String, String[]> paramMap = new HashMap<String, String[]>();
             for (Enumeration names = this.getParameterNames(); names.hasMoreElements();) {
                 String name = (String) names.nextElement();
                 paramMap.put(name, getParameterValues(name));
@@ -299,6 +314,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public BufferedReader getReader() throws IOException {
         if (hasBeenForwarded()) {
             return super.getReader();
@@ -309,11 +325,12 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public ServletInputStream getInputStream() throws IOException {
         if (hasBeenForwarded()) {
             return super.getInputStream();
         } else if (this.parsedParams != null) {
-            Logger.log(Logger.WARNING, Launcher.RESOURCES, "WinstoneRequest.BothMethods");
+            logger.debug("Called getInputStream after getParameter ... error");
         }
 
         if (this.inData == null) {
@@ -323,15 +340,13 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
         return this.inData;
     }
 
-    // -------------------------------------------------------------------
-
     /**
      * This takes the parameters in the body of the request and puts them into
      * the parameters map.
      */
     private void parseRequestParameters() {
         if (inData != null) {
-            Logger.log(Logger.WARNING, Launcher.RESOURCES, "WinstoneRequest.BothMethods");
+            logger.warn("Called getInputStream after getParameter ... error");
         }
 
         if (this.parsedParams == null) {
@@ -341,22 +356,22 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
             Map workingParameters = new HashMap();
             try {
                 // Parse query string from request
-                if ((method.equals(METHOD_GET) || method.equals(METHOD_HEAD) || 
-                        method.equals(METHOD_POST)) && (queryString != null)) {
+                if ((method.equals(METHOD_GET) || method.equals(METHOD_HEAD)
+                        || method.equals(METHOD_POST)) && (queryString != null)) {
                     WinstoneRequest.extractParameters(queryString, this.encoding, workingParameters, false);
                 }
-                
+
                 if (method.equals(METHOD_POST) && (contentType != null)
                         && (contentType.equals(POST_PARAMETERS) || contentType.startsWith(POST_PARAMETERS + ";"))) {
                     // Parse params
-                    String paramLine = (this.encoding == null ? new String(this.oldRequest.getBodyContent()) 
+                    String paramLine = (this.encoding == null ? new String(this.oldRequest.getBodyContent())
                             : new String(this.oldRequest.getBodyContent(), this.encoding));
                     WinstoneRequest.extractParameters(paramLine.trim(), this.encoding, workingParameters, false);
-                } 
-                
+                }
+
                 this.parsedParams = workingParameters;
             } catch (UnsupportedEncodingException err) {
-                Logger.log(Logger.ERROR, Launcher.RESOURCES, "WinstoneRequest.ErrorBodyParameters", err);
+                logger.error("Error parsing request parameters", err);
                 this.parsedParams = null;
             }
         }

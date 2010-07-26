@@ -6,7 +6,6 @@
  */
 package winstone;
 
-import com.google.common.collect.Collections2;
 import net.winstone.core.listener.Listener;
 import net.winstone.core.ShutdownHook;
 import winstone.jndi.JNDIManager;
@@ -211,7 +210,7 @@ public class Launcher implements Runnable {
             logger.debug(StringUtils.replaceToken("Listener class [#0] needs JDK1.4 support. Disabling", HTTPS_LISTENER_CLASS));
         }
 
-        this.controlThread = new Thread(this, RESOURCES.getString("Launcher.ThreadName", "" + this.controlPort));
+        this.controlThread = new Thread(this, StringUtils.replaceToken("LauncherControlThread[ControlPort=[#0]]", Integer.toString(this.controlPort)));
         this.controlThread.setDaemon(false);
         this.controlThread.start();
 
@@ -245,6 +244,7 @@ public class Launcher implements Runnable {
     /**
      * The main run method. This handles the normal thread processing.
      */
+    @Override
     public void run() {
         boolean interrupted = false;
         try {
@@ -518,17 +518,17 @@ public class Launcher implements Runnable {
 
     public static void initLogger(Map<String, String> args) throws IOException {
         // Reset the log level
-        int logLevel = WebAppConfiguration.intArg(args, "debug", Logger.INFO);
+        //int logLevel = WebAppConfiguration.intArg(args, "debug", Logger.INFO);
         // boolean showThrowingLineNo = WebAppConfiguration.booleanArg(args, "logThrowingLineNo", false);
-        boolean showThrowingThread = WebAppConfiguration.booleanArg(args, "logThrowingThread", false);
-        OutputStream logStream = null;
-        if (args.get("logfile") != null) {
-            logStream = new FileOutputStream((String) args.get("logfile"));
-        } else if (WebAppConfiguration.booleanArg(args, "logToStdErr", false)) {
-            logStream = System.err;
-        } else {
-            logStream = System.out;
-        }
+        //boolean showThrowingThread = WebAppConfiguration.booleanArg(args, "logThrowingThread", false);
+//        OutputStream logStream = null;
+//        if (args.get("logfile") != null) {
+//            logStream = new FileOutputStream((String) args.get("logfile"));
+//        } else if (WebAppConfiguration.booleanArg(args, "logToStdErr", false)) {
+//            logStream = System.err;
+//        } else {
+//            logStream = System.out;
+//        }
         // Logger.init(logLevel, logStream, showThrowingLineNo, showThrowingThread);
         //Logger.init(logLevel, logStream, showThrowingThread);
     }
