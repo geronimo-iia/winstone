@@ -1,8 +1,7 @@
 package net.winstone.log;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import net.winstone.WinstoneResourceBundle;
 import net.winstone.util.DateCache;
 
 /**
@@ -10,20 +9,22 @@ import net.winstone.util.DateCache;
  * 
  * @author Jerome Guibert
  */
-public class SimpleLogger implements Logger, LoggerProvider {
+public class SimpleLogger implements Logger {
 
     private final static String lineSeparator = System.getProperty("line.separator");
     private final DateCache dateCache = new DateCache(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
     private final StringBuilder fullMessage = new StringBuilder(128);
     private final String name;
-
-    public SimpleLogger() {
-        this("net.winstone.log");
+    private final WinstoneResourceBundle bundle;
+    
+    public SimpleLogger(final WinstoneResourceBundle bundle) {
+        this(bundle, "net.winstone.log");
     }
 
-    public SimpleLogger(final String name) {
+    public SimpleLogger(final WinstoneResourceBundle bundle, final String name) {
         super();
         this.name = ":" + name + ":";
+        this.bundle = bundle;
     }
 
     private void log(final String level, final String message, final Throwable error) {
@@ -81,11 +82,6 @@ public class SimpleLogger implements Logger, LoggerProvider {
     }
 
     @Override
-    public Logger getLogger(Class<?> className) {
-        return className != null ? new SimpleLogger(className.getName()) : new SimpleLogger();
-    }
-
-    @Override
     public void debug(String msg) {
         log(":DEBUG", msg, null);
     }
@@ -108,5 +104,34 @@ public class SimpleLogger implements Logger, LoggerProvider {
     @Override
     public boolean isTraceEnabled() {
         return Boolean.TRUE;
+    }
+
+    @Override
+    public boolean isWarnEnabled() {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public boolean isInfoEnabled() {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public boolean isErrorEnabled() {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public void info(String key, String... parameters) {
+        if (isInfoEnabled()) {
+            info(bundle.getString(key, parameters));
+        }
+    }
+
+    @Override
+    public void debug(String key, String... parameters) {
+        if (isDebugEnabled()) {
+            debug(bundle.getString(key, parameters));
+        }
     }
 }
