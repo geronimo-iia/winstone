@@ -8,13 +8,18 @@ public enum PatternType {
 
     COMMON("###ip### - ###user### ###time### \"###uriLine###\" ###status### ###size###"), COMBINED("###ip### - ###user### ###time### \"###uriLine###\" ###status### ###size### \"###referer###\" \"###userAgent###\""), RESIN(
     "###ip### - ###user### ###time### \"###uriLine###\" ###status### ###size### \"###userAgent###\"");
-    private String pattern;
+    /** associated pattern */
+    private final String pattern;
 
-    private PatternType(String pattern) {
+    /**
+     * Build a new PatternType instance.
+     * @param pattern
+     */
+    private PatternType(final String pattern) {
         this.pattern = pattern;
     }
 
-    public String getPattern() {
+    public final String getPattern() {
         return pattern;
     }
 }

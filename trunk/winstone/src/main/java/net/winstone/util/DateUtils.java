@@ -22,7 +22,7 @@ public class DateUtils {
      * @param date
      * @return a date string formatted in gmt style.
      */
-    public final static String getGmt(final Date date) {
+    public static String getGmt(final Date date) {
         return gmtFormat.format(date) + " GMT";
     }
     
@@ -32,7 +32,7 @@ public class DateUtils {
      * @param date
      * @return a date string formatted in Unix ls style.
      */
-    public final static String lsDateStr(final Date date) {
+    public static String lsDateStr(final Date date) {
         if (Math.abs(System.currentTimeMillis() - date.getTime()) < 183L * 24L * 60L * 60L * 1000L) {
             return shortFormat.format(date);
         }

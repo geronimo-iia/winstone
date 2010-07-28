@@ -1,6 +1,6 @@
 package net.winstone.util;
 
-public class Base64 {
+public final class Base64 {
     
     private static byte B64_DECODE_ARRAY[] = new byte[] {
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, // Plus

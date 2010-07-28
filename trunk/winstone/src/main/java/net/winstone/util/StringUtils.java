@@ -8,23 +8,24 @@ import java.util.Map;
  * @author Jerome Guibert
  */
 public class StringUtils {
-    
-    public static final boolean booleanArg(final Map<String, String> args, final String name, final boolean defaultTrue) {
+
+    public static boolean booleanArg(final Map<String, String> args, final String name, final boolean defaultTrue) {
         String value = args.get(name);
-        if (defaultTrue)
+        if (defaultTrue) {
             return (value == null) || (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("yes"));
-        else
+        } else {
             return (value != null) && (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("yes"));
+        }
     }
-    
-    public static final String stringArg(final Map<String, String> args, final String name, final String defaultValue) {
+
+    public static String stringArg(final Map<String, String> args, final String name, final String defaultValue) {
         return (args.get(name) == null ? defaultValue : args.get(name));
     }
-    
-    public static final int intArg(final Map<String, String> args, final String name, final int defaultValue) {
+
+    public static int intArg(final Map<String, String> args, final String name, final int defaultValue) {
         return Integer.parseInt(stringArg(args, name, Integer.toString(defaultValue)));
     }
-    
+
     /**
      * This function extract meaningful path or query
      * 
@@ -51,7 +52,7 @@ public class StringUtils {
         }
         return path;
     }
-    
+
     /**
      * Just does a string swap, replacing occurrences of from with to.
      */
@@ -59,9 +60,9 @@ public class StringUtils {
     public static String globalReplace(final String input, final String fromMarker, final String toValue) {
         StringBuffer out = new StringBuffer(input);
         StringUtils.globalReplace(out, fromMarker, toValue);
-        return new String(out.toString());
+        return out.toString();
     }
-    
+
     @Deprecated
     public static String globalReplace(final String input, final String parameters[][]) {
         if (parameters != null) {
@@ -74,7 +75,7 @@ public class StringUtils {
             return input;
         }
     }
-    
+
     @Deprecated
     public static void globalReplace(StringBuffer input, final String fromMarker, final String toValue) {
         if (input == null) {
@@ -91,31 +92,31 @@ public class StringUtils {
             foundAt = input.indexOf(fromMarker, index);
         }
     }
-    
+
     /**
      * replace substrings within string.
      */
-    public static String replace(final String s, final String sub, final String with) {
+    public static String replace(final String input, final String sub, final String with) {
         int fromIndex = 0;
-        int index = s.indexOf(sub, fromIndex);
+        int index = input.indexOf(sub, fromIndex);
         if (index == -1) {
-            return s;
+            return input;
         }
-        StringBuilder buf = new StringBuilder(s.length() + with.length());
+        StringBuilder buf = new StringBuilder(input.length() + with.length());
         do {
-            buf.append(s.substring(fromIndex, index));
+            buf.append(input.substring(fromIndex, index));
             buf.append(with);
             fromIndex = index + sub.length();
-        } while ((index = s.indexOf(sub, fromIndex)) != -1);
-        
-        if (fromIndex < s.length()) {
-            buf.append(s.substring(fromIndex, s.length()));
+        } while ((index = input.indexOf(sub, fromIndex)) != -1);
+
+        if (fromIndex < input.length()) {
+            buf.append(input.substring(fromIndex, input.length()));
         }
         return buf.toString();
     }
-    
+
     public static String replace(final String input, final String[][] tokens) {
-        if (tokens != null) {
+        if (tokens != null && input != null) {
             String out = input;
             for (int n = 0; n < tokens.length; n++) {
                 out = replace(out, tokens[n][0], tokens[n][1]);
@@ -125,25 +126,24 @@ public class StringUtils {
             return input;
         }
     }
-    
+
     public static String replaceToken(final String input, final String... parameters) {
-        if (parameters != null) {
+        if (input != null && parameters != null) {
             String tokens[][] = new String[parameters.length][2];
             for (int n = 0; n < parameters.length; n++) {
-                tokens[n] = new String[] {
-                    "[#" + n + "]", parameters[n]
-                };
+                tokens[n] = new String[]{
+                            "[#" + n + "]", parameters[n]
+                        };
             }
             return StringUtils.replace(input, tokens);
         }
         return input;
     }
-    
+
     public static String get(String value, String defaultValue) {
         if (value == null || "".equals(value)) {
             return defaultValue;
         }
         return value;
     }
-    
 }

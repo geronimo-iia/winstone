@@ -65,13 +65,13 @@ public enum HttpProtocole {
     HTTP_509("unused"),
     HTTP_510("Not Extended");
     
-    private String message;
+    private final String message;
 
-    HttpProtocole(String message) {
+    HttpProtocole(final String message) {
         this.message = message;
     }
 
-    public String getMessage() {
+    public final String getMessage() {
         return message;
     }
 }

@@ -9,7 +9,7 @@ import net.winstone.util.StringUtils;
  */
 public abstract class AbstractLogger implements Logger {
 
-    Map<String, String> bundle;
+    private final Map<String, String> bundle;
 
     public AbstractLogger(final Map<String, String> bundle) {
         this.bundle = bundle;

@@ -8,7 +8,7 @@ import java.util.ServiceLoader;
  * 
  * @author Jerome Guibert
  */
-public class LoggerFactory {
+public final class LoggerFactory {
     
     private final LoggerProvider provider;
     

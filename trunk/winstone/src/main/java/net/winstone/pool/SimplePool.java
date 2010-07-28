@@ -85,6 +85,7 @@ public class SimplePool<T> implements Pool<T> {
         }
     }
     
+    @Override
     public T acquire() {
         T result = null;
         if (!closing) {
@@ -109,6 +110,7 @@ public class SimplePool<T> implements Pool<T> {
         return result;
     }
     
+    @Override
     public void release(final T resource) {
         boolean offered = false;
         if (resource != null) {
@@ -132,6 +134,7 @@ public class SimplePool<T> implements Pool<T> {
         }
     }
     
+    @Override
     public void invalidate(final T resource) {
         if (resource != null) {
             borrowed.remove(resource);

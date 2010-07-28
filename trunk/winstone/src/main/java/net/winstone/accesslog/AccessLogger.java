@@ -17,6 +17,7 @@ import net.winstone.core.WinstoneResponse;
  * @version $Id: AccessLogger.java,v 1.2 2006/02/28 07:32:47 rickknowles Exp $
  */
 public interface AccessLogger {
+
     /**
      * log access.
      * 
@@ -24,7 +25,5 @@ public interface AccessLogger {
      * @param request
      * @param response
      */
-    public void log(String originalURL, WinstoneRequest request, WinstoneResponse response);
-    
- 
+    public void log(final String originalURL, final WinstoneRequest request, final WinstoneResponse response);
 }

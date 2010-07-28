@@ -28,6 +28,7 @@ public class BasicPool<T> implements Pool<T> {
         this.active = capacity > 0 ? new AtomicInteger() : null;
     }
     
+    @Override
     public T acquire() {
         if (capacity > 0) {
             if (active.incrementAndGet() > capacity) {
@@ -38,10 +39,12 @@ public class BasicPool<T> implements Pool<T> {
         return factory.create();
     }
     
+    @Override
     public void invalidate(T resource) {
         release(resource);
     }
     
+    @Override
     public void release(T resource) {
         if (resource != null) {
             factory.destroy(resource);

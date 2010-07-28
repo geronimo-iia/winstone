@@ -9,5 +9,5 @@ public interface AccessLoggerProvider {
     
     public AccessLogger getAccessLogger(final String host, final String webapp, final PatternType patternType, final String filePattern);
     
-    public void destroy(AccessLogger accessLogger);
+    public void destroy(final AccessLogger accessLogger);
 }

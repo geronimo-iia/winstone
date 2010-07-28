@@ -9,7 +9,7 @@ import java.util.Date;
  * 
  * @author Jerome Guibert
  */
-public class DateCache {
+public final class DateCache {
     private final DateFormat dateFormat;
     private String result = null;
     private long lastTimeInSeconds = -1;

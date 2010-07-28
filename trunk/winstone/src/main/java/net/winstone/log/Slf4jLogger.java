@@ -3,7 +3,7 @@ package net.winstone.log;
 import java.util.Map;
 import org.slf4j.LoggerFactory;
 
-public class Slf4jLogger extends AbstractLogger implements Logger {
+public final class Slf4jLogger extends AbstractLogger implements Logger {
 
     private final org.slf4j.Logger logger;
 

@@ -18,17 +18,14 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import net.winstone.WinstoneResourceBundle;
 import net.winstone.log.Logger;
 import net.winstone.log.LoggerFactory;
-import net.winstone.util.StringUtils;
 
 import winstone.HostConfiguration;
 import winstone.HostGroup;
@@ -41,7 +38,7 @@ import winstone.WinstoneSession;
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: SimpleCluster.java,v 1.8 2006/08/10 06:38:31 rickknowles Exp $
  */
-public class SimpleCluster implements Runnable, Cluster {
+public final class SimpleCluster implements Runnable, Cluster {
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
     final int SESSION_CHECK_TIMEOUT = 100;
@@ -51,13 +48,13 @@ public class SimpleCluster implements Runnable, Cluster {
     final byte NODE_HEARTBEAT_TYPE = (byte) '3';
     private int controlPort;
     private String initialClusterNodes;
-    private Map<String, Date> clusterAddresses;
+    private final Map<String, Date> clusterAddresses;
     private boolean interrupted;
 
     /**
      * Builds a cluster instance
      */
-    public SimpleCluster(Map<String, String> args, Integer controlPort) {
+    public SimpleCluster(final Map<String, String> args, final Integer controlPort) {
         this.interrupted = false;
         this.clusterAddresses = new HashMap<String, Date>();
         if (controlPort != null) {
