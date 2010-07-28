@@ -1,18 +1,21 @@
 package net.winstone.log;
 
+import net.winstone.WinstoneResourceBundle;
 import org.slf4j.LoggerFactory;
 
-public class Slf4jLogger implements Logger, LoggerProvider {
+public class Slf4jLogger implements Logger {
 
-    private org.slf4j.Logger logger;
+    private final WinstoneResourceBundle bundle;
+    private final org.slf4j.Logger logger;
 
-    public Slf4jLogger() {
-        this("net.winstone.log");
+    public Slf4jLogger(final WinstoneResourceBundle bundle) {
+        this(bundle, "net.winstone.log");
     }
 
-    public Slf4jLogger(final String name) {
+    public Slf4jLogger(final WinstoneResourceBundle bundle, final String name) {
         super();
         logger = LoggerFactory.getLogger(name);
+        this.bundle = bundle;
     }
 
     @Override
@@ -61,11 +64,6 @@ public class Slf4jLogger implements Logger, LoggerProvider {
     }
 
     @Override
-    public Logger getLogger(Class<?> className) {
-        return className != null ? new Slf4jLogger(className.getName()) : new Slf4jLogger();
-    }
-
-    @Override
     public boolean isDebugEnabled() {
         return logger.isDebugEnabled();
     }
@@ -73,5 +71,34 @@ public class Slf4jLogger implements Logger, LoggerProvider {
     @Override
     public boolean isTraceEnabled() {
         return logger.isTraceEnabled();
+    }
+
+    @Override
+    public boolean isWarnEnabled() {
+        return logger.isWarnEnabled();
+    }
+
+    @Override
+    public boolean isInfoEnabled() {
+        return logger.isInfoEnabled();
+    }
+
+    @Override
+    public boolean isErrorEnabled() {
+        return logger.isErrorEnabled();
+    }
+
+    @Override
+    public void info(String key, String... parameters) {
+        if (logger.isInfoEnabled()) {
+            logger.info(bundle.getString(key, parameters));
+        }
+    }
+
+    @Override
+    public void debug(String key, String... parameters) {
+        if (logger.isDebugEnabled()) {
+            logger.debug(bundle.getString(key, parameters));
+        }
     }
 }
