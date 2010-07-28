@@ -15,7 +15,6 @@ import java.util.Stack;
 import javax.servlet.http.Cookie;
 import net.winstone.log.Logger;
 import net.winstone.log.LoggerFactory;
-import net.winstone.util.StringUtils;
 
 /**
  * Matches the socket output stream to the servlet output.
