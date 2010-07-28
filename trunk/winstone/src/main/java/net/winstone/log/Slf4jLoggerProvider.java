@@ -1,6 +1,8 @@
 package net.winstone.log;
 
-import net.winstone.WinstoneResourceBundle;
+import java.util.Map;
+import java.util.ResourceBundle;
+import net.winstone.util.MapLoader;
 
 /**
  *
@@ -8,11 +10,11 @@ import net.winstone.WinstoneResourceBundle;
  */
 public class Slf4jLoggerProvider implements LoggerProvider {
 
-    private final WinstoneResourceBundle bundle;
+    private final Map<String, String> bundle;
 
     public Slf4jLoggerProvider() {
         super();
-        bundle = new WinstoneResourceBundle("net.winstone.log.message");
+        bundle =  MapLoader.load(ResourceBundle.getBundle("net.winstone.log.message"));
     }
 
     @Override

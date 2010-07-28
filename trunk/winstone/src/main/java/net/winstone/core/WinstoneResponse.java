@@ -29,7 +29,6 @@ import net.winstone.log.Logger;
 import net.winstone.log.LoggerFactory;
 import net.winstone.util.StringUtils;
 import winstone.HostConfiguration;
-import winstone.Launcher;
 import winstone.SimpleRequestDispatcher;
 import winstone.WebAppConfiguration;
 import winstone.WinstoneSession;

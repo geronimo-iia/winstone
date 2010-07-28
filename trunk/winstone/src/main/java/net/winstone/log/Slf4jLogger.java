@@ -1,21 +1,19 @@
 package net.winstone.log;
 
-import net.winstone.WinstoneResourceBundle;
+import java.util.Map;
 import org.slf4j.LoggerFactory;
 
-public class Slf4jLogger implements Logger {
+public class Slf4jLogger extends AbstractLogger implements Logger {
 
-    private final WinstoneResourceBundle bundle;
     private final org.slf4j.Logger logger;
 
-    public Slf4jLogger(final WinstoneResourceBundle bundle) {
+    public Slf4jLogger(final Map<String, String> bundle) {
         this(bundle, "net.winstone.log");
     }
 
-    public Slf4jLogger(final WinstoneResourceBundle bundle, final String name) {
-        super();
+    public Slf4jLogger(final Map<String, String> bundle, final String name) {
+        super(bundle);
         logger = LoggerFactory.getLogger(name);
-        this.bundle = bundle;
     }
 
     @Override
@@ -86,19 +84,5 @@ public class Slf4jLogger implements Logger {
     @Override
     public boolean isErrorEnabled() {
         return logger.isErrorEnabled();
-    }
-
-    @Override
-    public void info(String key, String... parameters) {
-        if (logger.isInfoEnabled()) {
-            logger.info(bundle.getString(key, parameters));
-        }
-    }
-
-    @Override
-    public void debug(String key, String... parameters) {
-        if (logger.isDebugEnabled()) {
-            logger.debug(bundle.getString(key, parameters));
-        }
     }
 }

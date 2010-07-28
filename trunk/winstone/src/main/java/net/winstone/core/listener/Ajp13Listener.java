@@ -24,10 +24,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import net.winstone.WinstoneException;
-import net.winstone.WinstoneResourceBundle;
 
 import winstone.HostGroup;
-import winstone.Logger;
 import winstone.ObjectPool;
 import winstone.RequestHandlerThread;
 import winstone.WebAppConfiguration;
@@ -35,6 +33,8 @@ import net.winstone.core.WinstoneInputStream;
 import net.winstone.core.WinstoneOutputStream;
 import net.winstone.core.WinstoneRequest;
 import net.winstone.core.WinstoneResponse;
+import net.winstone.log.Logger;
+import net.winstone.log.LoggerFactory;
 import net.winstone.util.StringUtils;
 import winstone.auth.AuthenticationPrincipal;
 
@@ -46,7 +46,7 @@ import winstone.auth.AuthenticationPrincipal;
  */
 public class Ajp13Listener implements Listener, Runnable {
 
-    public final static WinstoneResourceBundle AJP_RESOURCES = new WinstoneResourceBundle("winstone.ajp13.LocalStrings");
+    protected static Logger logger = LoggerFactory.getLogger(Ajp13Listener.class);
     private final static int LISTENER_TIMEOUT = 5000; // every 5s reset the listener socket
     private final static int DEFAULT_PORT = 8009;
     private final static int CONNECTION_TIMEOUT = 60000;
@@ -94,7 +94,7 @@ public class Ajp13Listener implements Listener, Runnable {
         try {
             ServerSocket ss = this.listenAddress == null ? new ServerSocket(this.listenPort, BACKLOG_COUNT) : new ServerSocket(this.listenPort, BACKLOG_COUNT, InetAddress.getByName(this.listenAddress));
             ss.setSoTimeout(LISTENER_TIMEOUT);
-            Logger.log(Logger.INFO, AJP_RESOURCES, "Ajp13Listener.StartupOK", this.listenPort + "");
+            logger.info("Ajp13Listener.StartupOK", this.listenPort + "");
 
             // Enter the main loop
             while (!interrupted) {
@@ -116,10 +116,10 @@ public class Ajp13Listener implements Listener, Runnable {
             // Close server socket
             ss.close();
         } catch (Throwable err) {
-            Logger.log(Logger.ERROR, AJP_RESOURCES, "Ajp13Listener.ShutdownError", err);
+            logger.error("Error during AJP13 listener init or shutdown", err);
         }
 
-        Logger.log(Logger.INFO, AJP_RESOURCES, "Ajp13Listener.ShutdownOK");
+        logger.info("AJP13 Listener shutdown successfully");
     }
 
     /**
@@ -192,9 +192,7 @@ public class Ajp13Listener implements Listener, Runnable {
                 while (position < contentLength) {
                     outSocket.write(getBodyRequestPacket(Math.min(contentLength - position, 8184)));
                     position = getBodyResponsePacket(inSocket, bodyContent, position);
-                    Logger.log(Logger.FULL_DEBUG, AJP_RESOURCES, "Ajp13Listener.ReadBodyProgress", new String[]{
-                                "" + position, "" + contentLength
-                            });
+                    logger.debug("Ajp13Listener.ReadBodyProgress", "" + position, "" + contentLength);
 
                 }
                 inData = new WinstoneInputStream(bodyContent);
@@ -305,7 +303,7 @@ public class Ajp13Listener implements Listener, Runnable {
                 try {
                     certificateArray[0] = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(certStream);
                 } catch (CertificateException err) {
-                    Logger.log(Logger.DEBUG, AJP_RESOURCES, "Ajp13Listener.SkippingCert", certValue);
+                    logger.debug("Ajp13Listener.SkippingCert", certValue);
                 }
                 req.setAttribute("javax.servlet.request.X509Certificate", certificateArray);
                 req.setIsSecure(true);
@@ -324,9 +322,7 @@ public class Ajp13Listener implements Listener, Runnable {
                 principal.setAuthType(authType);
                 req.setRemoteUser(principal);
             } else {
-                Logger.log(Logger.DEBUG, AJP_RESOURCES, "Ajp13Listener.UnknownAttribute", new String[]{
-                            attName, "" + headers.getAttributes().get(attName)
-                        });
+                logger.debug("Ajp13Listener.UnknownAttribute", attName, "" + headers.getAttributes().get(attName));
             }
         }
         return headers.getURI();
@@ -385,9 +381,9 @@ public class Ajp13Listener implements Listener, Runnable {
         byte headerBuffer[] = new byte[4];
         int headerBytesRead = in.read(headerBuffer);
         if (headerBytesRead != 4) {
-            throw new WinstoneException(AJP_RESOURCES.getString("Ajp13Listener.InvalidHeader"));
+            throw new WinstoneException("Invalid AJP header");
         } else if ((headerBuffer[0] != 0x12) || (headerBuffer[1] != 0x34)) {
-            throw new WinstoneException(AJP_RESOURCES.getString("Ajp13Listener.InvalidHeader"));
+            throw new WinstoneException("Invalid AJP header");
         }
 
         // Read in the whole packet
@@ -403,7 +399,7 @@ public class Ajp13Listener implements Listener, Runnable {
         int packetBytesRead = in.read(buffer, offset, bodyLength);
 
         if (packetBytesRead < bodyLength) {
-            throw new WinstoneException(AJP_RESOURCES.getString("Ajp13Listener.ShortPacket"));
+            throw new WinstoneException("Short AJP packet");
         } else {
             return packetBytesRead + offset;
         }

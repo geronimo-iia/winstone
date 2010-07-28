@@ -1,6 +1,7 @@
 package net.winstone.log;
 
 import java.text.SimpleDateFormat;
+import java.util.Map;
 import net.winstone.WinstoneResourceBundle;
 import net.winstone.util.DateCache;
 
@@ -9,22 +10,20 @@ import net.winstone.util.DateCache;
  * 
  * @author Jerome Guibert
  */
-public class SimpleLogger implements Logger {
+public class SimpleLogger extends AbstractLogger implements Logger {
 
     private final static String lineSeparator = System.getProperty("line.separator");
     private final DateCache dateCache = new DateCache(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
     private final StringBuilder fullMessage = new StringBuilder(128);
-    private final String name;
-    private final WinstoneResourceBundle bundle;
-    
-    public SimpleLogger(final WinstoneResourceBundle bundle) {
+    private final String name; 
+
+    public SimpleLogger(final Map<String, String> bundle) {
         this(bundle, "net.winstone.log");
     }
 
-    public SimpleLogger(final WinstoneResourceBundle bundle, final String name) {
-        super();
+    public SimpleLogger(final Map<String, String> bundle, final String name) {
+        super(bundle);
         this.name = ":" + name + ":";
-        this.bundle = bundle;
     }
 
     private void log(final String level, final String message, final Throwable error) {
@@ -119,19 +118,5 @@ public class SimpleLogger implements Logger {
     @Override
     public boolean isErrorEnabled() {
         return Boolean.TRUE;
-    }
-
-    @Override
-    public void info(String key, String... parameters) {
-        if (isInfoEnabled()) {
-            info(bundle.getString(key, parameters));
-        }
-    }
-
-    @Override
-    public void debug(String key, String... parameters) {
-        if (isDebugEnabled()) {
-            debug(bundle.getString(key, parameters));
-        }
     }
 }

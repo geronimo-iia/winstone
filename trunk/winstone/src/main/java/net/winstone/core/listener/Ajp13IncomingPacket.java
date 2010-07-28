@@ -9,12 +9,13 @@ package net.winstone.core.listener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
 
 import net.winstone.WinstoneException;
+import net.winstone.log.Logger;
+import net.winstone.log.LoggerFactory;
 
-import winstone.Logger;
 import winstone.RequestHandlerThread;
 
 /**
@@ -25,12 +26,12 @@ import winstone.RequestHandlerThread;
  */
 public class Ajp13IncomingPacket {
     // Server originated packet types
+
+    private static Logger logger = LoggerFactory.getLogger(Ajp13IncomingPacket.class);
     byte SERVER_FORWARD_REQUEST = 0x02;
-    
     // public static byte SERVER_SHUTDOWN = 0x07; //not implemented
     // public static byte SERVER_PING = 0x08; //not implemented
     // public static byte SERVER_CPING = 0x10; //not implemented
-    
     private int packetLength;
     private byte packetBytes[];
     private byte packetType;
@@ -44,7 +45,7 @@ public class Ajp13IncomingPacket {
     private boolean isSSL;
     private String headers[];
     private Map<String, String> attributes;
-    
+
     /**
      * Constructor
      */
@@ -56,14 +57,14 @@ public class Ajp13IncomingPacket {
         while ((headerBytesRead < 4) && (thisReadCount = in.read(headerBuffer, headerBytesRead, 4 - headerBytesRead)) >= 0) {
             headerBytesRead += thisReadCount;
         }
-        
+
         handler.setRequestStartTime();
         if (headerBytesRead != 4) {
-            throw new WinstoneException(Ajp13Listener.AJP_RESOURCES.getString("Ajp13IncomingPacket.InvalidHeader"));
+            throw new WinstoneException("Invalid AJP header");
         } else if ((headerBuffer[0] != 0x12) || (headerBuffer[1] != 0x34)) {
-            throw new WinstoneException(Ajp13Listener.AJP_RESOURCES.getString("Ajp13IncomingPacket.InvalidHeader"));
+            throw new WinstoneException("Invalid AJP header");
         }
-        
+
         // Read in the whole packet
         packetLength = ((headerBuffer[2] & 0xFF) << 8) + (headerBuffer[3] & 0xFF);
         packetBytes = new byte[packetLength];
@@ -71,72 +72,74 @@ public class Ajp13IncomingPacket {
         while ((packetBytesRead < packetLength) && (thisReadCount = in.read(packetBytes, packetBytesRead, packetLength - packetBytesRead)) >= 0) {
             packetBytesRead += thisReadCount;
         }
-        
+
         if (packetBytesRead < packetLength) {
-            throw new WinstoneException(Ajp13Listener.AJP_RESOURCES.getString("Ajp13IncomingPacket.ShortPacket"));
+            throw new WinstoneException("Short AJP packet");
         }
         // Ajp13Listener.packetDump(packetBytes, packetBytesRead);
     }
-    
+
     public byte parsePacket(String encoding) throws IOException {
         int position = 0;
         this.packetType = packetBytes[position++];
-        
-        if (this.packetType != SERVER_FORWARD_REQUEST)
-            throw new WinstoneException(Ajp13Listener.AJP_RESOURCES.getString("Ajp13IncomingPacket.UnknownPacketType", this.packetType + ""));
-        
+
+        if (this.packetType != SERVER_FORWARD_REQUEST) {
+            throw new WinstoneException("Unknown AJP packet type - " + this.packetType);
+        }
+
         // Check for terminator
-        if (packetBytes[packetLength - 1] != (byte)255)
-            throw new WinstoneException(Ajp13Listener.AJP_RESOURCES.getString("Ajp13IncomingPacket.InvalidTerminator"));
-        
+        if (packetBytes[packetLength - 1] != (byte) 255) {
+            throw new WinstoneException("Invalid AJP packet terminator");
+        }
+
         this.method = decodeMethodType(packetBytes[position++]);
-        Logger.log(Logger.FULL_DEBUG, Ajp13Listener.AJP_RESOURCES, "Ajp13IncomingPacket.Method", method);
-        
+        logger.debug("Ajp13IncomingPacket.Method", method);
+
         // Protocol
         int protocolLength = readInteger(position, packetBytes, true);
         position += 2;
         this.protocol = (protocolLength > -1) ? readString(position, packetBytes, encoding, protocolLength) : null;
         position += protocolLength + 1;
-        Logger.log(Logger.FULL_DEBUG, Ajp13Listener.AJP_RESOURCES, "Ajp13IncomingPacket.Protocol", protocol);
-        
+        logger.debug("Ajp13IncomingPacket.Protocol", protocol);
+
         // URI
         int uriLength = readInteger(position, packetBytes, true);
         position += 2;
         this.uri = (uriLength > -1) ? readString(position, packetBytes, encoding, uriLength) : null;
         position += uriLength + 1;
-        Logger.log(Logger.FULL_DEBUG, Ajp13Listener.AJP_RESOURCES, "Ajp13IncomingPacket.URI", uri);
-        
+        logger.debug("Ajp13IncomingPacket.URI", uri);
+
         // Remote addr
         int remoteAddrLength = readInteger(position, packetBytes, true);
         position += 2;
         this.remoteAddr = (remoteAddrLength > -1) ? readString(position, packetBytes, encoding, remoteAddrLength) : null;
         position += remoteAddrLength + 1;
-        Logger.log(Logger.FULL_DEBUG, Ajp13Listener.AJP_RESOURCES, "Ajp13IncomingPacket.RemoteAddress", remoteAddr);
-        
+        logger.debug("Ajp13IncomingPacket.RemoteAddress", remoteAddr);
+
         // Remote host
         int remoteHostLength = readInteger(position, packetBytes, true);
         position += 2;
         this.remoteHost = (remoteHostLength > -1) ? readString(position, packetBytes, encoding, remoteHostLength) : null;
         position += remoteHostLength + 1;
-        Logger.log(Logger.FULL_DEBUG, Ajp13Listener.AJP_RESOURCES, "Ajp13IncomingPacket.RemoteHost", remoteHost);
-        
+        logger.debug("Ajp13IncomingPacket.RemoteHost", remoteHost);
+
         // Server name
         int serverNameLength = readInteger(position, packetBytes, true);
         position += 2;
         this.serverName = (serverNameLength > -1) ? readString(position, packetBytes, encoding, serverNameLength) : null;
         position += serverNameLength + 1;
-        Logger.log(Logger.FULL_DEBUG, Ajp13Listener.AJP_RESOURCES, "Ajp13IncomingPacket.ServerName", serverName);
-        
+        logger.debug("Ajp13IncomingPacket.ServerName", serverName);
+
         this.serverPort = readInteger(position, packetBytes, false);
         position += 2;
-        Logger.log(Logger.FULL_DEBUG, Ajp13Listener.AJP_RESOURCES, "Ajp13IncomingPacket.ServerPort", "" + serverPort);
-        
+        logger.debug("Ajp13IncomingPacket.ServerPort", "" + serverPort);
+
         this.isSSL = readBoolean(position++, packetBytes);
-        Logger.log(Logger.FULL_DEBUG, Ajp13Listener.AJP_RESOURCES, "Ajp13IncomingPacket.SSL", "" + isSSL);
-        
+        logger.debug("Ajp13IncomingPacket.SSL", "" + isSSL);
+
         // Read headers
         int headerCount = readInteger(position, packetBytes, false);
-        Logger.log(Logger.FULL_DEBUG, Ajp13Listener.AJP_RESOURCES, "Ajp13IncomingPacket.HeaderCount", "" + headerCount);
+        logger.debug("Ajp13IncomingPacket.HeaderCount", "" + headerCount);
         position += 2;
         this.headers = new String[headerCount];
         for (int n = 0; n < headerCount; n++) {
@@ -144,100 +147,99 @@ public class Ajp13IncomingPacket {
             int headerTypeOrLength = readInteger(position, packetBytes, false);
             position += 2;
             String headerName = null;
-            if (packetBytes[position - 2] == (byte)0xA0)
+            if (packetBytes[position - 2] == (byte) 0xA0) {
                 headerName = decodeHeaderType(headerTypeOrLength);
-            else {
+            } else {
                 headerName = readString(position, packetBytes, encoding, headerTypeOrLength);
                 position += headerTypeOrLength + 1;
             }
-            
+
             // Header value
             int headerValueLength = readInteger(position, packetBytes, true);
             position += 2;
             this.headers[n] = headerName + ": " + ((headerValueLength > -1) ? readString(position, packetBytes, encoding, headerValueLength) : "");
             position += headerValueLength + 1;
-            Logger.log(Logger.FULL_DEBUG, Ajp13Listener.AJP_RESOURCES, "Ajp13IncomingPacket.Header", this.headers[n]);
+            logger.debug("Ajp13IncomingPacket.Header", this.headers[n]);
         }
-        
+
         // Attribute parsing
-        this.attributes = new Hashtable<String, String>();
+        this.attributes = new HashMap<String, String>();
         while (position < packetLength - 2) {
             String attName = decodeAttributeType(packetBytes[position++]);
             int attValueLength = readInteger(position, packetBytes, true);
             position += 2;
             String attValue = (attValueLength > -1) ? readString(position, packetBytes, encoding, attValueLength) : null;
             position += attValueLength + 1;
-            
+
             this.attributes.put(attName, attValue);
-            Logger.log(Logger.FULL_DEBUG, Ajp13Listener.AJP_RESOURCES, "Ajp13IncomingPacket.Attribute", new String[] {
-                attName, attValue
-            });
+            logger.debug("Ajp13IncomingPacket.Attribute", attName, attValue);
         }
-        Logger.log(Logger.FULL_DEBUG, Ajp13Listener.AJP_RESOURCES, "Ajp13IncomingPacket.SuccessfullyReadRequest", "" + packetLength);
+        logger.debug("Ajp13IncomingPacket.SuccessfullyReadRequest", "" + packetLength);
         return this.packetType;
     }
-    
+
     public int getPacketLength() {
         return this.packetLength;
     }
-    
+
     public String getMethod() {
         return this.method;
     }
-    
+
     public String getProtocol() {
         return this.protocol;
     }
-    
+
     public String getURI() {
         return this.uri;
     }
-    
+
     public String getRemoteAddress() {
         return this.remoteAddr;
     }
-    
+
     public String getRemoteHost() {
         return this.remoteHost;
     }
-    
+
     public String getServerName() {
         return this.serverName;
     }
-    
+
     public int getServerPort() {
         return this.serverPort;
     }
-    
+
     public boolean isSSL() {
         return this.isSSL;
     }
-    
+
     public String[] getHeaders() {
         return this.headers;
     }
-    
+
     public Map<String, String> getAttributes() {
         return this.attributes;
     }
-    
+
     /**
      * Read a single integer from the stream
      */
     private int readInteger(int position, byte packet[], boolean forStringLength) {
-        if (forStringLength && (packet[position] == (byte)0xFF) && (packet[position + 1] == (byte)0xFF))
+        if (forStringLength && (packet[position] == (byte) 0xFF) && (packet[position + 1] == (byte) 0xFF)) {
             return -1;
-        else
+        } else {
             return ((packet[position] & 0xFF) << 8) + (packet[position + 1] & 0xFF);
+        }
     }
-    
+
     /**
      * Read a single boolean from the stream
      */
     private boolean readBoolean(int position, byte packet[]) {
-        return (packet[position] == (byte)1);
+        return (packet[position] == (byte) 1);
     }
-    
+
     /**
      * Read a single string from the stream
      */
@@ -246,7 +248,7 @@ public class Ajp13IncomingPacket {
         // " position=" + position + " packetLength=" + packet.length);
         return length == 0 || (length > packet.length) ? "" : new String(packet, position, length, encoding);
     }
-    
+
     /**
      * Decodes the method types into Winstone HTTP method strings
      */
@@ -310,7 +312,7 @@ public class Ajp13IncomingPacket {
                 return "UNKNOWN";
         }
     }
-    
+
     /**
      * Decodes the header types into Winstone HTTP header strings
      */
@@ -348,7 +350,7 @@ public class Ajp13IncomingPacket {
                 return null;
         }
     }
-    
+
     /**
      * Decodes the header types into Winstone HTTP header strings
      */

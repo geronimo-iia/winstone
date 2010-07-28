@@ -23,6 +23,7 @@ import winstone.WinstoneSession;
  * @version $Id: Cluster.java,v 1.5 2006/02/28 07:32:47 rickknowles Exp $
  */
 public interface Cluster {
+
     /**
      * Destroy the maintenance thread if there is one. Prepare for shutdown
      */

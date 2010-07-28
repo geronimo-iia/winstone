@@ -25,7 +25,7 @@ import net.winstone.util.StringUtils;
  */
 public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 
-    protected static Logger logger = LoggerFactory.getLogger(WinstoneOutputStream.class);
+    private static Logger logger = LoggerFactory.getLogger(WinstoneOutputStream.class);
     
     private static final int DEFAULT_BUFFER_SIZE = 8192;
     private static final byte[] CR_LF = "\r\n".getBytes();
@@ -189,7 +189,7 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
             this.outStream.write(content, 0, commitLength);
         }
         this.outStream.flush();
-        logger.debug(StringUtils.replaceToken("Written [#0] bytes to response body", Integer.toString(this.bytesCommitted + commitLength)));
+        logger.debug("WinstoneOutputStream.CommittedBytes", Integer.toString(this.bytesCommitted + commitLength));
 
         this.bytesCommitted += commitLength;
         this.buffer.reset();
@@ -200,7 +200,7 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
         if (isCommitted()) {
             throw new IllegalStateException("OutputStream already committed");
         } else {
-            logger.debug(StringUtils.replaceToken("Resetting buffer - discarding [#0] bytes", Integer.toString(this.bufferPosition)));
+            logger.debug("WinstoneOutputStream.ResetBuffer", Integer.toString(this.bufferPosition));
             this.buffer.reset();
             this.bufferPosition = 0;
             this.bytesCommitted = 0;

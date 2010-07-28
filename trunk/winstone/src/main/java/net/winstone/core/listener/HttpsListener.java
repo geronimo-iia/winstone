@@ -27,14 +27,13 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
 import net.winstone.WinstoneException;
-import net.winstone.WinstoneResourceBundle;
 
 import winstone.HostGroup;
-import net.winstone.core.listener.HttpListener;
-import winstone.Logger;
 import winstone.ObjectPool;
 import winstone.WebAppConfiguration;
 import net.winstone.core.WinstoneRequest;
+import net.winstone.log.Logger;
+import net.winstone.log.LoggerFactory;
 
 /**
  * Implements the main listener daemon thread. This is the class that gets launched by the command line, and owns the server socket, etc.
@@ -43,11 +42,12 @@ import net.winstone.core.WinstoneRequest;
  * @version $Id: HttpsListener.java,v 1.10 2007/06/13 15:27:35 rickknowles Exp $
  */
 public class HttpsListener extends HttpListener {
-    private static final WinstoneResourceBundle SSL_RESOURCES = new WinstoneResourceBundle("winstone.ssl.LocalStrings");
+
+    private static Logger logger = LoggerFactory.getLogger(HttpListener.class);
     private String keystore;
     private String password;
     private String keyManagerType;
-    
+
     /**
      * Constructor
      */
@@ -57,7 +57,7 @@ public class HttpsListener extends HttpListener {
         this.password = WebAppConfiguration.stringArg(args, getConnectorName() + "KeyStorePassword", null);
         this.keyManagerType = WebAppConfiguration.stringArg(args, getConnectorName() + "KeyManagerType", "SunX509");
     }
-    
+
     /**
      * The default port to use - this is just so that we can override for the SSL connector.
      */
@@ -65,7 +65,7 @@ public class HttpsListener extends HttpListener {
     protected int getDefaultPort() {
         return -1; // https disabled by default
     }
-    
+
     /**
      * The name to use when getting properties - this is just so that we can override for the SSL connector.
      */
@@ -73,7 +73,7 @@ public class HttpsListener extends HttpListener {
     protected String getConnectorScheme() {
         return "https";
     }
-    
+
     /**
      * Gets a server socket - this gets as SSL socket instead of the standard socket returned in the base class.
      */
@@ -82,12 +82,12 @@ public class HttpsListener extends HttpListener {
         // Just to make sure it's set before we start
         SSLContext context = getSSLContext(this.keystore, this.password);
         SSLServerSocketFactory factory = context.getServerSocketFactory();
-        SSLServerSocket ss = (SSLServerSocket)(this.listenAddress == null ? factory.createServerSocket(this.listenPort, BACKLOG_COUNT) : factory.createServerSocket(this.listenPort, BACKLOG_COUNT, InetAddress.getByName(this.listenAddress)));
+        SSLServerSocket ss = (SSLServerSocket) (this.listenAddress == null ? factory.createServerSocket(this.listenPort, BACKLOG_COUNT) : factory.createServerSocket(this.listenPort, BACKLOG_COUNT, InetAddress.getByName(this.listenAddress)));
         ss.setEnableSessionCreation(true);
         ss.setWantClientAuth(true);
         return ss;
     }
-    
+
     /**
      * Extracts the relevant socket stuff and adds it to the request object. This method relies on the base class for everything other than
      * SSL related attributes
@@ -96,15 +96,16 @@ public class HttpsListener extends HttpListener {
     protected void parseSocketInfo(Socket socket, WinstoneRequest req) throws IOException {
         super.parseSocketInfo(socket, req);
         if (socket instanceof SSLSocket) {
-            SSLSocket s = (SSLSocket)socket;
+            SSLSocket s = (SSLSocket) socket;
             SSLSession ss = s.getSession();
             if (ss != null) {
                 Certificate certChain[] = null;
                 try {
                     certChain = ss.getPeerCertificates();
                 } catch (Throwable err) {/* do nothing */
+
                 }
-                
+
                 if (certChain != null) {
                     req.setAttribute("javax.servlet.request.X509Certificate", certChain);
                     req.setAttribute("javax.servlet.request.cipher_suite", ss.getCipherSuite());
@@ -115,31 +116,32 @@ public class HttpsListener extends HttpListener {
             req.setIsSecure(true);
         }
     }
-    
+
     /**
      * Just a mapping of key sizes for cipher types. Taken indirectly from the TLS specs.
      */
     private Integer getKeySize(String cipherSuite) {
-        if (cipherSuite.indexOf("_WITH_NULL_") != -1)
+        if (cipherSuite.indexOf("_WITH_NULL_") != -1) {
             return new Integer(0);
-        else if (cipherSuite.indexOf("_WITH_IDEA_CBC_") != -1)
+        } else if (cipherSuite.indexOf("_WITH_IDEA_CBC_") != -1) {
             return new Integer(128);
-        else if (cipherSuite.indexOf("_WITH_RC2_CBC_40_") != -1)
+        } else if (cipherSuite.indexOf("_WITH_RC2_CBC_40_") != -1) {
             return new Integer(40);
-        else if (cipherSuite.indexOf("_WITH_RC4_40_") != -1)
+        } else if (cipherSuite.indexOf("_WITH_RC4_40_") != -1) {
             return new Integer(40);
-        else if (cipherSuite.indexOf("_WITH_RC4_128_") != -1)
+        } else if (cipherSuite.indexOf("_WITH_RC4_128_") != -1) {
             return new Integer(128);
-        else if (cipherSuite.indexOf("_WITH_DES40_CBC_") != -1)
+        } else if (cipherSuite.indexOf("_WITH_DES40_CBC_") != -1) {
             return new Integer(40);
-        else if (cipherSuite.indexOf("_WITH_DES_CBC_") != -1)
+        } else if (cipherSuite.indexOf("_WITH_DES_CBC_") != -1) {
             return new Integer(56);
-        else if (cipherSuite.indexOf("_WITH_3DES_EDE_CBC_") != -1)
+        } else if (cipherSuite.indexOf("_WITH_3DES_EDE_CBC_") != -1) {
             return new Integer(168);
-        else
+        } else {
             return null;
+        }
     }
-    
+
     /**
      * Used to get the base ssl context in which to create the server socket. This is basically just so we can have a custom location for
      * key stores.
@@ -148,23 +150,22 @@ public class HttpsListener extends HttpListener {
         try {
             // Check the key manager factory
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(this.keyManagerType);
-            
+
             File ksFile = new File(keyStoreName);
-            if (!ksFile.exists() || !ksFile.isFile())
-                throw new WinstoneException(SSL_RESOURCES.getString("HttpsListener.KeyStoreNotFound", ksFile.getPath()));
+            if (!ksFile.exists() || !ksFile.isFile()) {
+                throw new WinstoneException("No SSL key store found at "+ ksFile.getPath());
+            }
             InputStream in = new FileInputStream(ksFile);
             char[] passwordChars = password == null ? null : password.toCharArray();
             KeyStore ks = KeyStore.getInstance("JKS");
             ks.load(in, passwordChars);
             kmf.init(ks, passwordChars);
-            Logger.log(Logger.FULL_DEBUG, SSL_RESOURCES, "HttpsListener.KeyCount", ks.size() + "");
+            logger.debug("HttpsListener.KeyCount", ks.size() + "");
             for (Enumeration<String> e = ks.aliases(); e.hasMoreElements();) {
                 String alias = e.nextElement();
-                Logger.log(Logger.FULL_DEBUG, SSL_RESOURCES, "HttpsListener.KeyFound", new String[] {
-                    alias, ks.getCertificate(alias) + ""
-                });
+                logger.debug("HttpsListener.KeyFound", alias, ks.getCertificate(alias) + "");
             }
-            
+
             SSLContext context = SSLContext.getInstance("SSL");
             context.init(kmf.getKeyManagers(), null, null);
             Arrays.fill(passwordChars, 'x');
@@ -172,7 +173,7 @@ public class HttpsListener extends HttpListener {
         } catch (IOException err) {
             throw err;
         } catch (Throwable err) {
-            throw new WinstoneException(SSL_RESOURCES.getString("HttpsListener.ErrorGettingContext"), err);
+            throw new WinstoneException("Error getting the SSL context object", err);
         }
     }
 }

@@ -101,7 +101,7 @@ public class StringUtils {
         if (index == -1) {
             return s;
         }
-        StringBuffer buf = new StringBuffer(s.length() + with.length());
+        StringBuilder buf = new StringBuilder(s.length() + with.length());
         do {
             buf.append(s.substring(fromIndex, index));
             buf.append(with);
