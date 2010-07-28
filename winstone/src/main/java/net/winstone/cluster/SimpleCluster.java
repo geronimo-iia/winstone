@@ -72,6 +72,7 @@ public class SimpleCluster implements Runnable, Cluster {
         thread.start();
     }
 
+    @Override
     public void destroy() {
         this.interrupted = true;
     }
@@ -79,6 +80,7 @@ public class SimpleCluster implements Runnable, Cluster {
     /**
      * Send a heartbeat every now and then, and remove any nodes that haven't responded in 3 heartbeats.
      */
+    @Override
     public void run() {
         // Ask each of the known addresses for their cluster lists, and build a
         // set
@@ -88,7 +90,7 @@ public class SimpleCluster implements Runnable, Cluster {
                 askClusterNodeForNodeList(st.nextToken());
             }
         }
-        logger.info(StringUtils.replaceToken("Cluster initialised with [#0] nodes", Integer.toString(this.clusterAddresses.size())));
+        logger.info("SimpleCluster.ClusterInit", Integer.toString(this.clusterAddresses.size()));
 
 
         while (!interrupted) {
@@ -101,7 +103,7 @@ public class SimpleCluster implements Runnable, Cluster {
                     Date lastHeartBeat = (Date) this.clusterAddresses.get(ipPort);
                     if (lastHeartBeat.before(noHeartbeatDate)) {
                         this.clusterAddresses.remove(ipPort);
-                        logger.debug(StringUtils.replaceToken("Removing address from cluster node list: [#0]", ipPort));
+                        logger.debug("SimpleCluster.ClusterRemovingAddress", ipPort);
                     } // Send heartbeat
                     else {
                         sendHeartbeat(ipPort);
@@ -122,6 +124,7 @@ public class SimpleCluster implements Runnable, Cluster {
      * @param sessionId The id of the session to check for
      * @return A valid session instance
      */
+    @Override
     public WinstoneSession askClusterForSession(String sessionId, WebAppConfiguration webAppConfig) {
         // Iterate through the cluster members
         Collection<String> addresses = new ArrayList<String>(clusterAddresses.keySet());
@@ -129,6 +132,7 @@ public class SimpleCluster implements Runnable, Cluster {
         for (Iterator<String> i = addresses.iterator(); i.hasNext();) {
             String ipPort = i.next();
             ClusterSessionSearch search = new ClusterSessionSearch(webAppConfig.getContextPath(), webAppConfig.getOwnerHostname(), sessionId, ipPort, this.controlPort);
+            search.start();
             searchThreads.add(search);
         }
 
@@ -174,7 +178,7 @@ public class SimpleCluster implements Runnable, Cluster {
         }
         if (answer != null) {
             answer.activate(webAppConfig);
-            logger.debug(StringUtils.replaceToken("Session transferred from: [#0]", senderThread));
+            logger.debug("SimpleCluster.SessionTransferred", senderThread);
         }
         return answer;
     }
@@ -214,9 +218,9 @@ public class SimpleCluster implements Runnable, Cluster {
             in.close();
             clusterListSocket.close();
         } catch (ConnectException err) {
-            logger.debug(StringUtils.replaceToken("No cluster node detected at [#0] - ignoring", address));
+            logger.debug("SimpleCluster.askClusterNodeForNodeList.ConnectException", address);
         } catch (Throwable err) {
-            logger.error(StringUtils.replaceToken("Error getting nodelist from: [#0]", address), err);
+            logger.error(err, "SimpleCluster.askClusterNodeForNodeList.Error", address);
         }
     }
 
@@ -238,11 +242,11 @@ public class SimpleCluster implements Runnable, Cluster {
             outData.writeInt(this.controlPort);
             outData.close();
             heartbeatSocket.close();
-            logger.debug(StringUtils.replaceToken("Heartbeat sent to: [#0]", address));
+            logger.debug("SimpleCluster.Heartbeat.Send", address);
         } catch (ConnectException err) {/* ignore - 3 fails, and we remove */
 
         } catch (Throwable err) {
-            logger.error(StringUtils.replaceToken("=Error sending heartbeat to: [#0]", address), err);
+            logger.error(err, "SimpleCluster.Heartbeat.Error", address);
         }
     }
 
@@ -255,6 +259,7 @@ public class SimpleCluster implements Runnable, Cluster {
      * @param webAppConfig Instance of the web app
      * @throws IOException
      */
+    @Override
     public void clusterRequest(byte requestType, InputStream in, OutputStream out, Socket socket, HostGroup hostGroup) throws IOException {
         if (requestType == ClusterSessionSearch.SESSION_CHECK_TYPE) {
             handleClusterSessionRequest(socket, in, out, hostGroup);
@@ -292,7 +297,7 @@ public class SimpleCluster implements Runnable, Cluster {
                 if (inControl.readUTF().equals(ClusterSessionSearch.SESSION_RECEIVED)) {
                     session.passivate();
                 }
-                logger.debug(StringUtils.replaceToken("Session transferred to: [#0]", ipPortSender));
+                logger.debug("SimpleCluster.handleClusterSessionRequest", ipPortSender);
             } else {
                 outData.writeUTF(ClusterSessionSearch.SESSION_NOT_FOUND);
             }
@@ -342,6 +347,6 @@ public class SimpleCluster implements Runnable, Cluster {
         inData.close();
         String ipPort = socket.getInetAddress().getHostAddress() + ":" + remoteControlPort;
         this.clusterAddresses.put(ipPort, new Date());
-        logger.debug(StringUtils.replaceToken("Heartbeat received from: [#0]", ipPort));
+        logger.debug("SimpleCluster.Heartbeat.Received", ipPort);
     }
 }

@@ -28,7 +28,6 @@ import net.winstone.log.Logger;
 import net.winstone.log.LoggerFactory;
 import net.winstone.util.StringUtils;
 import winstone.HostGroup;
-import winstone.Launcher;
 import winstone.ObjectPool;
 import winstone.RequestHandlerThread;
 import winstone.WebAppConfiguration;
@@ -42,7 +41,7 @@ import winstone.WebAppConfiguration;
  */
 public class HttpListener implements Listener, Runnable {
 
-    protected static Logger logger = LoggerFactory.getLogger(HttpListener.class);
+    private static Logger logger = LoggerFactory.getLogger(HttpListener.class);
     protected static int LISTENER_TIMEOUT = 5000; // every 5s reset the
     // listener socket
     protected static int CONNECTION_TIMEOUT = 60000;
@@ -57,15 +56,18 @@ public class HttpListener implements Listener, Runnable {
     protected int listenPort;
     protected String listenAddress;
     protected boolean interrupted;
+    private final String serverVersion;
 
     protected HttpListener() {
+        super();
+        serverVersion = WinstoneResourceBundle.getInstance().getString("ServerVersion");
     }
 
     /**
      * Constructor
      */
     public HttpListener(Map<String, String> args, ObjectPool objectPool, HostGroup hostGroup) throws IOException {
-        super();
+        this();
         // Load resources
         this.hostGroup = hostGroup;
         this.objectPool = objectPool;
@@ -117,11 +119,12 @@ public class HttpListener implements Listener, Runnable {
      * The main run method. This continually listens for incoming connections, and allocates any that it finds to a request handler thread,
      * before going back to listen again.
      */
+    @Override
     public void run() {
         try {
             ServerSocket ss = getServerSocket();
             ss.setSoTimeout(LISTENER_TIMEOUT);
-            logger.info(StringUtils.replaceToken("[#0] Listener started: port=[#1]", getConnectorName().toUpperCase(), this.listenPort + ""));
+            logger.info("HttpListener.ListenerStart", getConnectorName().toUpperCase(), this.listenPort + "");
 
             // Enter the main loop
             while (!interrupted) {
@@ -143,9 +146,9 @@ public class HttpListener implements Listener, Runnable {
             // Close server socket
             ss.close();
         } catch (Throwable err) {
-            logger.error(StringUtils.replaceToken("Error during [#0] listener init or shutdowny", getConnectorName().toUpperCase()),err);
+            logger.error(err, "HttpListener.ListenerShutdown.error", getConnectorName().toUpperCase());
         }
-        logger.info(StringUtils.replaceToken("[#0] Listener shutdown successfully", getConnectorName().toUpperCase()));
+        logger.info("HttpListener.ListenerShutdown.ok", getConnectorName().toUpperCase());
     }
 
     /**
@@ -163,7 +166,7 @@ public class HttpListener implements Listener, Runnable {
      */
     @Override
     public void allocateRequestResponse(Socket socket, InputStream inSocket, OutputStream outSocket, RequestHandlerThread handler, boolean iAmFirst) throws SocketException, IOException {
-        logger.debug("Allocating request/response: " + Thread.currentThread().getName());
+        logger.trace("HttpListener.allocateRequestResponse", Thread.currentThread().getName());
 
         socket.setSoTimeout(CONNECTION_TIMEOUT);
 
@@ -188,7 +191,7 @@ public class HttpListener implements Listener, Runnable {
         // If using this listener, we must set the server header now, because it
         // must be the first header. Ajp13 listener can defer to the Apache Server
         // header
-        rsp.setHeader("Server", WinstoneResourceBundle.getInstance().getString("ServerVersion"));
+        rsp.setHeader("Server", serverVersion);
     }
 
     /**
@@ -318,12 +321,12 @@ public class HttpListener implements Listener, Runnable {
      * Processes the uri line into it's component parts, determining protocol, method and uri.
      */
     public static String parseURILine(final String uriLine, final WinstoneRequest request, final WinstoneResponse response) {
-       logger.debug("URI Line: " + uriLine.trim());
+        logger.trace("HttpListener.parseURILine", uriLine.trim());
 
         // Method
         int spacePos = uriLine.indexOf(' ');
         if (spacePos == -1) {
-            throw new WinstoneException(WinstoneResourceBundle.getInstance().getString("HttpListener.ErrorUriLine", uriLine)); // Error URI Line: [#0]
+            throw new WinstoneException("Error URI Line: " + uriLine);
         }
         String method = uriLine.substring(0, spacePos).toUpperCase();
         String fullURI = null;
@@ -382,8 +385,8 @@ public class HttpListener implements Listener, Runnable {
             while (headerLine.trim().length() > 0) {
                 if (headerLine.indexOf(':') != -1) {
                     headerList.add(headerLine.trim());
-                   logger.debug("Header: " +headerLine.trim());
-                    
+                    logger.debug("Header: " + headerLine.trim());
+
                 }
                 headerBuffer = inData.readLine();
                 headerLine = new String(headerBuffer);

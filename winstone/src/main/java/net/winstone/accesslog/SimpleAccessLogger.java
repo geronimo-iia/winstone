@@ -56,6 +56,7 @@ public class SimpleAccessLogger implements AccessLogger {
         logger.info(String.format("Initialized access log at %s (format: %s)", fileName, patternType));
     }
     
+    @Override
     public void log(final String originalURL, final WinstoneRequest request, final WinstoneResponse response) {
         if (outWriter == null) {
             return;

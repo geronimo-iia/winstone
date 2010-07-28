@@ -30,8 +30,8 @@ public class ClusterSessionSearch implements Runnable {
     public static final String SESSION_NOT_FOUND = "NOTFOUND";
     public static final String SESSION_FOUND = "FOUND";
     public static final String SESSION_RECEIVED = "OK";
+    private boolean started;
     private boolean isFinished;
-//    private boolean interrupted;
     private WinstoneSession result;
     private String searchWebAppHostname;
     private String searchWebAppPrefix;
@@ -42,26 +42,30 @@ public class ClusterSessionSearch implements Runnable {
     /**
      * Sets up for a threaded search
      */
-    public ClusterSessionSearch(String webAppPrefix, String hostName, String sessionId,
-            String ipPort, int controlPort) {
+    public ClusterSessionSearch(String webAppPrefix, String hostName, String sessionId, String ipPort, int controlPort) {
         this.isFinished = false;
         this.searchWebAppHostname = hostName;
         this.searchWebAppPrefix = webAppPrefix;
-//        this.interrupted = false;
         this.searchId = sessionId;
         this.searchAddressPort = ipPort;
         this.result = null;
         this.controlPort = controlPort;
+        started = false;
+    }
 
-        // Start the search thread
-        Thread searchThread = new Thread(this);
-        searchThread.setDaemon(true);
-        searchThread.start();
+    public void start() {
+        if (!started) {
+            started = true;
+            Thread searchThread = new Thread(this);
+            searchThread.setDaemon(true);
+            searchThread.start();
+        }
     }
 
     /**
      * Actually implements the search
      */
+    @Override
     public void run() {
         try {
             int colonPos = this.searchAddressPort.indexOf(':');
@@ -97,18 +101,22 @@ public class ClusterSessionSearch implements Runnable {
             logger.warn("Error during cluster session search", err);
         }
         this.isFinished = true;
+        started = false;
     }
 
     public boolean isFinished() {
         return this.isFinished;
     }
 
+    public boolean isStarted() {
+        return started;
+    }
+
     public WinstoneSession getResult() {
         return this.result;
     }
 
-    public void destroy() {
-//        this.interrupted = true;
+    public void destroy() { 
     }
 
     public String getAddressPort() {

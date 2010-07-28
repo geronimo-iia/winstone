@@ -31,8 +31,7 @@ public class AccessLoggerProviderFactory {
         while (accessLoggerProvider == null && iterator.hasNext()) {
             try {
                 accessLoggerProvider = iterator.next();
-            } catch (Throwable e) {
-                e.printStackTrace();
+            } catch (Throwable e) { 
             }
         }
         if (accessLoggerProvider == null) {
