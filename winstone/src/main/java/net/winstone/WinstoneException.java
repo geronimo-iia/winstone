@@ -50,6 +50,7 @@ public class WinstoneException extends RuntimeException {
         return this.nestedError;
     }
     
+    @Override
     public void printStackTrace(PrintWriter p) {
         if (this.nestedError != null) {
             this.nestedError.printStackTrace(p);
@@ -58,6 +59,7 @@ public class WinstoneException extends RuntimeException {
         super.printStackTrace(p);
     }
     
+    @Override
     public void printStackTrace(PrintStream p) {
         if (this.nestedError != null) {
             this.nestedError.printStackTrace(p);
@@ -66,6 +68,7 @@ public class WinstoneException extends RuntimeException {
         super.printStackTrace(p);
     }
     
+    @Override
     public void printStackTrace() {
         if (this.nestedError != null) {
             this.nestedError.printStackTrace();
