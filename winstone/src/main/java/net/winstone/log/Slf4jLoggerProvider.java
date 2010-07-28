@@ -8,13 +8,13 @@ import net.winstone.util.MapLoader;
  *
  * @author Jerome Guibert
  */
-public class Slf4jLoggerProvider implements LoggerProvider {
+public final class Slf4jLoggerProvider implements LoggerProvider {
 
     private final Map<String, String> bundle;
 
     public Slf4jLoggerProvider() {
         super();
-        bundle =  MapLoader.load(ResourceBundle.getBundle("net.winstone.log.message"));
+        bundle = MapLoader.load(ResourceBundle.getBundle("net.winstone.log.message"));
     }
 
     @Override

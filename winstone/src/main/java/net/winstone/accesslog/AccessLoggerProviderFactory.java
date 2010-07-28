@@ -8,30 +8,38 @@ import java.util.ServiceLoader;
  * 
  * @author Jerome guibert
  */
-public class AccessLoggerProviderFactory {
-    
+public final class AccessLoggerProviderFactory {
+
     private final AccessLoggerProvider provider;
-    
+
+    /**
+     * Singleton Holder Pattern.
+     */
     private static class AccessLoggerProviderFactoryHolder {
+
         private static AccessLoggerProviderFactory loggerFactory = new AccessLoggerProviderFactory();
     }
-    
+
     public static AccessLogger getAccessLogger(final String host, final String webapp, final PatternType patternType, final String filePattern) {
         return AccessLoggerProviderFactoryHolder.loggerFactory.provider.getAccessLogger(host, webapp, patternType, filePattern);
     }
-    
-    public static void destroy(AccessLogger accessLogger) {
+
+    public static void destroy(final AccessLogger accessLogger) {
         AccessLoggerProviderFactoryHolder.loggerFactory.provider.destroy(accessLogger);
     }
-    
+
+    /**
+     * Buld a new instance of AccessLoggerProviderFactory.
+     */
     private AccessLoggerProviderFactory() {
+        super();
         ServiceLoader<AccessLoggerProvider> loader = ServiceLoader.load(AccessLoggerProvider.class);
         Iterator<AccessLoggerProvider> iterator = loader.iterator();
         AccessLoggerProvider accessLoggerProvider = null;
         while (accessLoggerProvider == null && iterator.hasNext()) {
             try {
                 accessLoggerProvider = iterator.next();
-            } catch (Throwable e) { 
+            } catch (Throwable e) {
             }
         }
         if (accessLoggerProvider == null) {

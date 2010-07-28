@@ -19,7 +19,7 @@ public final class MapLoader {
      * @param resourceBundle the specified resource bundle
      * @return a <code>Map</code> instance representing key/value found in the specified resource bundle.
      */
-    public final static Map<String, String> load(final ResourceBundle resourceBundle) {
+    public static Map<String, String> load(final ResourceBundle resourceBundle) {
         Map<String, String> resources = Maps.newHashMap();
         if (resourceBundle != null) {
             Enumeration<String> keys = resourceBundle.getKeys();

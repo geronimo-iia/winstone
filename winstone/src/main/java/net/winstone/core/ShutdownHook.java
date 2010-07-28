@@ -15,9 +15,10 @@ import winstone.Launcher;
  * @version $Id: ShutdownHook.java,v 1.3 2006/02/28 07:32:47 rickknowles Exp $
  */
 public class ShutdownHook extends Thread {
+
     private Launcher launcher;
 
-    public ShutdownHook(Launcher launcher) {
+    public ShutdownHook(final Launcher launcher) {
         this.launcher = launcher;
     }
 
@@ -25,6 +26,7 @@ public class ShutdownHook extends Thread {
     public void run() {
         if (this.launcher != null) {
             this.launcher.shutdown();
+            this.launcher = null;
         }
     }
 }

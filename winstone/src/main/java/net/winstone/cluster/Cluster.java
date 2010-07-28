@@ -37,8 +37,7 @@ public interface Cluster {
      * @param webAppConfig The web app that owns the session we want
      * @return A valid session instance
      */
-    public WinstoneSession askClusterForSession(String sessionId,
-            WebAppConfiguration webAppConfig);
+    public WinstoneSession askClusterForSession(final String sessionId, final WebAppConfiguration webAppConfig);
 
     /**
      * Accept a control socket request related to the cluster functions and
@@ -50,7 +49,5 @@ public interface Cluster {
      * @param hostConfig The collection of all local webapps
      * @throws IOException
      */
-    public void clusterRequest(byte requestType, InputStream in,
-            OutputStream out, Socket socket, HostGroup hostGroup)
-            throws IOException;
+    public void clusterRequest(final byte requestType, final InputStream in, final OutputStream out, final Socket socket, final HostGroup hostGroup) throws IOException;
 }

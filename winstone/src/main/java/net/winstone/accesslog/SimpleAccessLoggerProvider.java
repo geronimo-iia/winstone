@@ -5,7 +5,7 @@ package net.winstone.accesslog;
  * 
  * @author Jerome Guibert
  */
-public class SimpleAccessLoggerProvider implements AccessLoggerProvider {
+public final class SimpleAccessLoggerProvider implements AccessLoggerProvider {
     
     public SimpleAccessLoggerProvider() {
         super();

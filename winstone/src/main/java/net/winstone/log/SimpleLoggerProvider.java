@@ -8,7 +8,7 @@ import net.winstone.util.MapLoader;
  * SimpleLoggerProvider implement LoggerProvider.
  * @author Jerome Guibert
  */
-public class SimpleLoggerProvider implements LoggerProvider {
+public final class SimpleLoggerProvider implements LoggerProvider {
 
     private final Map<String, String> bundle;
 

@@ -25,25 +25,27 @@ import net.winstone.util.StringUtils;
  * @version $Id: WebappClassLoader.java,v 1.4 2008/02/04 00:03:43 rickknowles Exp $
  */
 public class WebappClassLoader extends URLClassLoader {
-    protected Logger logger = LoggerFactory.getLogger(getClass());
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
     protected ClassLoader system = getSystemClassLoader();
-    
+
     public WebappClassLoader(URL[] urls) {
         super(urls);
     }
-    
+
     public WebappClassLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
     }
-    
+
     public WebappClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
         super(urls, parent, factory);
     }
-    
+
+    @Override
     protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         // First, check if the class has already been loaded
         Class<?> c = findLoadedClass(name);
-        
+
         // Try the system loader first, to ensure that system classes are not
         // overridden by webapps. Note that this includes any classes in winstone,
         // including the javax.servlet classes
@@ -57,7 +59,7 @@ public class WebappClassLoader extends URLClassLoader {
                 c = null;
             }
         }
-        
+
         // If an allowed class, load it locally first
         if (c == null) {
             try {
@@ -70,7 +72,7 @@ public class WebappClassLoader extends URLClassLoader {
                 c = null;
             }
         }
-        
+
         // otherwise, and only if we have a parent, delegate to our parent
         // Note that within winstone, the only difference between this and the system
         // class loader we've already tried is that our parent might include the common/shared lib.
@@ -86,13 +88,14 @@ public class WebappClassLoader extends URLClassLoader {
                 throw new ClassNotFoundException(name);
             }
         }
-        
+
         if (resolve && (c != null)) {
             resolveClass(c);
         }
         return c;
     }
-    
+
+    @Override
     public InputStream getResourceAsStream(String name) {
         if ((name != null) && name.startsWith("/")) {
             name = name.substring(1);

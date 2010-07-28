@@ -23,21 +23,21 @@ public class WinstoneInputStream extends javax.servlet.ServletInputStream {
 
     protected static Logger logger = LoggerFactory.getLogger(WinstoneInputStream.class);
     final int BUFFER_SIZE = 4096;
-    private InputStream inData;
+    private final InputStream inData;
+    private final ByteArrayOutputStream dump;
     private Integer contentLength;
     private int readSoFar;
-    private ByteArrayOutputStream dump;
 
     /**
      * Constructor
      */
-    public WinstoneInputStream(InputStream inData) {
+    public WinstoneInputStream(final InputStream inData) {
         super();
         this.inData = inData;
         this.dump = new ByteArrayOutputStream();
     }
 
-    public WinstoneInputStream(byte inData[]) {
+    public WinstoneInputStream(final byte inData[]) {
         this(new ByteArrayInputStream(inData));
     }
 
@@ -45,7 +45,7 @@ public class WinstoneInputStream extends javax.servlet.ServletInputStream {
         return this.inData;
     }
 
-    public void setContentLength(int length) {
+    public void setContentLength(final int length) {
         this.contentLength = new Integer(length);
         this.readSoFar = 0;
     }

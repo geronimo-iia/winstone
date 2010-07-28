@@ -2,7 +2,6 @@ package net.winstone.log;
 
 import java.text.SimpleDateFormat;
 import java.util.Map;
-import net.winstone.WinstoneResourceBundle;
 import net.winstone.util.DateCache;
 
 /**
@@ -10,7 +9,7 @@ import net.winstone.util.DateCache;
  * 
  * @author Jerome Guibert
  */
-public class SimpleLogger extends AbstractLogger implements Logger {
+public final class SimpleLogger extends AbstractLogger implements Logger {
 
     private final static String lineSeparator = System.getProperty("line.separator");
     private final DateCache dateCache = new DateCache(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));

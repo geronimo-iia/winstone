@@ -26,7 +26,7 @@ import net.winstone.core.WinstoneResponse;
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: SimpleAccessLogger.java,v 1.5 2006/03/24 17:24:19 rickknowles Exp $
  */
-public class SimpleAccessLogger implements AccessLogger {
+public final class SimpleAccessLogger implements AccessLogger {
     protected Logger logger = LoggerFactory.getLogger(getClass());
     
     private final DateCache dateCache;
