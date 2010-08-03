@@ -90,18 +90,21 @@
                 <groupId>javax.servlet</groupId>
                 <artifactId>servlet-api</artifactId>
                 <version>2.5</version>
+                <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>1.5.10</version>
+                <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
                 <version>1.5.10</version>
+                <scope>runtime</scope>
             </dependency>
 
             <dependency>
@@ -159,7 +162,8 @@
     </properties>
 
     <modules>
-        <module>winstone</module>
+        <module>winstone-core</module>
+        <module>winstone-server</module>
         <module>winstone-test</module>
     </modules>
 </project>
