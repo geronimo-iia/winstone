@@ -1,9 +1,0 @@
-Using Xerces as an XML parser (required for v2.4 webapps)
-
-As part of the upgrade in the servlet specification, the v2.4 incarnation of the web.xml file is validated using XML Schema Documents (XSD) as opposed to Document Type Definitions (DTD). While I still have no idea why such a change was necessary - especially given that DTD validation seems to be more than enough in this case - I did implement it. Perhaps the people on the specification committee might want to give a thought to container size next time round, as this one change multiplies the size of the distribution by five.
-
-Anyway, to use Xerces, you'll need to download the latest Xerces-J parser from here, and copy xercesImpl.jar and xml-apis.jar into a folder somewhere (name it "endorsed"). Putting them in the winstone/lib folder will not work, because they must be in the system endorsed classpath to override the JDK internal XML parser.
-
-Then add -Djava.endorsed.dirs=<endorsed dir name> as a JVM arg to your command line for starting winstone, eg:
-
-  java -Djava.endorsed.dirs=/jdk/endorsed -jar winstone.jar --webroot=.
