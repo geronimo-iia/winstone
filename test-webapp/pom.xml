@@ -13,7 +13,7 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>Winstone sample test webapplication</name>
+    <name>Winstone Test Webapplication</name>
  
     <dependencies>
         <dependency>
@@ -21,6 +21,10 @@
             <artifactId>winstone</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
         </dependency>
     </dependencies>
     
