@@ -166,6 +166,7 @@
 
     <modules>
         <module>winstone</module>
-        <module>test</module>
+        <module>test-webapp</module>
+        <module>test-logic</module>
     </modules>
 </project>
