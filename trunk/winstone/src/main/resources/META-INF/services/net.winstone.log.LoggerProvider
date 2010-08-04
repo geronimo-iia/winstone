@@ -1,0 +1,2 @@
+net.winstone.log.Slf4jLoggerProvider
+net.winstone.log.SimpleLoggerProvider

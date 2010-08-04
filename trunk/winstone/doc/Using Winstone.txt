@@ -1,0 +1,27 @@
+
+Using Winstone
+
+If you want to build from source code, you will need to download and install Apache Maven (v2.x).
+The following instructions assume you have already installed Maven and have the maven shell script in your path (to get Maven, see http://maven.apache.org/).
+
+To build Winstone, unpack the tree:
+  tar zxf winstone-src-0.9.10.tar.gz
+
+Then build it:
+  cd winstone
+  maven clean jar
+
+The winstone.jar file will be in the target directory after the build is complete.
+
+To run it:
+  java -jar target/winstone-0.9.10.jar --webroot=<location of webroot> (+ other options)
+
+- OR -
+  java -jar target/winstone-0.9.10.jar --warfile=<location of warfile> (+ other options)
+
+- OR -
+  java -jar target/winstone-0.9.10.jar --webappsDir=<location of webapps directory> (+ other options)
+
+- OR -
+  java -jar target/winstone-0.9.10.jar --hostsDir=<location of hosts directory> (+ other options) 
+  
