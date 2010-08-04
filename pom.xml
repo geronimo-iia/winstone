@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
     <groupId>net.winstone</groupId>
-    <artifactId>winstone</artifactId>
+    <artifactId>winstone-project</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>Winstone Project</name>
 
@@ -89,28 +89,28 @@
             <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>servlet-api</artifactId>
-                <version>2.5</version>
+                <version>${javax.servlet.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.5.10</version>
+                <version>${org.slf4j.version}</version>
                 <scope>compile</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
-                <version>1.5.10</version>
+                <version>${org.slf4j.version}</version>
                 <scope>runtime</scope>
             </dependency>
 
             <dependency>
                 <groupId>com.google.collections</groupId>
                 <artifactId>google-collections</artifactId>
-                <version>1.0</version>
+                <version>${google-collections.version}</version>
                 <type>jar</type>
             </dependency>
 
@@ -139,31 +139,33 @@
 
 
     <dependencies>
+        <!-- Add dependencies for testing purpose -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>httpunit</groupId>
             <artifactId>httpunit</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
+    
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <javax.servlet.version>2.5</javax.servlet.version>
+        <google-collections.version>1.0</google-collections.version>
+        <org.slf4j.version>1.5.10</org.slf4j.version>
     </properties>
 
     <modules>
-        <module>winstone-core</module>
-        <module>winstone-server</module>
-        <module>winstone-test</module>
+        <module>winstone</module>
+        <module>test</module>
     </modules>
 </project>
