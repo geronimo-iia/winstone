@@ -16,7 +16,9 @@ Thoses depedencies will be copied to META-INF/lib folder.
         <artifact:dependencies filesetId="dependency.fileset">
             <dependency groupId="javax.servlet" artifactId="servlet-api" version="${javax.servlet.version}" />
             <dependency groupId="org.slf4j" artifactId="slf4j-api" version="${org.slf4j.version}" />
-            <dependency groupId="org.slf4j" artifactId="slf4j-log4j12" version="${org.slf4j.version}" />
+            <dependency groupId="org.slf4j" artifactId="slf4j-log4j12" version="${org.slf4j.version}" >
+                <exclusion groupId="log4j"  artifactId="log4j" />
+            </dependency>
 <!--            <dependency groupId="com.google.collections" artifactId="google-collections" version="${google-collections.version}" />-->
             <!-- Add Here all dependencies that you would to include -->
         </artifact:dependencies>
