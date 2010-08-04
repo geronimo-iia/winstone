@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+Special build extension in order to add dependencies in final winstone jar file.
+Thoses depedencies will be copied to META-INF/lib folder.
+-->
 <project name="winstone-core-install" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 
     <path id="maven-ant-tasks.classpath" path="lib/maven-ant-tasks-2.1.1.jar" />
@@ -13,7 +17,7 @@
             <dependency groupId="javax.servlet" artifactId="servlet-api" version="${javax.servlet.version}" />
             <dependency groupId="org.slf4j" artifactId="slf4j-api" version="${org.slf4j.version}" />
             <dependency groupId="org.slf4j" artifactId="slf4j-log4j12" version="${org.slf4j.version}" />
-            <dependency groupId="com.google.collections" artifactId="google-collections" version="${google-collections.version}" />
+<!--            <dependency groupId="com.google.collections" artifactId="google-collections" version="${google-collections.version}" />-->
             <!-- Add Here all dependencies that you would to include -->
         </artifact:dependencies>
         

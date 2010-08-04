@@ -4,7 +4,7 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import com.google.common.collect.Maps;
+import java.util.HashMap;
 
 /**
  * Load a resourceBundle and build a map with all keys/values.
@@ -20,7 +20,7 @@ public final class MapLoader {
      * @return a <code>Map</code> instance representing key/value found in the specified resource bundle.
      */
     public static Map<String, String> load(final ResourceBundle resourceBundle) {
-        Map<String, String> resources = Maps.newHashMap();
+        Map<String, String> resources = new HashMap<String, String>();
         if (resourceBundle != null) {
             Enumeration<String> keys = resourceBundle.getKeys();
             String key = null;

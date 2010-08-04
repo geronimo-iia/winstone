@@ -14,7 +14,9 @@
     <packaging>war</packaging>
 
     <name>Winstone Test Webapplication</name>
- 
+    <description>
+      This project build a web application which goal is for testing winstone server.
+    </description>
     <dependencies>
         <dependency>
             <groupId>net.winstone</groupId>

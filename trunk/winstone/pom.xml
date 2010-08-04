@@ -68,6 +68,9 @@
                 </configuration>
             </plugin>
             <plugin>
+                <!--
+                This plugin is for copy some dependencies to final jar.
+                -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
@@ -126,10 +129,10 @@
             <artifactId>slf4j-log4j12</artifactId>
         </dependency>
 
-        <dependency>
+<!--        <dependency>
             <groupId>com.google.collections</groupId>
             <artifactId>google-collections</artifactId>
-        </dependency>
+        </dependency>-->
  
     </dependencies>
 
