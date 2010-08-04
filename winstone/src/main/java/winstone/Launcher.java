@@ -6,6 +6,7 @@
  */
 package winstone;
 
+import java.net.URISyntaxException;
 import net.winstone.core.listener.Listener;
 import net.winstone.core.ShutdownHook;
 import winstone.jndi.JNDIManager;
@@ -33,8 +34,14 @@ import java.util.Properties;
 import net.winstone.cluster.Cluster;
 
 import net.winstone.WinstoneResourceBundle;
+import net.winstone.cluster.SimpleCluster;
+import net.winstone.core.listener.Ajp13Listener;
+import net.winstone.core.listener.HttpListener;
+import net.winstone.core.listener.HttpsListener;
 import net.winstone.log.LoggerFactory;
+import net.winstone.util.FileUtils;
 import net.winstone.util.StringUtils;
+import winstone.jndi.ContainerJNDIManager;
 
 /**
  * Implements the main launcher daemon thread. This is the class that gets launched by the command line, and owns the server socket, etc.
@@ -45,17 +52,8 @@ import net.winstone.util.StringUtils;
 public class Launcher implements Runnable {
 
     protected static net.winstone.log.Logger logger = LoggerFactory.getLogger(Launcher.class);
-
-
     public static final String EMBEDDED_PROPERTIES = "/embedded.properties";
-    public static final String WINSTONE_PROPERTIES = "winstone.properties";
-    
-    static final String HTTP_LISTENER_CLASS = "net.winstone.core.listener.HttpListener";
-    static final String HTTPS_LISTENER_CLASS = "net.winstone.core.listener.HttpsListener";
-    static final String AJP_LISTENER_CLASS = "net.winstone.core.listener.Ajp13Listener";
-    static final String CLUSTER_CLASS = "net.winstone.cluster.SimpleCluster";
-    static final String DEFAULT_JNDI_MGR_CLASS = "winstone.jndi.ContainerJNDIManager";
-
+    public static final String WINSTONE_PROPERTIES = "winstone.properties"; 
     public static final byte SHUTDOWN_TYPE = (byte) '0';
     public static final byte RELOAD_TYPE = (byte) '4';
     private static final String EMBEDDED_WAR = "/embedded.war";
@@ -93,18 +91,18 @@ public class Launcher implements Runnable {
             }
         }
 
-        logger.debug("Winstone startup arguments: " + args.toString());
+        logger.debug("Launcher.StartupArg", args.toString());
 
         this.args = args;
         this.controlPort = (args.get("controlPort") == null ? DEFAULT_CONTROL_PORT : Integer.parseInt((String) args.get("controlPort")));
 
         List<URL> jars = new ArrayList<URL>();
-        List<File> commonLibCLPaths = new ArrayList<File>();
+        List<File> jspClasspaths = new ArrayList<File>();
 
         // Check for java home
         String defaultJavaHome = System.getProperty("java.home");
         String javaHome = WebAppConfiguration.stringArg(args, "javaHome", defaultJavaHome);
-        logger.debug("Using JAVA_HOME=" + javaHome);
+        logger.debug("Launcher.JavaHome", javaHome);
         String toolsJarLocation = WebAppConfiguration.stringArg(args, "toolsJar", null);
         File toolsJar = null;
         if (toolsJarLocation == null) {
@@ -127,8 +125,8 @@ public class Launcher implements Runnable {
         // Add tools jar to classloader path
         if (toolsJar.exists()) {
             jars.add(toolsJar.toURI().toURL());
-            commonLibCLPaths.add(toolsJar);
-            logger.debug("Adding [#0] to common classpath" , toolsJar.getName());
+            jspClasspaths.add(toolsJar);
+            logger.debug("Launcher.AddingClasspath", toolsJar.getName());
         } else if (WebAppConfiguration.booleanArg(args, "useJasper", false)) {
             logger.warn("WARNING: Tools.jar was not found - jsp compilation will cause errors. Maybe you should set JAVA_HOME using --javaHome");
         }
@@ -137,22 +135,48 @@ public class Launcher implements Runnable {
         String commonLibCLFolder = WebAppConfiguration.stringArg(args, "commonLibFolder", "lib");
         File libFolder = new File(commonLibCLFolder);
         if (libFolder.exists() && libFolder.isDirectory()) {
-            logger.debug("Using common lib folder: [#0]", libFolder.getCanonicalPath());
+            logger.debug("Launcher.CommonLibFolder", libFolder.getCanonicalPath());
             File children[] = libFolder.listFiles();
             for (int n = 0; n < children.length; n++) {
                 if (children[n].getName().endsWith(".jar") || children[n].getName().endsWith(".zip")) {
                     jars.add(children[n].toURI().toURL());
                     //jars.add(children[n].toURL());
-                    commonLibCLPaths.add(children[n]);
-                    logger.debug(StringUtils.replaceToken("Adding [#0] to common classpath", children[n].getName()));
+                    jspClasspaths.add(children[n]);
+                    logger.debug("Launcher.AddingClasspath", children[n].getName());
                 }
             }
         } else {
             logger.debug("No common lib folder found");
         }
+        try {
+            // try to find in META-INF/lib
+            //TODO explode them in a temp folder?
+            String[] childrenName = FileUtils.getResourceListing(getClass(), "META-INF/lib");
+            for (int n = 0; n < childrenName.length; n++) {
+                if (childrenName[n].endsWith(".jar") || childrenName[n].endsWith(".zip")) {
+                    URL url = getClass().getClassLoader().getResource("META-INF/lib/" + childrenName[n]);
+                    jars.add(url);
+                    // add for jsp classpath in webapp!
+                    //commonLibCLPaths.add(children[n]);
+                    logger.debug("Launcher.AddingClasspath", childrenName[n]);
+                }
+            }
+        } catch (URISyntaxException ex) {
+            logger.error("Reading META-INF/lib", ex);
+        }
+
+
+
         ClassLoader commonLibCL = new URLClassLoader((URL[]) jars.toArray(new URL[jars.size()]), getClass().getClassLoader());
         logger.debug("Initializing Common Lib classloader: " + commonLibCL.toString());
-        logger.debug("Initializing Common Lib classloader: " + commonLibCLPaths.toString());
+        logger.debug("Initializing JSP Common Lib classloader: " + jspClasspaths.toString());
+        /** calcule de m'attribut pour les jsp */
+        StringBuilder cp = new StringBuilder();
+        File[] fa = (File[]) jspClasspaths.toArray(new File[0]);
+        for (int n = 0; n < fa.length; n++) {
+            cp.append(fa[n].getCanonicalPath()).append(File.pathSeparatorChar);
+        }
+        String jspClasspath = cp.length() > 0 ? cp.substring(0, cp.length() - 1) : "";
 
         this.objectPool = new ObjectPool(args);
 
@@ -163,7 +187,7 @@ public class Launcher implements Runnable {
             if (this.controlPort < 0) {
                 logger.info("Clustering disabled - control port must be enabled");
             } else {
-                String clusterClassName = WebAppConfiguration.stringArg(args, "clusterClassName", CLUSTER_CLASS).trim();
+                String clusterClassName = WebAppConfiguration.stringArg(args, "clusterClassName", SimpleCluster.class.getName()).trim();
                 try {
                     Class<?> clusterClass = Class.forName(clusterClassName);
                     Constructor<?> clusterConstructor = clusterClass.getConstructor(new Class[]{
@@ -182,7 +206,7 @@ public class Launcher implements Runnable {
 
         // If jndi is enabled, run the container wide jndi populator
         if (useJNDI) {
-            String jndiMgrClassName = WebAppConfiguration.stringArg(args, "containerJndiClassName", DEFAULT_JNDI_MGR_CLASS).trim();
+            String jndiMgrClassName = WebAppConfiguration.stringArg(args, "containerJndiClassName", ContainerJNDIManager.class.getName()).trim();
             try {
                 // Build the realm
                 Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, true, commonLibCL);
@@ -201,17 +225,17 @@ public class Launcher implements Runnable {
         }
 
         // Open the web apps
-        this.hostGroup = new HostGroup(this.cluster, this.objectPool, commonLibCL, (File[]) commonLibCLPaths.toArray(new File[0]), args);
+        this.hostGroup = new HostGroup(this.cluster, this.objectPool, commonLibCL, jspClasspath, args);
 
         // Create connectors (http, https and ajp)
         this.listeners = new ArrayList<Listener>();
-        spawnListener(HTTP_LISTENER_CLASS);
-        spawnListener(AJP_LISTENER_CLASS);
+        spawnListener(HttpListener.class.getName());
+        spawnListener(Ajp13Listener.class.getName());
         try {
             Class.forName("javax.net.ServerSocketFactory");
-            spawnListener(HTTPS_LISTENER_CLASS);
+            spawnListener(HttpsListener.class.getName());
         } catch (ClassNotFoundException err) {
-            logger.debug(StringUtils.replaceToken("Listener class [#0] needs JDK1.4 support. Disabling", HTTPS_LISTENER_CLASS));
+            logger.debug("Launcher.ServerSocketFactory", HttpsListener.class.getName());
         }
 
         this.controlThread = new Thread(this, StringUtils.replaceToken("LauncherControlThread[ControlPort=[#0]]", Integer.toString(this.controlPort)));
@@ -267,10 +291,10 @@ public class Launcher implements Runnable {
                 controlSocket = new ServerSocket(this.controlPort, 0, inetAddress);
                 controlSocket.setSoTimeout(CONTROL_TIMEOUT);
             }
-
-            logger.info(StringUtils.replaceToken("[#0] running: controlPort=[#1]",
-                    WinstoneResourceBundle.getInstance().getString("ServerVersion"), (this.controlPort > 0 ? Integer.toString(this.controlPort) : "disabled")));
-
+            if (logger.isInfoEnabled()) {
+                logger.info(StringUtils.replaceToken("[#0] running: controlPort=[#1]",
+                        WinstoneResourceBundle.getInstance().getString("ServerVersion"), (this.controlPort > 0 ? Integer.toString(this.controlPort) : "disabled")));
+            }
 
             // Enter the main loop
             while (!interrupted) {

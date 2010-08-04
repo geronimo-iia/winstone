@@ -69,6 +69,7 @@ import net.winstone.cluster.Cluster;
  */
 public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     // private static final String ELEM_DESCRIPTION = "description";
+
     private static final String ELEM_DISPLAY_NAME = "display-name";
     private static final String ELEM_SERVLET = "servlet";
     private static final String ELEM_SERVLET_MAPPING = "servlet-mapping";
@@ -106,7 +107,6 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     private static final String ELEM_ENCODING = "encoding";
     private static final String ELEM_JSP_CONFIG = "jsp-config";
     private static final String ELEM_JSP_PROPERTY_GROUP = "jsp-property-group";
-    
     private static final String DISPATCHER_REQUEST = "REQUEST";
     private static final String DISPATCHER_FORWARD = "FORWARD";
     private static final String DISPATCHER_INCLUDE = "INCLUDE";
@@ -126,13 +126,10 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     private static final String WEBAPP_CL_CLASS = "winstone.classLoader.WebappClassLoader";
     private static final String ERROR_SERVLET_NAME = "winstoneErrorServlet";
     private static final String ERROR_SERVLET_CLASS = "winstone.ErrorServlet";
-    
     private static final String WEB_INF = "WEB-INF";
     private static final String CLASSES = "classes/";
     private static final String LIB = "lib";
-    
     static final String JSP_SERVLET_CLASS = "org.apache.jasper.servlet.JspServlet";
-    
     private HostConfiguration ownerHostConfig;
     private Cluster cluster;
     private String webRoot;
@@ -174,23 +171,24 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     private AccessLogger accessLogger;
     private Map<String, FilterConfiguration[]> filterMatchCache;
     private boolean useSavedSessions;
-    
+
     public static boolean booleanArg(final Map<String, String> args, final String name, final boolean defaultTrue) {
-        String value = (String)args.get(name);
-        if (defaultTrue)
+        String value = (String) args.get(name);
+        if (defaultTrue) {
             return (value == null) || (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("yes"));
-        else
+        } else {
             return (value != null) && (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("yes"));
+        }
     }
-    
+
     public static String stringArg(final Map<String, String> args, final String name, final String defaultValue) {
-        return (String)(args.get(name) == null ? defaultValue : args.get(name));
+        return (String) (args.get(name) == null ? defaultValue : args.get(name));
     }
-    
+
     public static int intArg(final Map<String, String> args, final String name, final int defaultValue) {
         return Integer.parseInt(stringArg(args, name, "" + defaultValue));
     }
-    
+
     public static String getTextFromNode(final Node node) {
         if (node == null) {
             return null;
@@ -206,11 +204,11 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             return textNode.trim();
         }
     }
-    
+
     public static boolean useSavedSessions(final Map<String, String> args) {
         return booleanArg(args, "useSavedSessions", false);
     }
-    
+
     /**
      * Build a new instance of We
      * 
@@ -223,15 +221,15 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
      * @param parentClassPaths
      * @param contextName
      */
-    public WebAppConfiguration(final HostConfiguration ownerHostConfig, final String webRoot, final String prefix, final Map<String, String> startupArgs, final Node elm, final ClassLoader parentClassLoader, final File parentClassPaths[], final String contextName) {
-        this(ownerHostConfig, null, webRoot, prefix, null, startupArgs, elm, parentClassLoader, parentClassPaths, contextName);
+    public WebAppConfiguration(final HostConfiguration ownerHostConfig, final String webRoot, final String prefix, final Map<String, String> startupArgs, final Node elm, final ClassLoader parentClassLoader, final String jspClasspath, final String contextName) {
+        this(ownerHostConfig, null, webRoot, prefix, null, startupArgs, elm, parentClassLoader, jspClasspath, contextName);
     }
-    
+
     /**
      * Constructor. This parses the xml and sets up for basic routing
      */
     public WebAppConfiguration(final HostConfiguration ownerHostConfig, final Cluster cluster, final String webRoot, final String prefix, final ObjectPool objectPool, final Map<String, String> startupArgs, final Node elm, final ClassLoader parentClassLoader,
-                               final File parentClassPaths[], final String contextName) {
+            final String jspClasspath, final String contextName) {
         this.ownerHostConfig = ownerHostConfig;
         this.webRoot = webRoot;
         if (!prefix.equals("") && !prefix.startsWith("/")) {
@@ -241,16 +239,16 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             this.prefix = prefix;
         }
         this.contextName = contextName;
-        
+
         List<File> localLoaderClassPathFiles = new ArrayList<File>();
         this.loader = buildWebAppClassLoader(startupArgs, parentClassLoader, webRoot, localLoaderClassPathFiles);
-        
+
         // Build switch values
         boolean useJasper = booleanArg(startupArgs, "useJasper", true);
         boolean useInvoker = booleanArg(startupArgs, "useInvoker", false);
         boolean useJNDI = booleanArg(startupArgs, "useJNDI", false);
         this.useSavedSessions = useSavedSessions(startupArgs);
-        
+
         // Check jasper is available - simple tests
         if (useJasper) {
             try {
@@ -272,15 +270,15 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 useInvoker = false;
             }
         }
-        
+
         this.attributes = new Hashtable<String, Object>();
         this.initParameters = new HashMap<String, String>();
         this.sessions = new Hashtable<String, WinstoneSession>();
-        
+
         this.servletInstances = new HashMap<String, ServletConfiguration>();
         this.filterInstances = new HashMap<String, FilterConfiguration>();
         this.filterMatchCache = new HashMap<String, FilterConfiguration[]>();
-        
+
         List<ServletContextAttributeListener> contextAttributeListeners = new ArrayList<ServletContextAttributeListener>();
         List<ServletContextListener> contextListeners = new ArrayList<ServletContextListener>();
         List<ServletRequestListener> requestListeners = new ArrayList<ServletRequestListener>();
@@ -288,82 +286,79 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         List<HttpSessionActivationListener> sessionActivationListeners = new ArrayList<HttpSessionActivationListener>();
         List<HttpSessionAttributeListener> sessionAttributeListeners = new ArrayList<HttpSessionAttributeListener>();
         List<HttpSessionListener> sessionListeners = new ArrayList<HttpSessionListener>();
-        
+
         this.errorPagesByException = new HashMap<Class<?>, String>();
         this.errorPagesByCode = new HashMap<String, String>();
         boolean distributable = false;
-        
+
         this.exactServletMatchMounts = new Hashtable<String, String>();
         List<Mapping> localFolderPatterns = new ArrayList<Mapping>();
         List<Mapping> localExtensionPatterns = new ArrayList<Mapping>();
-        
+
         List<Mapping> lfpRequest = new ArrayList<Mapping>();
         List<Mapping> lfpForward = new ArrayList<Mapping>();
         List<Mapping> lfpInclude = new ArrayList<Mapping>();
         List<Mapping> lfpError = new ArrayList<Mapping>();
-        
+
         List<String> localWelcomeFiles = new ArrayList<String>();
         List<ServletConfiguration> startupServlets = new ArrayList<ServletConfiguration>();
-        
+
         Set<String> rolesAllowed = new HashSet<String>();
         List<Node> constraintNodes = new ArrayList<Node>();
         List<Node> envEntryNodes = new ArrayList<Node>();
         List<Class<?>> localErrorPagesByExceptionList = new ArrayList<Class<?>>();
-        
+
         Node loginConfigNode = null;
-        
+
         // Add the class loader as an implicit context listener if it implements the interface
         addListenerInstance(this.loader, contextAttributeListeners, contextListeners, requestAttributeListeners, requestListeners, sessionActivationListeners, sessionAttributeListeners, sessionListeners);
-        
+
         this.localeEncodingMap = new HashMap<String, String>();
         String encodingMapSet = Launcher.RESOURCES.getString("WebAppConfig.EncodingMap");
         StringTokenizer st = new StringTokenizer(encodingMapSet, ";");
         for (; st.hasMoreTokens();) {
             String token = st.nextToken();
             int delimPos = token.indexOf("=");
-            if (delimPos == -1)
+            if (delimPos == -1) {
                 continue;
+            }
             this.localeEncodingMap.put(token.substring(0, delimPos), token.substring(delimPos + 1));
         }
-        
+
         // init jsp mappings set
         List<String> jspMappings = new ArrayList<String>();
         jspMappings.add(JSP_SERVLET_MAPPING);
         jspMappings.add(JSPX_SERVLET_MAPPING);
-        
+
         // Add required context atttributes
         String userName = System.getProperty("user.name", "anyone");
         File tmpDir = new File(new File(new File(new File(System.getProperty("java.io.tmpdir"), userName), "winstone.tmp"), ownerHostConfig.getHostname()), contextName);
         tmpDir.mkdirs();
         this.attributes.put("javax.servlet.context.tempdir", tmpDir);
-        
+
         // Parse the web.xml file
         if (elm != null) {
             NodeList children = elm.getChildNodes();
             Map<String, String> webApplicationMimeType = null;
-            
+
             for (int n = 0; n < children.getLength(); n++) {
                 Node child = children.item(n);
-                if (child.getNodeType() != Node.ELEMENT_NODE)
+                if (child.getNodeType() != Node.ELEMENT_NODE) {
                     continue;
+                }
                 String nodeName = child.getNodeName();
-                
-                if (nodeName.equals(ELEM_DISPLAY_NAME))
+
+                if (nodeName.equals(ELEM_DISPLAY_NAME)) {
                     this.displayName = getTextFromNode(child);
-                
-                else if (nodeName.equals(ELEM_DISTRIBUTABLE))
+                } else if (nodeName.equals(ELEM_DISTRIBUTABLE)) {
                     distributable = true;
-                
-                else if (nodeName.equals(ELEM_SECURITY_CONSTRAINT))
+                } else if (nodeName.equals(ELEM_SECURITY_CONSTRAINT)) {
                     constraintNodes.add(child);
-                
-                else if (nodeName.equals(ELEM_ENV_ENTRY))
+                } else if (nodeName.equals(ELEM_ENV_ENTRY)) {
                     envEntryNodes.add(child);
-                
-                else if (nodeName.equals(ELEM_LOGIN_CONFIG))
+                } else if (nodeName.equals(ELEM_LOGIN_CONFIG)) {
                     loginConfigNode = child;
-                
-                // Session config elements
+                } // Session config elements
                 else if (nodeName.equals(ELEM_SESSION_CONFIG)) {
                     for (int m = 0; m < child.getChildNodes().getLength(); m++) {
                         Node timeoutElm = child.getChildNodes().item(m);
@@ -374,40 +369,35 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                             }
                         }
                     }
-                }
-
-                // Construct the security roles
+                } // Construct the security roles
                 else if (child.getNodeName().equals(ELEM_SECURITY_ROLE)) {
                     for (int m = 0; m < child.getChildNodes().getLength(); m++) {
                         Node roleElm = child.getChildNodes().item(m);
-                        if ((roleElm.getNodeType() == Node.ELEMENT_NODE) && (roleElm.getNodeName().equals(ELEM_ROLE_NAME)))
+                        if ((roleElm.getNodeType() == Node.ELEMENT_NODE) && (roleElm.getNodeName().equals(ELEM_ROLE_NAME))) {
                             rolesAllowed.add(getTextFromNode(roleElm));
+                        }
                     }
-                }
-
-                // Construct the servlet instances
+                } // Construct the servlet instances
                 else if (nodeName.equals(ELEM_SERVLET)) {
                     ServletConfiguration instance = new ServletConfiguration(this, child);
                     this.servletInstances.put(instance.getServletName(), instance);
-                    if (instance.getLoadOnStartup() >= 0)
+                    if (instance.getLoadOnStartup() >= 0) {
                         startupServlets.add(instance);
-                }
-
-                // Construct the servlet instances
+                    }
+                } // Construct the servlet instances
                 else if (nodeName.equals(ELEM_FILTER)) {
                     FilterConfiguration instance = new FilterConfiguration(this, this.loader, child);
                     this.filterInstances.put(instance.getFilterName(), instance);
-                }
-
-                // Construct the servlet instances
+                } // Construct the servlet instances
                 else if (nodeName.equals(ELEM_LISTENER)) {
                     String listenerClass = null;
                     for (int m = 0; m < child.getChildNodes().getLength(); m++) {
                         Node listenerElm = child.getChildNodes().item(m);
-                        if ((listenerElm.getNodeType() == Node.ELEMENT_NODE) && (listenerElm.getNodeName().equals(ELEM_LISTENER_CLASS)))
+                        if ((listenerElm.getNodeType() == Node.ELEMENT_NODE) && (listenerElm.getNodeName().equals(ELEM_LISTENER_CLASS))) {
                             listenerClass = getTextFromNode(listenerElm);
+                        }
                     }
-                    if (listenerClass != null)
+                    if (listenerClass != null) {
                         try {
                             Class<?> listener = Class.forName(listenerClass, true, this.loader);
                             Object listenerInstance = listener.newInstance();
@@ -416,19 +406,19 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                         } catch (Throwable err) {
                             Logger.log(Logger.WARNING, Launcher.RESOURCES, "WebAppConfig.InvalidListener", listenerClass, err);
                         }
-                }
-
-                // Process the servlet mappings
+                    }
+                } // Process the servlet mappings
                 else if (nodeName.equals(ELEM_SERVLET_MAPPING)) {
                     String name = null;
                     List<String> mappings = new ArrayList<String>();
-                    
+
                     // Parse the element and extract
                     NodeList mappingChildren = child.getChildNodes();
                     for (int k = 0; k < mappingChildren.getLength(); k++) {
                         Node mapChild = mappingChildren.item(k);
-                        if (mapChild.getNodeType() != Node.ELEMENT_NODE)
+                        if (mapChild.getNodeType() != Node.ELEMENT_NODE) {
                             continue;
+                        }
                         String mapNodeName = mapChild.getNodeName();
                         if (mapNodeName.equals(ELEM_SERVLET_NAME)) {
                             name = getTextFromNode(mapChild);
@@ -437,11 +427,9 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                         }
                     }
                     for (Iterator<String> i = mappings.iterator(); i.hasNext();) {
-                        processMapping(name, (String)i.next(), this.exactServletMatchMounts, localFolderPatterns, localExtensionPatterns);
+                        processMapping(name, (String) i.next(), this.exactServletMatchMounts, localFolderPatterns, localExtensionPatterns);
                     }
-                }
-
-                // Process the filter mappings
+                } // Process the filter mappings
                 else if (nodeName.equals(ELEM_FILTER_MAPPING)) {
                     String filterName = null;
                     List<String> mappings = new ArrayList<String>();
@@ -449,12 +437,13 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                     boolean onForward = false;
                     boolean onInclude = false;
                     boolean onError = false;
-                    
+
                     // Parse the element and extract
                     for (int k = 0; k < child.getChildNodes().getLength(); k++) {
                         Node mapChild = child.getChildNodes().item(k);
-                        if (mapChild.getNodeType() != Node.ELEMENT_NODE)
+                        if (mapChild.getNodeType() != Node.ELEMENT_NODE) {
                             continue;
+                        }
                         String mapNodeName = mapChild.getNodeName();
                         if (mapNodeName.equals(ELEM_FILTER_NAME)) {
                             filterName = getTextFromNode(mapChild);
@@ -464,14 +453,15 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                             mappings.add("url:" + getTextFromNode(mapChild));
                         } else if (mapNodeName.equals(ELEM_DISPATCHER)) {
                             String dispatcherValue = getTextFromNode(mapChild);
-                            if (dispatcherValue.equals(DISPATCHER_REQUEST))
+                            if (dispatcherValue.equals(DISPATCHER_REQUEST)) {
                                 onRequest = true;
-                            else if (dispatcherValue.equals(DISPATCHER_FORWARD))
+                            } else if (dispatcherValue.equals(DISPATCHER_FORWARD)) {
                                 onForward = true;
-                            else if (dispatcherValue.equals(DISPATCHER_INCLUDE))
+                            } else if (dispatcherValue.equals(DISPATCHER_INCLUDE)) {
                                 onInclude = true;
-                            else if (dispatcherValue.equals(DISPATCHER_ERROR))
+                            } else if (dispatcherValue.equals(DISPATCHER_ERROR)) {
                                 onError = true;
+                            }
                         }
                     }
                     if (!onRequest && !onInclude && !onForward && !onError) {
@@ -480,9 +470,9 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                     if (mappings.isEmpty()) {
                         throw new WinstoneException(Launcher.RESOURCES.getString("WebAppConfig.BadFilterMapping", filterName));
                     }
-                    
+
                     for (Iterator<String> i = mappings.iterator(); i.hasNext();) {
-                        String item = (String)i.next();
+                        String item = (String) i.next();
                         Mapping mapping = null;
                         try {
                             if (item.startsWith("srv:")) {
@@ -490,21 +480,23 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                             } else {
                                 mapping = Mapping.createFromURL(filterName, item.substring(4));
                             }
-                            if (onRequest)
+                            if (onRequest) {
                                 lfpRequest.add(mapping);
-                            if (onForward)
+                            }
+                            if (onForward) {
                                 lfpForward.add(mapping);
-                            if (onInclude)
+                            }
+                            if (onInclude) {
                                 lfpInclude.add(mapping);
-                            if (onError)
+                            }
+                            if (onError) {
                                 lfpError.add(mapping);
+                            }
                         } catch (WinstoneException err) {
                             Logger.log(Logger.WARNING, Launcher.RESOURCES, "WebAppConfig.ErrorMapURL", err.getMessage());
                         }
                     }
-                }
-
-                // Process the list of welcome files
+                } // Process the list of welcome files
                 else if (nodeName.equals(ELEM_WELCOME_FILES)) {
                     for (int m = 0; m < child.getChildNodes().getLength(); m++) {
                         Node welcomeFile = child.getChildNodes().item(m);
@@ -515,30 +507,31 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                             }
                         }
                     }
-                }
-
-                // Process the error pages
+                } // Process the error pages
                 else if (nodeName.equals(ELEM_ERROR_PAGE)) {
                     String code = null;
                     String exception = null;
                     String location = null;
-                    
+
                     // Parse the element and extract
                     for (int k = 0; k < child.getChildNodes().getLength(); k++) {
                         Node errorChild = child.getChildNodes().item(k);
-                        if (errorChild.getNodeType() != Node.ELEMENT_NODE)
+                        if (errorChild.getNodeType() != Node.ELEMENT_NODE) {
                             continue;
+                        }
                         String errorChildName = errorChild.getNodeName();
-                        if (errorChildName.equals(ELEM_ERROR_CODE))
+                        if (errorChildName.equals(ELEM_ERROR_CODE)) {
                             code = getTextFromNode(errorChild);
-                        else if (errorChildName.equals(ELEM_EXCEPTION_TYPE))
+                        } else if (errorChildName.equals(ELEM_EXCEPTION_TYPE)) {
                             exception = getTextFromNode(errorChild);
-                        else if (errorChildName.equals(ELEM_ERROR_LOCATION))
+                        } else if (errorChildName.equals(ELEM_ERROR_LOCATION)) {
                             location = getTextFromNode(errorChild);
+                        }
                     }
-                    if ((code != null) && (location != null))
+                    if ((code != null) && (location != null)) {
                         this.errorPagesByCode.put(code.trim(), location.trim());
-                    if ((exception != null) && (location != null))
+                    }
+                    if ((exception != null) && (location != null)) {
                         try {
                             Class<?> exceptionClass = Class.forName(exception.trim(), false, this.loader);
                             localErrorPagesByExceptionList.add(exceptionClass);
@@ -546,78 +539,77 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                         } catch (ClassNotFoundException err) {
                             Logger.log(Logger.ERROR, Launcher.RESOURCES, "WebAppConfig.ExceptionNotFound", exception);
                         }
-                }
-
-                // Process the list of welcome files
+                    }
+                } // Process the list of welcome files
                 else if (nodeName.equals(ELEM_MIME_MAPPING)) {
                     String extension = null;
                     String mimeType = null;
                     for (int m = 0; m < child.getChildNodes().getLength(); m++) {
                         Node mimeTypeNode = child.getChildNodes().item(m);
-                        if (mimeTypeNode.getNodeType() != Node.ELEMENT_NODE)
+                        if (mimeTypeNode.getNodeType() != Node.ELEMENT_NODE) {
                             continue;
-                        else if (mimeTypeNode.getNodeName().equals(ELEM_MIME_EXTENSION))
+                        } else if (mimeTypeNode.getNodeName().equals(ELEM_MIME_EXTENSION)) {
                             extension = getTextFromNode(mimeTypeNode);
-                        else if (mimeTypeNode.getNodeName().equals(ELEM_MIME_TYPE))
+                        } else if (mimeTypeNode.getNodeName().equals(ELEM_MIME_TYPE)) {
                             mimeType = getTextFromNode(mimeTypeNode);
+                        }
                     }
                     if ((extension != null) && (mimeType != null)) {
                         if (webApplicationMimeType == null) {
                             webApplicationMimeType = new HashMap<String, String>();
                         }
                         webApplicationMimeType.put(extension.toLowerCase(), mimeType);
-                    } else
-                        Logger.log(Logger.WARNING, Launcher.RESOURCES, "WebAppConfig.InvalidMimeMapping", new String[] {
-                            extension, mimeType
-                        });
-                }
-
-                // Process the list of welcome files
+                    } else {
+                        Logger.log(Logger.WARNING, Launcher.RESOURCES, "WebAppConfig.InvalidMimeMapping", new String[]{
+                                    extension, mimeType
+                                });
+                    }
+                } // Process the list of welcome files
                 else if (nodeName.equals(ELEM_CONTEXT_PARAM)) {
                     String name = null;
                     String value = null;
                     for (int m = 0; m < child.getChildNodes().getLength(); m++) {
                         Node contextParamNode = child.getChildNodes().item(m);
-                        if (contextParamNode.getNodeType() != Node.ELEMENT_NODE)
+                        if (contextParamNode.getNodeType() != Node.ELEMENT_NODE) {
                             continue;
-                        else if (contextParamNode.getNodeName().equals(ELEM_PARAM_NAME))
+                        } else if (contextParamNode.getNodeName().equals(ELEM_PARAM_NAME)) {
                             name = getTextFromNode(contextParamNode);
-                        else if (contextParamNode.getNodeName().equals(ELEM_PARAM_VALUE))
+                        } else if (contextParamNode.getNodeName().equals(ELEM_PARAM_VALUE)) {
                             value = getTextFromNode(contextParamNode);
+                        }
                     }
-                    if ((name != null) && (value != null))
+                    if ((name != null) && (value != null)) {
                         this.initParameters.put(name, value);
-                    else
-                        Logger.log(Logger.WARNING, Launcher.RESOURCES, "WebAppConfig.InvalidInitParam", new String[] {
-                            name, value
-                        });
-                }
-
-                // Process locale encoding mapping elements
+                    } else {
+                        Logger.log(Logger.WARNING, Launcher.RESOURCES, "WebAppConfig.InvalidInitParam", new String[]{
+                                    name, value
+                                });
+                    }
+                } // Process locale encoding mapping elements
                 else if (nodeName.equals(ELEM_LOCALE_ENC_MAP_LIST)) {
                     for (int m = 0; m < child.getChildNodes().getLength(); m++) {
                         Node mappingNode = child.getChildNodes().item(m);
-                        if (mappingNode.getNodeType() != Node.ELEMENT_NODE)
+                        if (mappingNode.getNodeType() != Node.ELEMENT_NODE) {
                             continue;
-                        else if (mappingNode.getNodeName().equals(ELEM_LOCALE_ENC_MAPPING)) {
+                        } else if (mappingNode.getNodeName().equals(ELEM_LOCALE_ENC_MAPPING)) {
                             String localeName = "";
                             String encoding = "";
                             for (int l = 0; l < mappingNode.getChildNodes().getLength(); l++) {
                                 Node mappingChildNode = mappingNode.getChildNodes().item(l);
-                                if (mappingChildNode.getNodeType() != Node.ELEMENT_NODE)
+                                if (mappingChildNode.getNodeType() != Node.ELEMENT_NODE) {
                                     continue;
-                                else if (mappingChildNode.getNodeName().equals(ELEM_LOCALE))
+                                } else if (mappingChildNode.getNodeName().equals(ELEM_LOCALE)) {
                                     localeName = getTextFromNode(mappingChildNode);
-                                else if (mappingChildNode.getNodeName().equals(ELEM_ENCODING))
+                                } else if (mappingChildNode.getNodeName().equals(ELEM_ENCODING)) {
                                     encoding = getTextFromNode(mappingChildNode);
+                                }
                             }
-                            if (!encoding.equals("") && !localeName.equals(""))
+                            if (!encoding.equals("") && !localeName.equals("")) {
                                 this.localeEncodingMap.put(localeName, encoding);
+                            }
                         }
                     }
-                }
-
-                // Record the url mappings for jsp files if set
+                } // Record the url mappings for jsp files if set
                 else if (nodeName.equals(ELEM_JSP_CONFIG)) {
                     for (int m = 0; m < child.getChildNodes().getLength(); m++) {
                         Node propertyGroupNode = child.getChildNodes().item(m);
@@ -644,14 +636,14 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 this.mimeTypes = MimeTypes.getInstance(webApplicationMimeType);
             }
         }
-        
+
         // If not distributable, remove the cluster reference
         if (!distributable && (cluster != null)) {
             Logger.log(Logger.INFO, Launcher.RESOURCES, "WebAppConfig.ClusterOffNotDistributable", this.contextName);
         } else {
             this.cluster = cluster;
         }
-        
+
         // Build the login/security role instance
         if (!constraintNodes.isEmpty() && (loginConfigNode != null)) {
             String authMethod = null;
@@ -671,68 +663,68 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             try {
                 // Build the realm
                 Class<?> realmClass = Class.forName(realmClassName, true, parentClassLoader);
-                Constructor<?> realmConstr = realmClass.getConstructor(new Class[] {
-                    Set.class, Map.class
-                });
-                this.authenticationRealm = (AuthenticationRealm)realmConstr.newInstance(new Object[] {
-                    rolesAllowed, startupArgs
-                });
-                
+                Constructor<?> realmConstr = realmClass.getConstructor(new Class[]{
+                            Set.class, Map.class
+                        });
+                this.authenticationRealm = (AuthenticationRealm) realmConstr.newInstance(new Object[]{
+                            rolesAllowed, startupArgs
+                        });
+
                 // Build the authentication handler
                 Class<?> authClass = Class.forName(authClassName);
-                Constructor<?> authConstr = authClass.getConstructor(new Class[] {
-                    Node.class, List.class, Set.class, AuthenticationRealm.class
-                });
-                this.authenticationHandler = (AuthenticationHandler)authConstr.newInstance(new Object[] {
-                    loginConfigNode, constraintNodes, rolesAllowed, authenticationRealm
-                });
+                Constructor<?> authConstr = authClass.getConstructor(new Class[]{
+                            Node.class, List.class, Set.class, AuthenticationRealm.class
+                        });
+                this.authenticationHandler = (AuthenticationHandler) authConstr.newInstance(new Object[]{
+                            loginConfigNode, constraintNodes, rolesAllowed, authenticationRealm
+                        });
             } catch (ClassNotFoundException err) {
                 Logger.log(Logger.DEBUG, Launcher.RESOURCES, "WebAppConfig.AuthDisabled", authMethod);
             } catch (Throwable err) {
-                Logger.log(Logger.ERROR, Launcher.RESOURCES, "WebAppConfig.AuthError", new String[] {
-                    authClassName, realmClassName
-                }, err);
+                Logger.log(Logger.ERROR, Launcher.RESOURCES, "WebAppConfig.AuthError", new String[]{
+                            authClassName, realmClassName
+                        }, err);
             }
         } else if (!stringArg(startupArgs, "realmClassName", "").trim().equals("")) {
             Logger.log(Logger.DEBUG, Launcher.RESOURCES, "WebAppConfig.NoWebXMLSecurityDefs");
         }
-        
+
         // Instantiate the JNDI manager
         String jndiMgrClassName = stringArg(startupArgs, "webappJndiClassName", DEFAULT_JNDI_MGR_CLASS).trim();
         if (useJNDI) {
             try {
                 // Build the realm
                 Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, true, parentClassLoader);
-                Constructor<?> jndiMgrConstr = jndiMgrClass.getConstructor(new Class[] {
-                    Map.class, List.class, ClassLoader.class
-                });
-                this.jndiManager = (JNDIManager)jndiMgrConstr.newInstance(new Object[] {
-                    null, envEntryNodes, this.loader
-                });
-                if (this.jndiManager != null)
+                Constructor<?> jndiMgrConstr = jndiMgrClass.getConstructor(new Class[]{
+                            Map.class, List.class, ClassLoader.class
+                        });
+                this.jndiManager = (JNDIManager) jndiMgrConstr.newInstance(new Object[]{
+                            null, envEntryNodes, this.loader
+                        });
+                if (this.jndiManager != null) {
                     this.jndiManager.setup();
+                }
             } catch (ClassNotFoundException err) {
                 Logger.log(Logger.DEBUG, Launcher.RESOURCES, "WebAppConfig.JNDIDisabled");
             } catch (Throwable err) {
                 Logger.log(Logger.ERROR, Launcher.RESOURCES, "WebAppConfig.JNDIError", jndiMgrClassName, err);
             }
         }
-        
+
         String loggerClassName = stringArg(startupArgs, "accessLoggerClassName", "").trim();
         if (!loggerClassName.equals("")) {
             try {
-                
-                this.accessLogger = AccessLoggerProviderFactory.getAccessLogger(this.getOwnerHostname(), this.getContextName(), PatternType.valueOf(WebAppConfiguration.stringArg(startupArgs, "simpleAccessLogger.format", "combined")), WebAppConfiguration
-                    .stringArg(startupArgs, "simpleAccessLogger.file", "logs/###host###/###webapp###_access.log"));
-                
+
+                this.accessLogger = AccessLoggerProviderFactory.getAccessLogger(this.getOwnerHostname(), this.getContextName(), PatternType.valueOf(WebAppConfiguration.stringArg(startupArgs, "simpleAccessLogger.format", "combined")), WebAppConfiguration.stringArg(startupArgs, "simpleAccessLogger.file", "logs/###host###/###webapp###_access.log"));
+
             } catch (Throwable err) {
                 Logger.log(Logger.ERROR, Launcher.RESOURCES, "WebAppConfig.LoggerError", loggerClassName, err);
             }
         } else {
             Logger.log(Logger.DEBUG, Launcher.RESOURCES, "WebAppConfig.LoggerDisabled");
-            
+
         }
-        
+
         // Add the default index.html welcomeFile if none are supplied
         if (localWelcomeFiles.isEmpty()) {
             if (useJasper) {
@@ -740,48 +732,54 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             }
             localWelcomeFiles.add("index.html");
         }
-        
+
         // Put the name filters after the url filters, then convert to string arrays
-        this.filterPatternsRequest = (Mapping[])lfpRequest.toArray(new Mapping[0]);
-        this.filterPatternsForward = (Mapping[])lfpForward.toArray(new Mapping[0]);
-        this.filterPatternsInclude = (Mapping[])lfpInclude.toArray(new Mapping[0]);
-        this.filterPatternsError = (Mapping[])lfpError.toArray(new Mapping[0]);
-        
-        if (this.filterPatternsRequest.length > 0)
+        this.filterPatternsRequest = (Mapping[]) lfpRequest.toArray(new Mapping[0]);
+        this.filterPatternsForward = (Mapping[]) lfpForward.toArray(new Mapping[0]);
+        this.filterPatternsInclude = (Mapping[]) lfpInclude.toArray(new Mapping[0]);
+        this.filterPatternsError = (Mapping[]) lfpError.toArray(new Mapping[0]);
+
+        if (this.filterPatternsRequest.length > 0) {
             Arrays.sort(this.filterPatternsRequest, this.filterPatternsRequest[0]);
-        if (this.filterPatternsForward.length > 0)
+        }
+        if (this.filterPatternsForward.length > 0) {
             Arrays.sort(this.filterPatternsForward, this.filterPatternsForward[0]);
-        if (this.filterPatternsInclude.length > 0)
+        }
+        if (this.filterPatternsInclude.length > 0) {
             Arrays.sort(this.filterPatternsInclude, this.filterPatternsInclude[0]);
-        if (this.filterPatternsError.length > 0)
+        }
+        if (this.filterPatternsError.length > 0) {
             Arrays.sort(this.filterPatternsError, this.filterPatternsError[0]);
-        
-        this.welcomeFiles = (String[])localWelcomeFiles.toArray(new String[0]);
-        this.errorPagesByExceptionKeysSorted = (Class[])localErrorPagesByExceptionList.toArray(new Class[0]);
+        }
+
+        this.welcomeFiles = (String[]) localWelcomeFiles.toArray(new String[0]);
+        this.errorPagesByExceptionKeysSorted = (Class[]) localErrorPagesByExceptionList.toArray(new Class[0]);
         Arrays.sort(this.errorPagesByExceptionKeysSorted, this);
-        
+
         // Put the listeners into their arrays
-        this.contextAttributeListeners = (ServletContextAttributeListener[])contextAttributeListeners.toArray(new ServletContextAttributeListener[0]);
-        this.contextListeners = (ServletContextListener[])contextListeners.toArray(new ServletContextListener[0]);
-        this.requestListeners = (ServletRequestListener[])requestListeners.toArray(new ServletRequestListener[0]);
-        this.requestAttributeListeners = (ServletRequestAttributeListener[])requestAttributeListeners.toArray(new ServletRequestAttributeListener[0]);
-        this.sessionActivationListeners = (HttpSessionActivationListener[])sessionActivationListeners.toArray(new HttpSessionActivationListener[0]);
-        this.sessionAttributeListeners = (HttpSessionAttributeListener[])sessionAttributeListeners.toArray(new HttpSessionAttributeListener[0]);
-        this.sessionListeners = (HttpSessionListener[])sessionListeners.toArray(new HttpSessionListener[0]);
-        
+        this.contextAttributeListeners = (ServletContextAttributeListener[]) contextAttributeListeners.toArray(new ServletContextAttributeListener[0]);
+        this.contextListeners = (ServletContextListener[]) contextListeners.toArray(new ServletContextListener[0]);
+        this.requestListeners = (ServletRequestListener[]) requestListeners.toArray(new ServletRequestListener[0]);
+        this.requestAttributeListeners = (ServletRequestAttributeListener[]) requestAttributeListeners.toArray(new ServletRequestAttributeListener[0]);
+        this.sessionActivationListeners = (HttpSessionActivationListener[]) sessionActivationListeners.toArray(new HttpSessionActivationListener[0]);
+        this.sessionAttributeListeners = (HttpSessionAttributeListener[]) sessionAttributeListeners.toArray(new HttpSessionAttributeListener[0]);
+        this.sessionListeners = (HttpSessionListener[]) sessionListeners.toArray(new HttpSessionListener[0]);
+
         // If we haven't explicitly mapped the default servlet, map it here
-        if (this.defaultServletName == null)
+        if (this.defaultServletName == null) {
             this.defaultServletName = DEFAULT_SERVLET_NAME;
-        if (this.errorServletName == null)
+        }
+        if (this.errorServletName == null) {
             this.errorServletName = ERROR_SERVLET_NAME;
-        
+        }
+
         // If we don't have an instance of the default servlet, mount the inbuilt one
         boolean useDirLists = booleanArg(startupArgs, "directoryListings", true);
         Map<String, String> staticParams = new Hashtable<String, String>();
         staticParams.put("webRoot", webRoot);
         staticParams.put("prefix", this.prefix);
         staticParams.put("directoryList", "" + useDirLists);
-        
+
         if (this.servletInstances.get(this.defaultServletName) == null) {
             ServletConfiguration defaultServlet = new ServletConfiguration(this, this.defaultServletName, DEFAULT_SERVLET_CLASS, staticParams, 0);
             this.servletInstances.put(this.defaultServletName, defaultServlet);
@@ -792,40 +790,29 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             this.servletInstances.put(DEFAULT_SERVLET_NAME, defaultServlet);
             startupServlets.add(defaultServlet);
         }
-        
+
         // If we don't have an instance of the default servlet, mount the inbuilt one
         if (this.servletInstances.get(this.errorServletName) == null) {
             ServletConfiguration errorServlet = new ServletConfiguration(this, this.errorServletName, ERROR_SERVLET_CLASS, new HashMap<String, String>(), 0);
             this.servletInstances.put(this.errorServletName, errorServlet);
             startupServlets.add(errorServlet);
         }
-        
+
         // Initialise jasper servlet if requested
         if (useJasper) {
             setAttribute("org.apache.catalina.classloader", this.loader);
-            try {
-                StringBuffer cp = new StringBuffer();
-                for (Iterator<File> i = localLoaderClassPathFiles.iterator(); i.hasNext();) {
-                    cp.append(((File)i.next()).getCanonicalPath()).append(File.pathSeparatorChar);
-                }
-                for (int n = 0; n < parentClassPaths.length; n++) {
-                    cp.append(parentClassPaths[n].getCanonicalPath()).append(File.pathSeparatorChar);
-                }
-                setAttribute("org.apache.catalina.jsp_classpath", (cp.length() > 0 ? cp.substring(0, cp.length() - 1) : ""));
-            } catch (IOException err) {
-                Logger.log(Logger.ERROR, Launcher.RESOURCES, "WebAppConfig.ErrorSettingJSPPaths", err);
-            }
-            
+            setAttribute("org.apache.catalina.jsp_classpath", (jspClasspath != null ? jspClasspath : ""));
+
             Map<String, String> jspParams = new HashMap<String, String>();
             addJspServletParams(jspParams);
             ServletConfiguration sc = new ServletConfiguration(this, JSP_SERVLET_NAME, JSP_SERVLET_CLASS, jspParams, 3);
             this.servletInstances.put(JSP_SERVLET_NAME, sc);
             startupServlets.add(sc);
             for (Iterator<String> mapIt = jspMappings.iterator(); mapIt.hasNext();) {
-                processMapping(JSP_SERVLET_NAME, (String)mapIt.next(), this.exactServletMatchMounts, localFolderPatterns, localExtensionPatterns);
+                processMapping(JSP_SERVLET_NAME, (String) mapIt.next(), this.exactServletMatchMounts, localFolderPatterns, localExtensionPatterns);
             }
         }
-        
+
         // Initialise invoker servlet if requested
         if (useInvoker) {
             // Get generic options
@@ -837,13 +824,14 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             this.servletInstances.put(INVOKER_SERVLET_NAME, sc);
             processMapping(INVOKER_SERVLET_NAME, invokerPrefix + Mapping.STAR, this.exactServletMatchMounts, localFolderPatterns, localExtensionPatterns);
         }
-        
+
         // Sort the folder patterns so the longest paths are first
         localFolderPatterns.addAll(localExtensionPatterns);
-        this.patternMatches = (Mapping[])localFolderPatterns.toArray(new Mapping[0]);
-        if (this.patternMatches.length > 0)
+        this.patternMatches = (Mapping[]) localFolderPatterns.toArray(new Mapping[0]);
+        if (this.patternMatches.length > 0) {
             Arrays.sort(this.patternMatches, this.patternMatches[0]);
-        
+        }
+
         // Send init notifies
         try {
             for (int n = 0; n < this.contextListeners.length; n++) {
@@ -856,43 +844,43 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             Logger.log(Logger.ERROR, Launcher.RESOURCES, "WebAppConfig.ContextStartupError", this.contextName, err);
             this.contextStartupError = err;
         }
-        
+
         if (this.contextStartupError == null) {
             // Load sessions if enabled
             if (this.useSavedSessions) {
                 WinstoneSession.loadSessions(this);
             }
-            
+
             // Initialise all the filters
             for (Iterator<FilterConfiguration> i = this.filterInstances.values().iterator(); i.hasNext();) {
-                FilterConfiguration config = (FilterConfiguration)i.next();
+                FilterConfiguration config = (FilterConfiguration) i.next();
                 try {
                     config.getFilter();
                 } catch (ServletException err) {
                     Logger.log(Logger.ERROR, Launcher.RESOURCES, "WebAppConfig.FilterStartupError", config.getFilterName(), err);
                 }
             }
-            
+
             // Initialise load on startup servlets
             Object autoStarters[] = startupServlets.toArray();
             Arrays.sort(autoStarters);
             for (int n = 0; n < autoStarters.length; n++) {
-                ((ServletConfiguration)autoStarters[n]).ensureInitialization();
+                ((ServletConfiguration) autoStarters[n]).ensureInitialization();
             }
         }
     }
-    
+
     /**
      * Build the web-app classloader. This tries to load the preferred classloader first, but if it fails, falls back to a simple
      * URLClassLoader.
      */
     private ClassLoader buildWebAppClassLoader(Map<String, String> startupArgs, ClassLoader parentClassLoader, String webRoot, List<File> classPathFileList) {
         List<URL> urlList = new ArrayList<URL>();
-        
+
         try {
             // Web-inf folder
             File webInfFolder = new File(webRoot, WEB_INF);
-            
+
             // Classes folder
             File classesFolder = new File(webInfFolder, CLASSES);
             if (classesFolder.exists()) {
@@ -903,7 +891,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             } else {
                 Logger.log(Logger.WARNING, Launcher.RESOURCES, "WebAppConfig.NoWebAppClasses", classesFolder.toString());
             }
-            
+
             // Lib folder's jar files
             File libFolder = new File(webInfFolder, LIB);
             if (libFolder.exists()) {
@@ -924,141 +912,150 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         } catch (IOException err) {
             throw new WinstoneException(Launcher.RESOURCES.getString("WebAppConfig.IOException"), err);
         }
-        
-        URL jarURLs[] = (URL[])urlList.toArray(new URL[urlList.size()]);
-        
+
+        URL jarURLs[] = (URL[]) urlList.toArray(new URL[urlList.size()]);
+
         String preferredClassLoader = stringArg(startupArgs, "preferredClassLoader", WEBAPP_CL_CLASS);
         if (booleanArg(startupArgs, "useServletReloading", false) && stringArg(startupArgs, "preferredClassLoader", "").equals("")) {
             preferredClassLoader = RELOADING_CL_CLASS;
         }
-        
+
         // Try to set up the preferred class loader, and if we fail, use the normal one
         ClassLoader outputCL = null;
         if (!preferredClassLoader.equals("")) {
             try {
                 Class<?> preferredCL = Class.forName(preferredClassLoader, true, parentClassLoader);
-                Constructor<?> reloadConstr = preferredCL.getConstructor(new Class[] {
-                    URL[].class, ClassLoader.class
-                });
-                outputCL = (ClassLoader)reloadConstr.newInstance(new Object[] {
-                    jarURLs, parentClassLoader
-                });
+                Constructor<?> reloadConstr = preferredCL.getConstructor(new Class[]{
+                            URL[].class, ClassLoader.class
+                        });
+                outputCL = (ClassLoader) reloadConstr.newInstance(new Object[]{
+                            jarURLs, parentClassLoader
+                        });
             } catch (Throwable err) {
                 if (!stringArg(startupArgs, "preferredClassLoader", "").equals("") || !preferredClassLoader.equals(WEBAPP_CL_CLASS)) {
                     Logger.log(Logger.ERROR, Launcher.RESOURCES, "WebAppConfig.CLError", err);
                 }
             }
         }
-        
+
         if (outputCL == null) {
             outputCL = new URLClassLoader(jarURLs, parentClassLoader);
         }
-        
+
         Logger.log(Logger.MAX, Launcher.RESOURCES, "WebAppConfig.WebInfClassLoader", outputCL.toString());
         return outputCL;
     }
-    
+
     private void addListenerInstance(final Object listenerInstance, final List<ServletContextAttributeListener> contextAttributeListeners, final List<ServletContextListener> contextListeners, final List<ServletRequestAttributeListener> requestAttributeListeners,
-                                     final List<ServletRequestListener> requestListeners, final List<HttpSessionActivationListener> sessionActivationListeners, final List<HttpSessionAttributeListener> sessionAttributeListeners, final List<HttpSessionListener> sessionListeners) {
-        if (listenerInstance instanceof ServletContextAttributeListener)
-            contextAttributeListeners.add((ServletContextAttributeListener)listenerInstance);
-        if (listenerInstance instanceof ServletContextListener)
-            contextListeners.add((ServletContextListener)listenerInstance);
-        if (listenerInstance instanceof ServletRequestAttributeListener)
-            requestAttributeListeners.add((ServletRequestAttributeListener)listenerInstance);
-        if (listenerInstance instanceof ServletRequestListener)
-            requestListeners.add((ServletRequestListener)listenerInstance);
-        if (listenerInstance instanceof HttpSessionActivationListener)
-            sessionActivationListeners.add((HttpSessionActivationListener)listenerInstance);
-        if (listenerInstance instanceof HttpSessionAttributeListener)
-            sessionAttributeListeners.add((HttpSessionAttributeListener)listenerInstance);
-        if (listenerInstance instanceof HttpSessionListener)
-            sessionListeners.add((HttpSessionListener)listenerInstance);
+            final List<ServletRequestListener> requestListeners, final List<HttpSessionActivationListener> sessionActivationListeners, final List<HttpSessionAttributeListener> sessionAttributeListeners, final List<HttpSessionListener> sessionListeners) {
+        if (listenerInstance instanceof ServletContextAttributeListener) {
+            contextAttributeListeners.add((ServletContextAttributeListener) listenerInstance);
+        }
+        if (listenerInstance instanceof ServletContextListener) {
+            contextListeners.add((ServletContextListener) listenerInstance);
+        }
+        if (listenerInstance instanceof ServletRequestAttributeListener) {
+            requestAttributeListeners.add((ServletRequestAttributeListener) listenerInstance);
+        }
+        if (listenerInstance instanceof ServletRequestListener) {
+            requestListeners.add((ServletRequestListener) listenerInstance);
+        }
+        if (listenerInstance instanceof HttpSessionActivationListener) {
+            sessionActivationListeners.add((HttpSessionActivationListener) listenerInstance);
+        }
+        if (listenerInstance instanceof HttpSessionAttributeListener) {
+            sessionAttributeListeners.add((HttpSessionAttributeListener) listenerInstance);
+        }
+        if (listenerInstance instanceof HttpSessionListener) {
+            sessionListeners.add((HttpSessionListener) listenerInstance);
+        }
     }
-    
+
     public String getContextPath() {
         return this.prefix;
     }
-    
+
     public String getWebroot() {
         return this.webRoot;
     }
-    
+
     public ClassLoader getLoader() {
         return this.loader;
     }
-    
+
     public AccessLogger getAccessLogger() {
         return this.accessLogger;
     }
-    
+
     public Map<String, FilterConfiguration> getFilters() {
         return this.filterInstances;
     }
-    
+
     public String getContextName() {
         return this.contextName;
     }
-    
+
     public Class<?>[] getErrorPageExceptions() {
         return this.errorPagesByExceptionKeysSorted;
     }
-    
+
     public Map<Class<?>, String> getErrorPagesByException() {
         return this.errorPagesByException;
     }
-    
+
     public Map<String, String> getErrorPagesByCode() {
         return this.errorPagesByCode;
     }
-    
+
     public Map<String, String> getLocaleEncodingMap() {
         return this.localeEncodingMap;
     }
-    
+
     public String[] getWelcomeFiles() {
         return this.welcomeFiles;
     }
-    
+
     public boolean isDistributable() {
         return (this.cluster != null);
     }
-    
+
     public Map<String, FilterConfiguration[]> getFilterMatchCache() {
         return this.filterMatchCache;
     }
-    
+
     public String getOwnerHostname() {
         return this.ownerHostConfig.getHostname();
     }
-    
+
     public ServletRequestListener[] getRequestListeners() {
         return this.requestListeners;
     }
-    
+
     public ServletRequestAttributeListener[] getRequestAttributeListeners() {
         return this.requestAttributeListeners;
     }
-    
+
     public static void addJspServletParams(Map<String, String> jspParams) {
         jspParams.put("logVerbosityLevel", JSP_SERVLET_LOG_LEVEL);
         jspParams.put("fork", "false");
     }
-    
+
     @SuppressWarnings("unchecked")
     public int compare(Object one, Object two) {
-        if (!(one instanceof Class) || !(two instanceof Class))
+        if (!(one instanceof Class) || !(two instanceof Class)) {
             throw new IllegalArgumentException("This comparator is only for sorting classes");
-        Class classOne = (Class)one;
-        Class classTwo = (Class)two;
-        if (classOne.isAssignableFrom(classTwo))
+        }
+        Class classOne = (Class) one;
+        Class classTwo = (Class) two;
+        if (classOne.isAssignableFrom(classTwo)) {
             return 1;
-        else if (classTwo.isAssignableFrom(classOne))
+        } else if (classTwo.isAssignableFrom(classOne)) {
             return -1;
-        else
+        } else {
             return 0;
+        }
     }
-    
+
     public String getServletURIFromRequestURI(String requestURI) {
         if (prefix.equals("")) {
             return requestURI;
@@ -1068,7 +1065,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             throw new WinstoneException("This shouldn't happen, " + "since we aborted earlier if we didn't match");
         }
     }
-    
+
     /**
      * Iterates through each of the servlets/filters and calls destroy on them
      */
@@ -1076,27 +1073,27 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         synchronized (this.filterMatchCache) {
             this.filterMatchCache.clear();
         }
-        
+
         Collection<FilterConfiguration> filterInstances = new ArrayList<FilterConfiguration>(this.filterInstances.values());
         for (Iterator<FilterConfiguration> i = filterInstances.iterator(); i.hasNext();) {
             try {
-                ((FilterConfiguration)i.next()).destroy();
+                ((FilterConfiguration) i.next()).destroy();
             } catch (Throwable err) {
                 Logger.log(Logger.ERROR, Launcher.RESOURCES, "WebAppConfig.ShutdownError", err);
             }
         }
         this.filterInstances.clear();
-        
+
         Collection<ServletConfiguration> servletInstances = new ArrayList<ServletConfiguration>(this.servletInstances.values());
         for (Iterator<ServletConfiguration> i = servletInstances.iterator(); i.hasNext();) {
             try {
-                ((ServletConfiguration)i.next()).destroy();
+                ((ServletConfiguration) i.next()).destroy();
             } catch (Throwable err) {
                 Logger.log(Logger.ERROR, Launcher.RESOURCES, "WebAppConfig.ShutdownError", err);
             }
         }
         this.servletInstances.clear();
-        
+
         // Drop all sessions
         Collection<WinstoneSession> sessions = new ArrayList<WinstoneSession>(this.sessions.values());
         for (Iterator<WinstoneSession> i = sessions.iterator(); i.hasNext();) {
@@ -1112,7 +1109,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             }
         }
         this.sessions.clear();
-        
+
         // Send destroy notifies - backwards
         for (int n = this.contextListeners.length - 1; n >= 0; n--) {
             try {
@@ -1126,7 +1123,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             }
         }
         this.contextListeners = null;
-        
+
         // Terminate class loader reloading thread if running
         if (this.loader != null) {
             // already shutdown/handled by the servlet context listeners
@@ -1138,20 +1135,20 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             // }
             this.loader = null;
         }
-        
+
         // Kill JNDI manager if we have one
         if (this.jndiManager != null) {
             this.jndiManager.tearDown();
             this.jndiManager = null;
         }
-        
+
         // Kill JNDI manager if we have one
         if (this.accessLogger != null) {
             AccessLoggerProviderFactory.destroy(accessLogger);
             this.accessLogger = null;
         }
     }
-    
+
     /**
      * Triggered by the admin thread on the reloading class loader. This will cause a full shutdown and reinstantiation of the web app - not
      * real graceful, but you shouldn't have reloading turned on in high load environments.
@@ -1159,12 +1156,12 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     public void resetClassLoader() throws IOException {
         this.ownerHostConfig.reloadWebApp(getContextPath());
     }
-    
+
     /**
      * Here we process url patterns into the exactMatch and patternMatch lists
      */
     private void processMapping(String name, String pattern, Map<String, String> exactPatterns, List<Mapping> folderPatterns, List<Mapping> extensionPatterns) {
-        
+
         Mapping urlPattern = null;
         try {
             urlPattern = Mapping.createFromURL(name, pattern);
@@ -1172,7 +1169,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             Logger.log(Logger.WARNING, Launcher.RESOURCES, "WebAppConfig.ErrorMapURL", err.getMessage());
             return;
         }
-        
+
         // put the pattern in the correct list
         if (urlPattern.getPatternType() == Mapping.EXACT_PATTERN) {
             exactPatterns.put(urlPattern.getUrlPattern(), name);
@@ -1183,20 +1180,20 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         } else if (urlPattern.getPatternType() == Mapping.DEFAULT_SERVLET) {
             this.defaultServletName = name;
         } else {
-            Logger.log(Logger.WARNING, Launcher.RESOURCES, "WebAppConfig.InvalidMount", new String[] {
-                name, pattern
-            });
+            Logger.log(Logger.WARNING, Launcher.RESOURCES, "WebAppConfig.InvalidMount", new String[]{
+                        name, pattern
+                    });
         }
     }
-    
+
     /**
      * Execute the pattern match, and try to return a servlet that matches this URL
      */
     public ServletConfiguration urlMatch(String path, StringBuffer servletPath, StringBuffer pathInfo) {
         Logger.log(Logger.FULL_DEBUG, Launcher.RESOURCES, "WebAppConfig.URLMatch", path);
-        
+
         // Check exact matches first
-        String exact = (String)this.exactServletMatchMounts.get(path);
+        String exact = (String) this.exactServletMatchMounts.get(path);
         if (exact != null) {
             if (this.servletInstances.get(exact) != null) {
                 servletPath.append(WinstoneRequest.decodeURLToken(path));
@@ -1204,7 +1201,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 return this.servletInstances.get(exact);
             }
         }
-        
+
         // Inexact mount check
         for (int n = 0; n < this.patternMatches.length; n++) {
             Mapping urlPattern = this.patternMatches[n];
@@ -1212,16 +1209,17 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 return this.servletInstances.get(urlPattern.getMappedTo());
             }
         }
-        
+
         // return default servlet
         // servletPath.append(""); // unneeded
-        if (this.servletInstances.get(this.defaultServletName) == null)
+        if (this.servletInstances.get(this.defaultServletName) == null) {
             throw new WinstoneException(Launcher.RESOURCES.getString("WebAppConfig.MatchedNonExistServlet", this.defaultServletName));
+        }
         // pathInfo.append(path);
         servletPath.append(WinstoneRequest.decodeURLToken(path));
         return this.servletInstances.get(this.defaultServletName);
     }
-    
+
     /**
      * Constructs a session instance with the given sessionId
      * 
@@ -1242,7 +1240,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         this.sessions.put(sessionId, ws);
         return ws;
     }
-    
+
     /**
      * Retrieves the session by id. If the web app is distributable, it asks the other members of the cluster if it doesn't have it itself.
      * 
@@ -1253,11 +1251,11 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         if (sessionId == null) {
             return null;
         }
-        WinstoneSession session = (WinstoneSession)this.sessions.get(sessionId);
+        WinstoneSession session = (WinstoneSession) this.sessions.get(sessionId);
         if (session != null) {
             return session;
         }
-        
+
         // If I'm distributable ... check remotely
         if ((isDistributable()) && !localOnly) {
             session = this.cluster.askClusterForSession(sessionId, this);
@@ -1269,24 +1267,24 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             return null;
         }
     }
-    
+
     /**
      * Add/Remove the session from the collection
      */
     void removeSessionById(String sessionId) {
         this.sessions.remove(sessionId);
     }
-    
+
     void addSession(String sessionId, WinstoneSession session) {
         this.sessions.put(sessionId, session);
     }
-    
+
     public void invalidateExpiredSessions() {
         Object allSessions[] = this.sessions.values().toArray();
         int expiredCount = 0;
-        
+
         for (int n = 0; n < allSessions.length; n++) {
-            WinstoneSession session = (WinstoneSession)allSessions[n];
+            WinstoneSession session = (WinstoneSession) allSessions[n];
             if (!session.isNew() && session.isUnusedByRequests() && session.isExpired()) {
                 session.invalidate();
                 expiredCount++;
@@ -1296,45 +1294,47 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             Logger.log(Logger.DEBUG, Launcher.RESOURCES, "WebAppConfig.InvalidatedSessions", expiredCount + "");
         }
     }
-    
+
     public void setSessionListeners(WinstoneSession session) {
         session.setSessionActivationListeners(this.sessionActivationListeners);
         session.setSessionAttributeListeners(this.sessionAttributeListeners);
         session.setSessionListeners(this.sessionListeners);
     }
-    
+
     public void removeServletConfigurationAndMappings(ServletConfiguration config) {
         this.servletInstances.remove(config.getServletName());
         // The urlMatch method will only match to non-null mappings, so we don't need
         // to remove anything here
     }
-    
+
     /***************************************************************************
      * OK ... from here to the end is the interface implementation methods for the servletContext interface.
      **************************************************************************/
-    
     // Application level attributes
     public Object getAttribute(String name) {
         return this.attributes.get(name);
     }
-    
+
     public Enumeration<String> getAttributeNames() {
         return Collections.enumeration(this.attributes.keySet());
     }
-    
+
+    @Override
     public void removeAttribute(String name) {
         Object me = this.attributes.get(name);
         this.attributes.remove(name);
-        if (me != null)
+        if (me != null) {
             for (int n = 0; n < this.contextAttributeListeners.length; n++) {
                 ClassLoader cl = Thread.currentThread().getContextClassLoader();
                 Thread.currentThread().setContextClassLoader(getLoader());
                 this.contextAttributeListeners[n].attributeRemoved(new ServletContextAttributeEvent(this, name, me));
                 Thread.currentThread().setContextClassLoader(cl);
             }
+        }
     }
-    
-    public void setAttribute(String name, Object object) {
+
+    @Override
+    public final void setAttribute(String name, Object object) {
         if (object == null) {
             removeAttribute(name);
         } else {
@@ -1357,54 +1357,54 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             }
         }
     }
-    
+
     // Application level init parameters
     public String getInitParameter(String name) {
         return this.initParameters.get(name);
     }
-    
+
     public Enumeration<String> getInitParameterNames() {
         return Collections.enumeration(this.initParameters.keySet());
     }
-    
+
     // Server info
     public String getServerInfo() {
         return Launcher.RESOURCES.getString("ServerVersion");
     }
-    
+
     public int getMajorVersion() {
         return 2;
     }
-    
+
     public int getMinorVersion() {
         return 5;
     }
-    
+
     // Weird mostly deprecated crap to do with getting servlet instances
     public javax.servlet.ServletContext getContext(String uri) {
         return this.ownerHostConfig.getWebAppByURI(uri);
     }
-    
+
     public String getServletContextName() {
         return this.displayName;
     }
-    
+
     /**
      * Look up the map of mimeType extensions, and return the type that matches
      */
     public String getMimeType(final String fileName) {
         return mimeTypes.getContentTypeFor(fileName);
     }
-    
+
     // Context level log statements
     public void log(String message) {
         Logger.logDirectMessage(Logger.INFO, this.contextName, message, null);
     }
-    
+
     public void log(String message, Throwable throwable) {
         Logger.logDirectMessage(Logger.ERROR, this.contextName, message, throwable);
     }
-    
+
     /**
      * Named dispatcher - this basically gets us a simple exact dispatcher (no url matching, no request attributes and no security)
      */
@@ -1419,7 +1419,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         }
         return null;
     }
-    
+
     /**
      * Gets a dispatcher, which sets the request attributes, etc on a forward/include. Doesn't execute security though.
      */
@@ -1429,7 +1429,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         } else if (!uriInsideWebapp.startsWith("/")) {
             return null;
         }
-        
+
         // Parse the url for query string, etc
         String queryString = "";
         int questionPos = uriInsideWebapp.indexOf('?');
@@ -1439,7 +1439,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             }
             uriInsideWebapp = uriInsideWebapp.substring(0, questionPos);
         }
-        
+
         // Return the dispatcher
         StringBuffer servletPath = new StringBuffer();
         StringBuffer pathInfo = new StringBuffer();
@@ -1453,7 +1453,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         }
         return null;
     }
-    
+
     /**
      * Creates the dispatcher that corresponds to a request level dispatch (ie the initial entry point). The difference here is that we need
      * to set up the dispatcher so that on a forward, it executes the security checks and the request filters, while not setting any of the
@@ -1469,16 +1469,17 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             this.contextStartupError.printStackTrace(pw);
             return this.getErrorDispatcherByCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, Launcher.RESOURCES.getString("WebAppConfig.ErrorDuringStartup", sw.toString()), this.contextStartupError);
         }
-        
+
         // Parse the url for query string, etc
         String queryString = "";
         int questionPos = uriInsideWebapp.indexOf('?');
         if (questionPos != -1) {
-            if (questionPos != uriInsideWebapp.length() - 1)
+            if (questionPos != uriInsideWebapp.length() - 1) {
                 queryString = uriInsideWebapp.substring(questionPos + 1);
+            }
             uriInsideWebapp = uriInsideWebapp.substring(0, questionPos);
         }
-        
+
         // Return the dispatcher
         StringBuffer servletPath = new StringBuffer();
         StringBuffer pathInfo = new StringBuffer();
@@ -1494,7 +1495,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 if (directoryPath.startsWith("/")) {
                     directoryPath = directoryPath.substring(1);
                 }
-                
+
                 File res = new File(webRoot, directoryPath);
                 if (res.exists() && res.isDirectory() && (request.getMethod().equals("GET") || request.getMethod().equals("HEAD"))) {
                     // Check for the send back with slash case
@@ -1503,7 +1504,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                         response.sendRedirect(this.prefix + servletPath.toString() + pathInfo.toString() + "/" + (queryString.equals("") ? "" : "?" + queryString));
                         return null;
                     }
-                    
+
                     // Check for welcome files
                     Logger.log(Logger.FULL_DEBUG, Launcher.RESOURCES, "WebAppConfig.CheckWelcomeFile", servletPath.toString() + pathInfo.toString());
                     String welcomeFile = matchWelcomeFiles(servletPath.toString() + pathInfo.toString(), request, queryString);
@@ -1517,71 +1518,71 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                     }
                 }
             }
-            
+
             SimpleRequestDispatcher rd = new SimpleRequestDispatcher(this, servlet);
             rd.setForInitialDispatcher(servletPath.toString(), pathInfo.toString().equals("") ? null : pathInfo.toString(), queryString, uriInsideWebapp, this.filterPatternsRequest, this.authenticationHandler);
             return rd;
         }
-        
+
         // If we are here, return a 404
         return this.getErrorDispatcherByCode(HttpServletResponse.SC_NOT_FOUND, Launcher.RESOURCES.getString("StaticResourceServlet.PathNotFound", uriInsideWebapp), null);
     }
-    
+
     /**
      * Gets a dispatcher, set up for error dispatch.
      */
     public SimpleRequestDispatcher getErrorDispatcherByClass(Throwable exception) {
-        
+
         // Check for exception class match
         Class<?> exceptionClasses[] = this.errorPagesByExceptionKeysSorted;
         Throwable errWrapper = new ServletException(exception);
-        
+
         while (errWrapper instanceof ServletException) {
-            errWrapper = ((ServletException)errWrapper).getRootCause();
+            errWrapper = ((ServletException) errWrapper).getRootCause();
             if (errWrapper == null) {
                 break;
             }
             for (int n = 0; n < exceptionClasses.length; n++) {
-                
-                Logger.log(Logger.FULL_DEBUG, Launcher.RESOURCES, "WinstoneResponse.TestingException", new String[] {
-                    this.errorPagesByExceptionKeysSorted[n].getName(), errWrapper.getClass().getName()
-                });
+
+                Logger.log(Logger.FULL_DEBUG, Launcher.RESOURCES, "WinstoneResponse.TestingException", new String[]{
+                            this.errorPagesByExceptionKeysSorted[n].getName(), errWrapper.getClass().getName()
+                        });
                 if (exceptionClasses[n].isInstance(errWrapper)) {
-                    String errorURI = (String)this.errorPagesByException.get(exceptionClasses[n]);
+                    String errorURI = (String) this.errorPagesByException.get(exceptionClasses[n]);
                     if (errorURI != null) {
                         SimpleRequestDispatcher rd = buildErrorDispatcher(errorURI, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, null, errWrapper);
                         if (rd != null) {
                             return rd;
                         }
                     } else {
-                        Logger.log(Logger.WARNING, Launcher.RESOURCES, "WinstoneResponse.SkippingException", new String[] {
-                            exceptionClasses[n].getName(), (String)this.errorPagesByException.get(exceptionClasses[n])
-                        });
+                        Logger.log(Logger.WARNING, Launcher.RESOURCES, "WinstoneResponse.SkippingException", new String[]{
+                                    exceptionClasses[n].getName(), (String) this.errorPagesByException.get(exceptionClasses[n])
+                                });
                     }
                 } else {
                     Logger.log(Logger.WARNING, Launcher.RESOURCES, "WinstoneResponse.ExceptionNotMatched", exceptionClasses[n].getName());
                 }
             }
         }
-        
+
         // Otherwise throw a code error
         Throwable errPassDown = exception;
-        while ((errPassDown instanceof ServletException) && (((ServletException)errPassDown).getRootCause() != null)) {
-            errPassDown = ((ServletException)errPassDown).getRootCause();
+        while ((errPassDown instanceof ServletException) && (((ServletException) errPassDown).getRootCause() != null)) {
+            errPassDown = ((ServletException) errPassDown).getRootCause();
         }
         return getErrorDispatcherByCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, null, errPassDown);
     }
-    
+
     public SimpleRequestDispatcher getErrorDispatcherByCode(int statusCode, String summaryMessage, Throwable exception) {
         // Check for status code match
-        String errorURI = (String)getErrorPagesByCode().get("" + statusCode);
+        String errorURI = (String) getErrorPagesByCode().get("" + statusCode);
         if (errorURI != null) {
             SimpleRequestDispatcher rd = buildErrorDispatcher(errorURI, statusCode, summaryMessage, exception);
             if (rd != null) {
                 return rd;
             }
         }
-        
+
         // If no dispatcher available, return a dispatcher to the default error formatter
         ServletConfiguration errorServlet = this.servletInstances.get(this.errorServletName);
         if (errorServlet != null) {
@@ -1591,12 +1592,12 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 return rd;
             }
         }
-        
+
         // Otherwise log and return null
         Logger.log(Logger.ERROR, Launcher.RESOURCES, "WebAppConfig.NoErrorServlet", "" + statusCode, exception);
         return null;
     }
-    
+
     /**
      * Build a dispatcher to the error handler if it's available. If it fails, return null.
      */
@@ -1610,13 +1611,13 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             }
             errorURI = errorURI.substring(0, questionPos);
         }
-        
+
         // Get the message by recursing if none supplied
         ServletException errIterator = new ServletException(exception);
         while ((summaryMessage == null) && (errIterator != null)) {
             summaryMessage = errIterator.getMessage();
             if (errIterator.getRootCause() instanceof ServletException) {
-                errIterator = (ServletException)errIterator.getRootCause();
+                errIterator = (ServletException) errIterator.getRootCause();
             } else {
                 if ((summaryMessage == null) && (errIterator.getCause() != null)) {
                     summaryMessage = errIterator.getRootCause().getMessage();
@@ -1624,7 +1625,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 errIterator = null;
             }
         }
-        
+
         // Return the dispatcher
         StringBuffer servletPath = new StringBuffer();
         StringBuffer pathInfo = new StringBuffer();
@@ -1638,7 +1639,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         }
         return null;
     }
-    
+
     /**
      * Check if any of the welcome files under this path are available. Returns the name of the file if found, null otherwise. Returns the
      * full internal webapp uri
@@ -1647,7 +1648,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         if (!path.endsWith("/")) {
             path = path + "/";
         }
-        
+
         String qs = (queryString.equals("") ? "" : "?" + queryString);
         for (int n = 0; n < this.welcomeFiles.length; n++) {
             String welcomeFile = this.welcomeFiles[n];
@@ -1655,12 +1656,12 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 welcomeFile = welcomeFile.substring(1);
             }
             welcomeFile = path + welcomeFile;
-            
-            String exact = (String)this.exactServletMatchMounts.get(welcomeFile);
+
+            String exact = (String) this.exactServletMatchMounts.get(welcomeFile);
             if (exact != null) {
                 return welcomeFile + qs;
             }
-            
+
             // Inexact folder mount check - note folder mounts only
             for (int j = 0; j < this.patternMatches.length; j++) {
                 Mapping urlPattern = this.patternMatches[j];
@@ -1668,7 +1669,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                     return welcomeFile + qs;
                 }
             }
-            
+
             try {
                 if (getResource(welcomeFile) != null) {
                     return welcomeFile + qs;
@@ -1678,7 +1679,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         }
         return null;
     }
-    
+
     // Getting resources via the classloader
     public URL getResource(String path) throws MalformedURLException {
         if (path == null) {
@@ -1691,7 +1692,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         File res = new File(webRoot, path.substring(1));
         return (res != null) && res.exists() ? res.toURI().toURL() : null;
     }
-    
+
     public InputStream getResourceAsStream(String path) {
         try {
             URL res = getResource(path);
@@ -1700,64 +1701,66 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             throw new WinstoneException(Launcher.RESOURCES.getString("WebAppConfig.ErrorOpeningStream"), err);
         }
     }
-    
+
     public String getRealPath(String path) {
         // Trim the prefix
-        if (path == null)
+        if (path == null) {
             return null;
-        else {
+        } else {
             try {
                 File res = new File(this.webRoot, path);
-                if (res.isDirectory())
+                if (res.isDirectory()) {
                     return res.getCanonicalPath() + "/";
-                else
+                } else {
                     return res.getCanonicalPath();
+                }
             } catch (IOException err) {
                 return null;
             }
         }
     }
-    
+
     public Set<String> getResourcePaths(final String path) {
         // Trim the prefix
-        if (path == null)
+        if (path == null) {
             return null;
-        else if (!path.startsWith("/"))
+        } else if (!path.startsWith("/")) {
             throw new WinstoneException(Launcher.RESOURCES.getString("WebAppConfig.BadResourcePath", path));
-        else {
+        } else {
             String workingPath = null;
-            if (path.equals("/"))
+            if (path.equals("/")) {
                 workingPath = "";
-            else {
+            } else {
                 boolean lastCharIsSlash = path.charAt(path.length() - 1) == '/';
                 workingPath = path.substring(1, path.length() - (lastCharIsSlash ? 1 : 0));
             }
             File inPath = new File(this.webRoot, workingPath.equals("") ? "." : workingPath).getAbsoluteFile();
-            if (!inPath.exists())
+            if (!inPath.exists()) {
                 return null;
-            else if (!inPath.isDirectory())
+            } else if (!inPath.isDirectory()) {
                 return null;
-            
+            }
+
             // Find all the files in this folder
             File children[] = inPath.listFiles();
             Set<String> out = new HashSet<String>();
             for (int n = 0; n < children.length; n++) {
                 // Write the entry as subpath + child element
                 String entry = // this.prefix +
-                "/" + (workingPath.length() != 0 ? workingPath + "/" : "") + children[n].getName() + (children[n].isDirectory() ? "/" : "");
+                        "/" + (workingPath.length() != 0 ? workingPath + "/" : "") + children[n].getName() + (children[n].isDirectory() ? "/" : "");
                 out.add(entry);
             }
             return out;
         }
     }
-    
+
     /**
      * @deprecated
      */
     public javax.servlet.Servlet getServlet(String name) {
         return null;
     }
-    
+
     /**
      * @deprecated
      */
@@ -1765,7 +1768,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     public Enumeration getServletNames() {
         return Collections.enumeration(new ArrayList());
     }
-    
+
     /**
      * @deprecated
      */
@@ -1773,14 +1776,14 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     public Enumeration getServlets() {
         return Collections.enumeration(new ArrayList());
     }
-    
+
     /**
      * @deprecated
      */
     public void log(Exception exception, String msg) {
         this.log(msg, exception);
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -1788,27 +1791,31 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
         return result;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
-        WebAppConfiguration other = (WebAppConfiguration)obj;
+        }
+        WebAppConfiguration other = (WebAppConfiguration) obj;
         if (prefix == null) {
-            if (other.prefix != null)
+            if (other.prefix != null) {
                 return false;
-        } else if (!prefix.equals(other.prefix))
+            }
+        } else if (!prefix.equals(other.prefix)) {
             return false;
+        }
         return true;
     }
-    
+
     @Override
     public String toString() {
         return "WebAppConfiguration [contextPath=" + prefix + "]";
     }
-    
 }
