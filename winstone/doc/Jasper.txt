@@ -36,3 +36,4 @@ CHANGED: Until v0.9.5, it wasn't necessary to add the jsp-api.jar, because winst
 
 I disagree with the Expert Group's penchant for trading away backwards compatibility in exchange for spec features that are unnecessary (such as generics and XSD support). But at the end of the day, they call the shots, so I just do what I can to minimize the downsides in practice.
 
+library for jsp : build from common lib (/lib is default) folder if exists
