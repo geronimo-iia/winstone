@@ -1,12 +1,12 @@
-package net.winstone.jndi;
+package net.winstone.jndi.resources;
 
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import net.winstone.jndi.AbstractJndiTestCase;
 
-import net.winstone.jndi.resources.DataSourceConfig;
 
-public class DataSourceTest extends AbstractJndiTestCase {
+public class DataSourceConfigTest extends AbstractJndiTestCase {
     
     public void testDataSourceManagement() throws NamingException {
         String jndiName = "jdbc/test";

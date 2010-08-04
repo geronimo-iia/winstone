@@ -2,7 +2,7 @@ package net.winstone.relocate;
 
 import junit.framework.TestCase;
 
-public class TreePathTestCase extends TestCase {
+public class TreePathTest extends TestCase {
     private TreePath tree;
     
     @Override
