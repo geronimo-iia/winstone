@@ -17,9 +17,9 @@
             <!-- Add Here all dependencies that you would to include -->
         </artifact:dependencies>
         
-        <delete dir="target/classes/lib"/>
+        <delete dir="target/classes/META-INF/lib"/>
 
-        <copy todir="target/classes/lib">    
+        <copy todir="target/classes/META-INF/lib">
             <fileset refid="dependency.fileset" />
             <mapper type="flatten" />
         </copy>

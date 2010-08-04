@@ -14,8 +14,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +51,7 @@ public class HostConfiguration implements Runnable {
     private Cluster cluster;
     private ObjectPool objectPool;
     private ClassLoader commonLibCL;
-    private File commonLibCLPaths[];
+    private String jspClasspath;
     
     private Thread thread;
     
@@ -65,18 +65,18 @@ public class HostConfiguration implements Runnable {
      * @param webappsDirName
      * @throws IOException
      */
-    public HostConfiguration(String hostname, ClassLoader commonLibCL, File commonLibCLPaths[], Map<String, String> args, String webappsDirName) throws IOException {
-        this(hostname, null, null, commonLibCL, commonLibCLPaths, args, webappsDirName);
+    public HostConfiguration(String hostname, ClassLoader commonLibCL, String jspClasspath, Map<String, String> args, String webappsDirName) throws IOException {
+        this(hostname, null, null, commonLibCL, jspClasspath, args, webappsDirName);
     }
     
-    public HostConfiguration(String hostname, Cluster cluster, ObjectPool objectPool, ClassLoader commonLibCL, File commonLibCLPaths[], Map<String, String> args, String webappsDirName) throws IOException {
+    public HostConfiguration(String hostname, Cluster cluster, ObjectPool objectPool, ClassLoader commonLibCL, String jspClasspath, Map<String, String> args, String webappsDirName) throws IOException {
         this.hostname = hostname;
         this.args = args;
-        this.webapps = new Hashtable<String, WebAppConfiguration>();
+        this.webapps = new HashMap<String, WebAppConfiguration>();
         this.cluster = cluster;
         this.objectPool = objectPool;
         this.commonLibCL = commonLibCL;
-        this.commonLibCLPaths = commonLibCLPaths;
+        this.jspClasspath = jspClasspath;
         
         // Is this the single or multiple configuration ? Check args
         String warfile = (String)args.get("warfile");
@@ -127,7 +127,7 @@ public class HostConfiguration implements Runnable {
         }
     }
     
-    protected WebAppConfiguration initWebApp(String prefix, File webRoot, String contextName) throws IOException {
+    protected final WebAppConfiguration initWebApp(String prefix, File webRoot, String contextName) throws IOException {
         Node webXMLParentNode = null;
         File webInfFolder = new File(webRoot, WEB_INF);
         if (webInfFolder.exists()) {
@@ -145,7 +145,8 @@ public class HostConfiguration implements Runnable {
         }
         
         // Instantiate the webAppConfig
-        return new WebAppConfiguration(this, this.cluster, webRoot.getCanonicalPath(), prefix, this.objectPool, this.args, webXMLParentNode, this.commonLibCL, this.commonLibCLPaths, contextName);
+        return new WebAppConfiguration(this, this.cluster, webRoot.getCanonicalPath(), prefix, 
+                this.objectPool, this.args, webXMLParentNode, this.commonLibCL, this.jspClasspath, contextName);
     }
     
     public String getHostname() {
@@ -176,12 +177,13 @@ public class HostConfiguration implements Runnable {
     }
     
     public void invalidateExpiredSessions() {
-        Set<WebAppConfiguration> webapps = new HashSet<WebAppConfiguration>(this.webapps.values());
-        for (Iterator<WebAppConfiguration> i = webapps.iterator(); i.hasNext();) {
+        Set<WebAppConfiguration> webappConfiguration = new HashSet<WebAppConfiguration>(this.webapps.values());
+        for (Iterator<WebAppConfiguration> i = webappConfiguration.iterator(); i.hasNext();) {
             ((WebAppConfiguration)i.next()).invalidateExpiredSessions();
         }
     }
     
+    @Override
     public void run() {
         boolean interrupted = false;
         while (!interrupted) {
@@ -216,7 +218,7 @@ public class HostConfiguration implements Runnable {
      * Setup the webroot. If a warfile is supplied, extract any files that the war file is newer than. If none is supplied, use the default
      * temp directory.
      */
-    protected File getWebRoot(String requestedWebroot, String warfileName) throws IOException {
+    protected final File getWebRoot(String requestedWebroot, String warfileName) throws IOException {
         if (warfileName != null) {
             Logger.log(Logger.INFO, Launcher.RESOURCES, "HostConfig.BeginningWarExtraction");
             
@@ -304,7 +306,7 @@ public class HostConfiguration implements Runnable {
         }
     }
     
-    protected void initMultiWebappDir(String webappsDirName) throws IOException {
+    protected final void initMultiWebappDir(String webappsDirName) throws IOException {
         if (webappsDirName == null) {
             webappsDirName = "webapps";
         }
