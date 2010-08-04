@@ -1,4 +1,4 @@
-package net.winstone.jndi;
+package net.winstone.jndi.resources;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -7,10 +7,10 @@ import java.util.List;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import net.winstone.jndi.AbstractJndiTestCase;
 
-import net.winstone.jndi.resources.DataSourceConfig;
 
-public class ConnectionPoolTestCase extends AbstractJndiTestCase {
+public class SimpleDatasourceTest extends AbstractJndiTestCase {
     private static String jndiName = "jdbc/test";
     
     @Override

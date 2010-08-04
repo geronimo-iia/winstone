@@ -1,10 +1,8 @@
 package net.winstone.log;
 
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
 import junit.framework.TestCase;
 
-public class LoggerTestCase extends TestCase {
+public class LoggerFactoryTest extends TestCase {
     
     public void testLoading() {
         assertNotNull(LoggerFactory.getLogger(getClass()));
