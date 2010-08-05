@@ -29,20 +29,21 @@ import net.winstone.util.LifeCycle;
  * @author Jerome Guibert
  */
 public class JndiManager implements LifeCycle {
+
     protected Logger logger = LoggerFactory.getLogger(getClass());
-    
     protected InitialContext initialContext;
     protected ScheduledExecutorService scheduler;
-    
+
     public JndiManager() {
         super();
     }
-    
+
     /**
      * Initialize context factory.
      * 
      * @throws NamingException
      */
+    @Override
     public void initialize() {
         // Instantiate scheduler with a initial pool size of one thread.
         scheduler = Executors.newScheduledThreadPool(1);
@@ -57,17 +58,18 @@ public class JndiManager implements LifeCycle {
         }
         logger.info("jndi context initialized");
     }
-    
+
     /**
      * Clean destroy.
      * 
      * @throws NamingException
      */
+    @Override
     public void destroy() {
         if (initialContext != null) {
             // close datasource
             try {
-                Context jdbc = (Context)initialContext.lookup("java:/comp/env/jdbc");
+                Context jdbc = (Context) initialContext.lookup("java:/comp/env/jdbc");
                 NamingEnumeration<NameClassPair> names = jdbc.list("");
                 while (names.hasMore()) {
                     try {
@@ -76,7 +78,7 @@ public class JndiManager implements LifeCycle {
                         // is a winstone datasource ?
                         if (object instanceof SimpleDatasource) {
                             // close it
-                            ((SimpleDatasource)object).close();
+                            ((SimpleDatasource) object).close();
                         }
                         // unbind datasource
                         jdbc.unbind(pair.getName());
@@ -91,7 +93,6 @@ public class JndiManager implements LifeCycle {
                 initialContext.close();
                 initialContext = null;
             } catch (NamingException e) {
-                
             }
         }
         // stop scheduler
@@ -101,7 +102,7 @@ public class JndiManager implements LifeCycle {
         }
         logger.info("jndi context destroyed");
     }
-    
+
     /**
      * Create and bind a datasource in Naming context.
      * 
@@ -113,11 +114,14 @@ public class JndiManager implements LifeCycle {
     public void bind(final DataSourceConfig dataSourceConfig, final ClassLoader loader) throws IllegalStateException, NamingException {
         final SimpleDatasource dataSource = new SimpleDatasource(dataSourceConfig, loader);
         String jndiName = dataSource.getName();
-        if (jndiName.startsWith("jdbc/"))
+        if (jndiName.startsWith("jdbc/")) {
             jndiName = "java:/comp/env/" + jndiName;
+        }
         bind(jndiName, dataSource);
         if (dataSourceConfig.getKeepAlivePeriod() > 0) {
             scheduler.scheduleWithFixedDelay(new Runnable() {
+
+                @Override
                 public void run() {
                     dataSource.keepAlive();
                 }
@@ -125,13 +129,15 @@ public class JndiManager implements LifeCycle {
         }
         if (dataSourceConfig.getKillInactivePeriod() > 0) {
             scheduler.scheduleWithFixedDelay(new Runnable() {
+
+                @Override
                 public void run() {
                     dataSource.drain();
                 }
             }, dataSourceConfig.getKillInactivePeriod(), dataSourceConfig.getKillInactivePeriod(), TimeUnit.MINUTES);
         }
     }
-    
+
     /**
      * Create and bind a mail session.
      * 
@@ -144,30 +150,30 @@ public class JndiManager implements LifeCycle {
     public void bind(final String name, final Properties properties, final ClassLoader loader) throws IllegalStateException, NamingException {
         try {
             Class<?> smtpClass = Class.forName("javax.mail.Session", true, loader);
-            Method smtpMethod = smtpClass.getMethod("getInstance", new Class[] {
-                Properties.class, Class.forName("javax.mail.Authenticator")
-            });
+            Method smtpMethod = smtpClass.getMethod("getInstance", new Class[]{
+                        Properties.class, Class.forName("javax.mail.Authenticator")
+                    });
             // create object
-            Object object = smtpMethod.invoke(null, new Object[] {
-                properties, null
-            });
+            Object object = smtpMethod.invoke(null, new Object[]{
+                        properties, null
+                    });
             // bind it
             initialContext.bind(name, object);
         } catch (ClassNotFoundException e) {
-            new IllegalStateException(e);
+            throw new IllegalStateException(e);
         } catch (SecurityException e) {
-            new IllegalStateException(e);
+            throw new IllegalStateException(e);
         } catch (NoSuchMethodException e) {
-            new IllegalStateException(e);
+            throw new IllegalStateException(e);
         } catch (IllegalArgumentException e) {
-            new IllegalStateException(e);
+            throw new IllegalStateException(e);
         } catch (IllegalAccessException e) {
-            new IllegalStateException(e);
+            throw new IllegalStateException(e);
         } catch (InvocationTargetException e) {
-            new IllegalStateException(e);
+            throw new IllegalStateException(e);
         }
     }
-    
+
     /**
      * Create and bind an simple object.
      * 
@@ -184,37 +190,37 @@ public class JndiManager implements LifeCycle {
                 // load class
                 Class<?> objClass = Class.forName(className.trim(), true, loader);
                 // find constructor
-                Constructor<?> objConstr = objClass.getConstructor(new Class[] {
-                    String.class
-                });
+                Constructor<?> objConstr = objClass.getConstructor(new Class[]{
+                            String.class
+                        });
                 // create object
-                Object object = objConstr.newInstance(new Object[] {
-                    value
-                });
+                Object object = objConstr.newInstance(new Object[]{
+                            value
+                        });
                 // bind it
                 initialContext.bind(name, object);
             } catch (ClassNotFoundException e) {
-                new IllegalStateException(e);
+                throw new IllegalStateException(e);
             } catch (IllegalArgumentException e) {
-                new IllegalStateException(e);
+                throw new IllegalStateException(e);
             } catch (InstantiationException e) {
-                new IllegalStateException(e);
+                throw new IllegalStateException(e);
             } catch (IllegalAccessException e) {
-                new IllegalStateException(e);
+                throw new IllegalStateException(e);
             } catch (InvocationTargetException e) {
-                new IllegalStateException(e);
+                throw new IllegalStateException(e);
             } catch (SecurityException e) {
-                new IllegalStateException(e);
+                throw new IllegalStateException(e);
             } catch (NoSuchMethodException e) {
-                new IllegalStateException(e);
+                throw new IllegalStateException(e);
             }
         }
     }
-    
+
     public InitialContext getInitialContext() {
         return initialContext;
     }
-    
+
     /**
      * Utility method to bind an object: we build all needed sub context.
      * 
@@ -234,11 +240,10 @@ public class JndiManager implements LifeCycle {
             try {
                 currentContext = currentContext.createSubcontext(fullName.get(0));
             } catch (NamingException err) {
-                currentContext = (Context)currentContext.lookup(fullName.get(0));
+                currentContext = (Context) currentContext.lookup(fullName.get(0));
             }
             fullName = fullName.getSuffix(1);
         }
         initialContext.bind(name, object);
     }
-    
 }

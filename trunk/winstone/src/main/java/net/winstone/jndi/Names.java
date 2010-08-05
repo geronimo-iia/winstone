@@ -24,16 +24,19 @@ public class Names implements NamingEnumeration<NameClassPair> {
         this.iterator =  bindings.entrySet().iterator();
     }
     
+    @Override
     public void close() throws NamingException {
         this.iterator = null;
     }
     
+    @Override
     public boolean hasMore() throws NamingException {
         if (iterator == null)
             throw new NamingException("Enumeration has already been closed");
         return iterator.hasNext();
     }
     
+    @Override
     public NameClassPair next() throws NamingException {
         if (hasMore()) {
             Entry<String, Object> entry = iterator.next();
@@ -42,6 +45,7 @@ public class Names implements NamingEnumeration<NameClassPair> {
         throw new NoSuchElementException();
     }
     
+    @Override
     public boolean hasMoreElements() {
         try {
             return hasMore();
@@ -50,6 +54,7 @@ public class Names implements NamingEnumeration<NameClassPair> {
         }
     }
     
+    @Override
     public NameClassPair nextElement() {
         try {
             return next();

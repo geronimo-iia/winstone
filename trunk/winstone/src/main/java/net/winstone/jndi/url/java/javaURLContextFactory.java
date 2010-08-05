@@ -39,6 +39,7 @@ public class javaURLContextFactory implements InitialContextFactory, ObjectFacto
     }
     
     @SuppressWarnings("unchecked")
+    @Override
     public Context getInitialContext(final Hashtable<?, ?> environnement) throws NamingException {
         if (rootContext == null) {
             rootContext = new NamingContext((Hashtable<String, Object>)environnement);
@@ -52,6 +53,7 @@ public class javaURLContextFactory implements InitialContextFactory, ObjectFacto
         return (Context)rootContext.lookup("java:/comp/env");
     }
     
+    @Override
     public Object getObjectInstance(Object urlInfo, Name name, Context context, Hashtable<?, ?> environnement) throws Exception {
         // Case 1: urlInfo is null
         // This means to create a URL context that can accept arbitrary "foo" URLs.
