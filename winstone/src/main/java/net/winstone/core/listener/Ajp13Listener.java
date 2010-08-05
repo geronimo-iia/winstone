@@ -33,8 +33,9 @@ import net.winstone.core.WinstoneInputStream;
 import net.winstone.core.WinstoneOutputStream;
 import net.winstone.core.WinstoneRequest;
 import net.winstone.core.WinstoneResponse;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.winstone.util.StringUtils;
 import winstone.auth.AuthenticationPrincipal;
 
@@ -55,16 +56,16 @@ public class Ajp13Listener implements Listener, Runnable {
     // private final static int KEEP_ALIVE_SLEEP = 50;
     // private final static int KEEP_ALIVE_SLEEP_MAX = 500;
     private final static String TEMPORARY_URL_STASH = "winstone.ajp13.TemporaryURLAttribute";
-    private HostGroup hostGroup;
-    private ObjectPool objectPool;
-    private int listenPort;
+    private final HostGroup hostGroup;
+    private final ObjectPool objectPool;
+    private final int listenPort;
     private boolean interrupted;
-    private String listenAddress;
+    private final String listenAddress;
 
     /**
      * Constructor
      */
-    public Ajp13Listener(Map<String, String> args, ObjectPool objectPool, HostGroup hostGroup) {
+    public Ajp13Listener(final Map<String, String> args, final ObjectPool objectPool, final HostGroup hostGroup) {
         // Load resources
         this.hostGroup = hostGroup;
         this.objectPool = objectPool;
@@ -79,7 +80,7 @@ public class Ajp13Listener implements Listener, Runnable {
             return false;
         } else {
             this.interrupted = false;
-            Thread thread = new Thread(this, StringUtils.replaceToken("ConnectorThread:[[#0]-[#1]]", "ajp13", Integer.toString(this.listenPort)));
+            Thread thread = new Thread(this, StringUtils.replaceToken("ConnectorThread:[{}-[#1]]", "ajp13", Integer.toString(this.listenPort)));
             thread.setDaemon(true);
             thread.start();
             return true;
@@ -94,7 +95,7 @@ public class Ajp13Listener implements Listener, Runnable {
         try {
             ServerSocket ss = this.listenAddress == null ? new ServerSocket(this.listenPort, BACKLOG_COUNT) : new ServerSocket(this.listenPort, BACKLOG_COUNT, InetAddress.getByName(this.listenAddress));
             ss.setSoTimeout(LISTENER_TIMEOUT);
-            logger.info("Ajp13Listener.StartupOK", this.listenPort + "");
+            logger.info("AJP13 Listener started: port={}", this.listenPort + "");
 
             // Enter the main loop
             while (!interrupted) {
@@ -192,7 +193,7 @@ public class Ajp13Listener implements Listener, Runnable {
                 while (position < contentLength) {
                     outSocket.write(getBodyRequestPacket(Math.min(contentLength - position, 8184)));
                     position = getBodyResponsePacket(inSocket, bodyContent, position);
-                    logger.debug("Ajp13Listener.ReadBodyProgress", "" + position, "" + contentLength);
+                    logger.debug("Read {}/[#1] bytes from request body", "" + position, "" + contentLength);
 
                 }
                 inData = new WinstoneInputStream(bodyContent);
@@ -303,7 +304,7 @@ public class Ajp13Listener implements Listener, Runnable {
                 try {
                     certificateArray[0] = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(certStream);
                 } catch (CertificateException err) {
-                    logger.debug("Ajp13Listener.SkippingCert", certValue);
+                    logger.debug("Skipping invalid SSL certificate: {}", certValue);
                 }
                 req.setAttribute("javax.servlet.request.X509Certificate", certificateArray);
                 req.setIsSecure(true);
@@ -322,7 +323,7 @@ public class Ajp13Listener implements Listener, Runnable {
                 principal.setAuthType(authType);
                 req.setRemoteUser(principal);
             } else {
-                logger.debug("Ajp13Listener.UnknownAttribute", attName, "" + headers.getAttributes().get(attName));
+                logger.debug("Unknown request attribute ignored: {}={}", attName, "" + headers.getAttributes().get(attName));
             }
         }
         return headers.getURI();
