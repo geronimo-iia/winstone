@@ -157,10 +157,12 @@ public class NamingContext implements Context {
         return name;
     }
     
+    @Override
     public Object lookup(final String name) throws NamingException {
         return lookup(new CompositeName(name));
     }
     
+    @Override
     public Object lookup(final Name name) throws NamingException {
         Name searchName = validateName(name);
         
@@ -202,10 +204,12 @@ public class NamingContext implements Context {
         }
     }
     
+    @Override
     public void bind(final String name, final Object obj) throws NamingException {
         bind(new CompositeName(name), obj);
     }
     
+    @Override
     public void bind(final Name name, final Object obj) throws NamingException {
         Name bindName = validateName(name);
         // If null, it means we don't know how to handle this -> throw to the parent
@@ -241,10 +245,12 @@ public class NamingContext implements Context {
         }
     }
     
+    @Override
     public void rebind(final String name, final Object obj) throws NamingException {
         rebind(new CompositeName(name), obj);
     }
     
+    @Override
     public void rebind(final Name name, final Object obj) throws NamingException {
         Name bindName = validateName(name);
         // If null, it means we don't know how to handle this -> throw to the parent
@@ -277,10 +283,12 @@ public class NamingContext implements Context {
         }
     }
     
+    @Override
     public void unbind(final String name) throws NamingException {
         unbind(new CompositeName(name));
     }
     
+    @Override
     public void unbind(final Name name) throws NamingException {
         Name unbindName = validateName(name);
         
@@ -309,10 +317,12 @@ public class NamingContext implements Context {
         }
     }
     
+    @Override
     public void rename(final String oldname, final String newname) throws NamingException {
         rename(new CompositeName(oldname), new CompositeName(newname));
     }
     
+    @Override
     public void rename(final Name oldname, final Name newname) throws NamingException {
         if (oldname.isEmpty() || newname.isEmpty()) {
             throw new InvalidNameException("Cannot rename empty name");
@@ -365,10 +375,12 @@ public class NamingContext implements Context {
         }
     }
     
+    @Override
     public NamingEnumeration<NameClassPair> list(final String name) throws NamingException {
         return list(new CompositeName(name));
     }
     
+    @Override
     public NamingEnumeration<NameClassPair> list(final Name name) throws NamingException {
         Name searchName = validateName(name);
         // If null, it means we don't know how to handle this -> throw to the parent
@@ -388,10 +400,12 @@ public class NamingContext implements Context {
         throw new NotContextException(name + " cannot be listed");
     }
     
+    @Override
     public NamingEnumeration<Binding> listBindings(final String name) throws NamingException {
         return listBindings(new CompositeName(name));
     }
     
+    @Override
     public NamingEnumeration<Binding> listBindings(final Name name) throws NamingException {
         Name searchName = validateName(name);
         // If null, it means we don't know how to handle this -> throw to the parent
@@ -410,10 +424,12 @@ public class NamingContext implements Context {
         throw new NotContextException(name + " cannot be listed");
     }
     
+    @Override
     public void destroySubcontext(final String name) throws NamingException {
         destroySubcontext(new CompositeName(name));
     }
     
+    @Override
     public void destroySubcontext(final Name name) throws NamingException {
         Name childName = validateName(name);
         // If null, it means we don't know how to handle this -> throw to the parent
@@ -431,10 +447,12 @@ public class NamingContext implements Context {
         unbind(name);
     }
     
+    @Override
     public Context createSubcontext(final String name) throws NamingException {
         return createSubcontext(new CompositeName(name));
     }
     
+    @Override
     public Context createSubcontext(final Name name) throws NamingException {
         Name childName = validateName(name);
         // If null, it means we don't know how to handle this -> throw to the parent
@@ -468,10 +486,12 @@ public class NamingContext implements Context {
         }
     }
     
+    @Override
     public Object lookupLink(final String name) throws NamingException {
         return lookupLink(new CompositeName(name));
     }
     
+    @Override
     public Object lookupLink(final Name name) throws NamingException {
         Object result = lookup(name);
         if (result instanceof LinkRef) {
@@ -488,10 +508,12 @@ public class NamingContext implements Context {
         return result;
     }
     
+    @Override
     public NameParser getNameParser(final String name) throws NamingException {
         return getNameParser(new CompositeName(name));
     }
     
+    @Override
     public NameParser getNameParser(final Name name) throws NamingException {
         // Do lookup to verify name exists
         Object obj = lookup(name);
@@ -501,11 +523,13 @@ public class NamingContext implements Context {
         return nameParser;
     }
     
+    @Override
     public String composeName(final String name, final String prefix) throws NamingException {
         Name result = composeName(new CompositeName(name), new CompositeName(prefix));
         return result.toString();
     }
     
+    @Override
     public Name composeName(final Name name, final Name prefix) throws NamingException {
         Name result;
         
@@ -520,6 +544,7 @@ public class NamingContext implements Context {
         throw new OperationNotSupportedException("Do not support composing composite names");
     }
     
+    @Override
     public Object addToEnvironment(final String propName, final Object propVal) throws NamingException {
         if (environnement == null) {
             environnement = new Hashtable<String, Object>();
@@ -527,12 +552,14 @@ public class NamingContext implements Context {
         return environnement.put(propName, propVal);
     }
     
+    @Override
     public Object removeFromEnvironment(final String propName) throws NamingException {
         if (environnement == null)
             return null;
         return environnement.remove(propName);
     }
     
+    @Override
     public Hashtable<String, Object> getEnvironment() throws NamingException {
         Hashtable<String, Object> result = new Hashtable<String, Object>();
         if (environnement != null) {
@@ -541,6 +568,7 @@ public class NamingContext implements Context {
         return result;
     }
     
+    @Override
     public String getNameInNamespace() throws NamingException {
         NamingContext ancestor = parent;
         // No ancestor
@@ -558,6 +586,7 @@ public class NamingContext implements Context {
         return name.toString();
     }
     
+    @Override
     public String toString() {
         if (myAtomicName != null) {
             return myAtomicName;
@@ -566,6 +595,7 @@ public class NamingContext implements Context {
         }
     }
     
+    @Override
     public void close() throws NamingException {
     }
     

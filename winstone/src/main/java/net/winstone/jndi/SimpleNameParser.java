@@ -28,6 +28,7 @@ public class SimpleNameParser implements NameParser {
         syntax.put("jndi.syntax.beginquote", "'");
     }
     
+    @Override
     public Name parse(final String name) throws NamingException {
         return new CompoundName(name != null ? name : "", syntax);
     }
@@ -41,6 +42,12 @@ public class SimpleNameParser implements NameParser {
         if (getClass() != obj.getClass())
             return false;
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        return hash;
     }
     
 }

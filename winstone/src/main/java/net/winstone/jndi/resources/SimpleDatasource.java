@@ -113,6 +113,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
      * @exception SQLException if a database access error occurs
      * @throws IllegalStateException if no validated connection can be acquire
      */
+    @Override
     public Connection getConnection() throws SQLException {
         Connection connection = null;
         if (!validated) {
@@ -140,20 +141,24 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
         }, new ConnectionWrapperInvocationHandler(connection));
     }
     
+    @Override
     public Connection getConnection(final String username, final String password) throws SQLException {
         connectionProperties.setProperty("user", username);
         connectionProperties.setProperty("password", password);
         return getConnection();
     }
     
+    @Override
     public int getLoginTimeout() throws SQLException {
         return pool.getTimeout() / 1000;
     }
     
+    @Override
     public PrintWriter getLogWriter() throws SQLException {
         return logWriter;
     }
     
+    @Override
     public void setLogWriter(PrintWriter out) throws SQLException {
         logWriter = out;
     }
@@ -161,6 +166,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
     /**
      * Unmodifiable.
      */
+    @Override
     public void setLoginTimeout(int seconds) throws SQLException {
         log("LoginTimeout cannot be modified at runtime for %s%n", null, name);
     }
@@ -168,6 +174,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
     /**
      * @since 1.6
      */
+    @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return DataSource.class.equals(iface);
     }
@@ -176,12 +183,14 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
      * @since 1.6
      */
     @SuppressWarnings("unchecked")
+    @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         if (isWrapperFor(iface))
             return (T)this;
         return null;
     }
     
+    @Override
     public Connection create() {
         try {
             return this.driver.connect(this.url, this.connectionProperties);
@@ -191,6 +200,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
         }
     }
     
+    @Override
     public void destroy(Connection resource) {
         try {
             if (resource != null) {
@@ -223,6 +233,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
             try {
                 pool.applyOnIdle(new Function<Void, Connection>() {
                     
+                    @Override
                     public Void apply(Connection connection) {
                         PreparedStatement keepAliveQuery = null;
                         try {
@@ -272,13 +283,13 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
                 try {
                     return ((Boolean)connection.getClass().getMethod("isValid", int.class).invoke(10));
                 } catch (Exception e) {
-                    e.printStackTrace();
                 }
             } else if ("isClosed".equals(validationQuery)) {
                 return (connection.isClosed() == false);
             } else {
                 // validation task
                 FutureTask<Boolean> futureTask = new FutureTask<Boolean>(new Runnable() {
+                    @Override
                     public void run() {
                         Statement statement = null;
                         try {
@@ -344,6 +355,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
             this.connection = connection;
         }
         
+        @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             if (connection == null) {
                 throw new SQLException("The connection is closed");

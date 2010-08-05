@@ -1,5 +1,7 @@
 package net.winstone.jndi.resources;
 
+import java.io.Serializable;
+
 /**
  * DataSourceConfig describe a DataSource Configuration. This is all parameter that WinstoneDatasourceFactory can handle. If you want more
  * functionality, please use other framework like common dbcp.
@@ -29,7 +31,8 @@ package net.winstone.jndi.resources;
  * 
  * @author Jerome Guibert
  */
-public class DataSourceConfig {
+public class DataSourceConfig implements Serializable{
+    
     private String name = null;
     
     private String url = null;
