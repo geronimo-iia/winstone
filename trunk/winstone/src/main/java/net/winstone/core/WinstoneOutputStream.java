@@ -13,8 +13,9 @@ import java.util.Iterator;
 import java.util.Stack;
 
 import javax.servlet.http.Cookie;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * Matches the socket output stream to the servlet output.
@@ -188,7 +189,7 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
             this.outStream.write(content, 0, commitLength);
         }
         this.outStream.flush();
-        logger.debug("WinstoneOutputStream.CommittedBytes", Integer.toString(this.bytesCommitted + commitLength));
+        logger.debug("Written {} bytes to response body", Integer.toString(this.bytesCommitted + commitLength));
 
         this.bytesCommitted += commitLength;
         this.buffer.reset();
@@ -199,7 +200,7 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
         if (isCommitted()) {
             throw new IllegalStateException("OutputStream already committed");
         } else {
-            logger.debug("WinstoneOutputStream.ResetBuffer", Integer.toString(this.bufferPosition));
+            logger.debug("WResetting buffer - discarding {} bytes", Integer.toString(this.bufferPosition));
             this.buffer.reset();
             this.bufferPosition = 0;
             this.bytesCommitted = 0;

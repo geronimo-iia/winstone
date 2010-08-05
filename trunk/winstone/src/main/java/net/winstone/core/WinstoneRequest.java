@@ -46,14 +46,14 @@ import javax.servlet.http.HttpSession;
 import winstone.auth.AuthenticationPrincipal;
 
 import net.winstone.WinstoneException;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
-import net.winstone.util.StringUtils;
+
 import winstone.HostConfiguration;
 import winstone.HostGroup;
 import winstone.ServletConfiguration;
 import winstone.WebAppConfiguration;
 import winstone.WinstoneSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implements the request interface required by the servlet spec.
@@ -186,7 +186,7 @@ public class WinstoneRequest implements HttpServletRequest {
     /**
      * Steps through the header array, searching for the first header matching
      */
-    private String extractFirstHeader(String name) {
+    private String extractFirstHeader(final String name) {
         for (int n = 0; n < this.headers.length; n++) {
             if (this.headers[n].toUpperCase().startsWith(name.toUpperCase() + ':')) {
                 return this.headers[n].substring(name.length() + 1).trim(); // 1 for colon
@@ -393,7 +393,7 @@ public class WinstoneRequest implements HttpServletRequest {
      * Gets parameters from the url encoded parameter string
      */
     public static void extractParameters(String urlEncodedParams, String encoding, Map<String, String[]> outputParams, boolean overwrite) {
-        logger.debug("WinstoneRequest.ParsingParameter", urlEncodedParams, encoding);
+        logger.debug("Parsing parameters: {} (using encoding {})", urlEncodedParams, encoding);
         StringTokenizer st = new StringTokenizer(urlEncodedParams, "&", false);
         Set<String> overwrittenParamNames = null;
         while (st.hasMoreTokens()) {
@@ -456,7 +456,7 @@ public class WinstoneRequest implements HttpServletRequest {
                     workspace.append((char) (Integer.parseInt(token, 16)));
                     n += inc;
                 } catch (RuntimeException err) {
-                    logger.warn("WinstoneRequest.InvalidURLTokenChar", token);
+                    logger.warn("Found an invalid character %{} in url parameter. Echoing through in escaped form", token);
                     workspace.append(thisChar);
                 }
             } else {
@@ -516,7 +516,7 @@ public class WinstoneRequest implements HttpServletRequest {
                     byte paramBuffer[] = new byte[contentLength];
                     int readCount = this.inputData.read(paramBuffer);
                     if (readCount != contentLength) {
-                        logger.warn("WinstoneRequest.IncorrectContentLength", Integer.toString(contentLength), Integer.toString(readCount));
+                        logger.warn("Content-length said {}, actual length was {}", Integer.toString(contentLength), Integer.toString(readCount));
                     }
                     String paramLine = (this.encoding == null ? new String(paramBuffer) : new String(paramBuffer, this.encoding));
                     extractParameters(paramLine.trim(), this.encoding, workingParameters, false);
@@ -658,7 +658,7 @@ public class WinstoneRequest implements HttpServletRequest {
                     }
                     // this.requestedSessionId = thisCookie.getValue();
                     // this.currentSessionId = thisCookie.getValue();
-                    logger.debug("WinstoneRequest.SessionCookieFound", thisCookie.getValue(), ownerContext == null ? "" : "prefix:" + ownerContext.getContextPath());
+                    logger.debug("Found session cookie: {} {}", thisCookie.getValue(), ownerContext == null ? "" : "prefix:" + ownerContext.getContextPath());
                 }
             }
         }
@@ -802,9 +802,9 @@ public class WinstoneRequest implements HttpServletRequest {
             this.queryString = forwardQueryString + (needJoiner ? "&" : "") + oldQueryString;
 
             if (this.parsedParameters != null) {
-                logger.debug("WinstoneRequest.ParsingParameters", forwardQueryString, this.encoding);
+                logger.debug("Parsing parameters: {} (using encoding {})", forwardQueryString, this.encoding);
                 extractParameters(forwardQueryString, this.encoding, this.parameters, true);
-                logger.debug("WinstoneRequest.ParamLine", this.parameters != null ? this.parameters.toString() : "");
+                logger.debug("Param line: {}", this.parameters != null ? this.parameters.toString() : "");
             }
         }
 
@@ -897,7 +897,7 @@ public class WinstoneRequest implements HttpServletRequest {
     public void setCharacterEncoding(String encoding) throws UnsupportedEncodingException {
         "blah".getBytes(encoding); // throws an exception if the encoding is unsupported
         if (this.inputReader == null) {
-            logger.debug("WinstoneRequest.SetCharEncoding", this.encoding, encoding);
+            logger.debug("Setting the request encoding from {} to {}", this.encoding, encoding);
             this.encoding = encoding;
         }
     }
@@ -1115,19 +1115,19 @@ public class WinstoneRequest implements HttpServletRequest {
                 }
                 return date.getTime();
             } catch (java.text.ParseException err) {
-                throw new IllegalArgumentException(StringUtils.replaceToken("Can't convert to date - [#0]", dateHeader));
+                throw new IllegalArgumentException("Can't convert to date - " + dateHeader);
             }
         }
     }
 
     @Override
-    public int getIntHeader(String name) {
+    public int getIntHeader(final String name) {
         String header = getHeader(name);
         return header == null ? -1 : Integer.parseInt(header);
     }
 
     @Override
-    public String getHeader(String name) {
+    public String getHeader(final String name) {
         return extractFirstHeader(name);
     }
 
@@ -1137,7 +1137,7 @@ public class WinstoneRequest implements HttpServletRequest {
     }
 
     @Override
-    public Enumeration<String> getHeaders(String name) {
+    public Enumeration<String> getHeaders(final String name) {
         List<String> result = new ArrayList<String>();
         for (int n = 0; n < this.headers.length; n++) {
             if (this.headers[n].toUpperCase().startsWith(name.toUpperCase() + ':')) {
@@ -1257,7 +1257,7 @@ public class WinstoneRequest implements HttpServletRequest {
     }
 
     @Override
-    public HttpSession getSession(boolean create) {
+    public HttpSession getSession(final boolean create) {
         String cookieValue = (String) this.currentSessionIds.get(this.webappConfig.getContextPath());
 
         // Handle the null case
@@ -1309,7 +1309,7 @@ public class WinstoneRequest implements HttpServletRequest {
         return this.webappConfig.makeNewSession(newSessionId);
     }
 
-    public void markSessionsAsRequestFinished(long lastAccessedTime, boolean saveSessions) {
+    public void markSessionsAsRequestFinished(final long lastAccessedTime, final boolean saveSessions) {
         for (Iterator<WinstoneSession> i = this.usedSessions.iterator(); i.hasNext();) {
             WinstoneSession session = i.next();
             session.setLastAccessedDate(lastAccessedTime);
@@ -1325,7 +1325,7 @@ public class WinstoneRequest implements HttpServletRequest {
      * @deprecated
      */
     @Override
-    public String getRealPath(String path) {
+    public String getRealPath(final String path) {
         return this.webappConfig.getRealPath(path);
     }
 

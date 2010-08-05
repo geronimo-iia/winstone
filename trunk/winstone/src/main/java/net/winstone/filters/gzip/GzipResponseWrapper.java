@@ -42,7 +42,7 @@ public class GzipResponseWrapper extends HttpServletResponseWrapper {
     private PrintWriter bufferWriter;
     private ServletContext context;
     
-    public GzipResponseWrapper(HttpServletResponse response, ServletContext context) {
+    public GzipResponseWrapper(final HttpServletResponse response,final  ServletContext context) {
         super(response);
         this.context = context;
         setHeader("Content-Encoding", "gzip");
@@ -84,11 +84,13 @@ public class GzipResponseWrapper extends HttpServletResponseWrapper {
         }
     }
     
+    @Override
     public void setContentLength(int length) {/* do nothing */}
     
     /**
      * Returns a stream wrapper 
      */
+    @Override
     public ServletOutputStream getOutputStream() throws IOException {
         if (this.bufferStream != null) {
             return this.bufferStream;
@@ -102,6 +104,7 @@ public class GzipResponseWrapper extends HttpServletResponseWrapper {
     /**
      * Returns a writer wrapper
      */
+    @Override
     public PrintWriter getWriter() throws IOException {
         if (this.bufferWriter != null) {
             return this.bufferWriter;

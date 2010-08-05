@@ -48,6 +48,7 @@ public class MimeTypes implements FileNameMap {
         return contentType;
     }
     
+    @Override
     public String getContentTypeFor(final String fileName) {
         int dotPos = fileName.lastIndexOf('.');
         if ((dotPos != -1) && (dotPos != fileName.length() - 1)) {
@@ -67,7 +68,7 @@ public class MimeTypes implements FileNameMap {
     /**
      * @return a instance of <code>MimeTypes</code> using default mime type information.
      */
-    public static final MimeTypes getInstance() {
+    public static MimeTypes getInstance() {
         return MimeTypesLazyHolder.uniqueInstance;
     }
     
@@ -77,7 +78,7 @@ public class MimeTypes implements FileNameMap {
      * @param additionalMimeType the specified additional MimeType
      * @return a instance of MimeTypes.
      */
-    public static final MimeTypes getInstance(final Map<String, String> additionalMimeType) {
+    public static MimeTypes getInstance(final Map<String, String> additionalMimeType) {
         MimeTypes mimeTypes = MimeTypes.getInstance();
         if (additionalMimeType == null || additionalMimeType.isEmpty()) {
             return mimeTypes;

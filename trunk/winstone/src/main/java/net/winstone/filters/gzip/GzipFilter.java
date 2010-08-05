@@ -44,15 +44,18 @@ public class GzipFilter implements Filter {
     
     private ServletContext context;
     
-    public void init(FilterConfig config) throws ServletException {
+    @Override
+    public void init(final FilterConfig config) throws ServletException {
         this.context = config.getServletContext();
     }
     
+    @Override
     public void destroy() {
         this.context = null;
     }
     
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    @Override
+    public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException {
         //Add cast to WinstoneRequest avoid type cast.
         Enumeration<String> headers = ((WinstoneRequest)request).getHeaders(ACCEPT_ENCODING);
         boolean acceptsGzipEncoding = false;

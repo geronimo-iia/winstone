@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServlet;
 
 import net.winstone.WinstoneResourceBundle;
 import net.winstone.util.StringUtils;
-import winstone.SimpleRequestDispatcher;
 import net.winstone.core.WinstoneConstant;
 
 /**
@@ -30,25 +29,25 @@ import net.winstone.core.WinstoneConstant;
  * @version $Id: ErrorServlet.java,v 1.3 2006/02/28 07:32:47 rickknowles Exp $
  */
 public class ErrorServlet extends HttpServlet {
-    
+
     private static final long serialVersionUID = -1210902945433492424L;
-    
     private String template;
     private String serverVersion;
-    
+
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         template = WinstoneResourceBundle.getInstance().getString("WinstoneResponse.ErrorPage");
         serverVersion = WinstoneResourceBundle.getInstance().getString("ServerVersion");
     }
-    
-    public void service(ServletRequest request, ServletResponse response) throws ServletException, IOException {
-        
-        Integer sc = (Integer)request.getAttribute(WinstoneConstant.ERROR_STATUS_CODE);
-        String msg = (String)request.getAttribute(WinstoneConstant.ERROR_MESSAGE);
-        Throwable err = (Throwable)request.getAttribute(WinstoneConstant.ERROR_EXCEPTION);
-        
+
+    @Override
+    public void service(final ServletRequest request, final ServletResponse response) throws ServletException, IOException {
+
+        Integer sc = (Integer) request.getAttribute(WinstoneConstant.ERROR_STATUS_CODE);
+        String msg = (String) request.getAttribute(WinstoneConstant.ERROR_MESSAGE);
+        Throwable err = (Throwable) request.getAttribute(WinstoneConstant.ERROR_EXCEPTION);
+
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         if (err != null) {
@@ -59,7 +58,7 @@ public class ErrorServlet extends HttpServlet {
         pw.flush();
         // If we are here there was no error servlet, so show the default error page
         String output = StringUtils.replaceToken(template, sc != null ? sc.toString() : "", (msg == null ? "" : msg), sw.toString(), serverVersion, new Date().toString());
-        
+
         response.setContentLength(output.getBytes(response.getCharacterEncoding()).length);
         Writer out = response.getWriter();
         out.write(output);

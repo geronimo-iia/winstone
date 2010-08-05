@@ -10,8 +10,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
+
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The request stream management class.

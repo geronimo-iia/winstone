@@ -65,6 +65,11 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>2.0.2</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>1.4</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -100,12 +105,7 @@
                 <scope>compile</scope>
             </dependency>
 
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>${org.slf4j.version}</version>
-                <scope>runtime</scope>
-            </dependency>
+          
 
             <dependency>
                 <groupId>com.google.collections</groupId>
@@ -114,6 +114,13 @@
                 <type>jar</type>
             </dependency>
 
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${org.slf4j.version}</version>
+                <scope>test</scope>
+            </dependency>
+            
             <dependency>
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
@@ -153,6 +160,11 @@
         <dependency>
             <groupId>httpunit</groupId>
             <artifactId>httpunit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

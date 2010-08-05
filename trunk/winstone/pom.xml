@@ -75,21 +75,40 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>copy-mandatory-dependencies</id>
                         <phase>process-resources</phase>
-                        <configuration>
-                            <tasks unless="winstone.skip">
-                                <echo message="To skip me, just call mvn -Dwinstone.skip=true"/>
-                                <property name="javax.servlet.version" value="${javax.servlet.version}" />
-                                <property name="org.slf4j.version" value="${org.slf4j.version}" />
-                                <property name="google-collections.version" value="${google-collections.version}" />
-                                <ant antfile="${basedir}/build.xml">
-                                    <target name="install"/>
-                                </ant>
-                            </tasks>
-                        </configuration>
                         <goals>
                             <goal>run</goal>
                         </goals>
+                        <configuration>
+                            <tasks  unless="winstone.resources.skip">
+                                <echo message="Installing Mandatory Ressource. To skip me, just call mvn -Dwinstone.resources.skip=true"/>
+                                <dependencyfilesets prefix="mydeps."/>
+                                <mkdir dir="target/classes/META-INF/lib"/>
+                                <copy todir="target/classes/META-INF/lib">
+                                    <fileset refid="mydeps.javax.servlet:servlet-api:jar"/>
+                                    <fileset refid="mydeps.org.slf4j:slf4j-api:jar"/>
+                                </copy>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-slf4j-log4j-dependencies</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks unless="winstone.slf4j-log4j12.skip">
+                                <echo message="Installing  SLF4J log4j Ressource. To skip me, just call mvn -Dwinstone.slf4j-log4j12.skip=true"/>
+                                <dependencyfilesets prefix="mydeps."/>
+                                <mkdir dir="target/classes/META-INF/lib"/>
+                                <copy todir="target/classes/META-INF/lib">
+                                    <fileset refid="mydeps.org.slf4j:slf4j-log4j12:jar"/>
+                                    <fileset refid="mydeps.log4j:log4j:jar"/>
+                                </copy>
+                            </tasks>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -124,18 +143,7 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-        </dependency>
-
-<!--        <dependency>
-            <groupId>com.google.collections</groupId>
-            <artifactId>google-collections</artifactId>
-        </dependency>-->
- 
     </dependencies>
-
 
 </project>
 

@@ -40,10 +40,12 @@ public class ByteArrayServletOutputStream extends ServletOutputStream {
         return this.bodyStream.toByteArray();
     }
     
+    @Override
     public void write(int b) throws IOException {
         this.bodyStream.write(b);
     }
 
+    @Override
     public void flush() throws IOException {
         this.bodyStream.flush();
     }

@@ -29,10 +29,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.winstone.WinstoneResourceBundle;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
-import net.winstone.util.StringUtils;
 import net.winstone.core.WinstoneRequest;
+import net.winstone.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Servlet to handle static resources. Simply finds and sends them, or dispatches to the error servlet.<br />
@@ -60,6 +60,7 @@ import net.winstone.core.WinstoneRequest;
  * @version $Id: StaticResourceServlet.java,v 1.17 2004/12/31 07:21:00 rickknowles Exp $
  */
 public class StaticResourceServlet extends HttpServlet {
+
     protected Logger logger = LoggerFactory.getLogger(getClass());
     private static final long serialVersionUID = 6699448605081774638L;
     // final String JSP_FILE = "org.apache.catalina.jsp_file";
@@ -70,27 +71,24 @@ public class StaticResourceServlet extends HttpServlet {
     final static String RANGE_HEADER = "Range";
     final static String ACCEPT_RANGES_HEADER = "Accept-Ranges";
     final static String CONTENT_RANGE_HEADER = "Content-Range";
-    
     private File webRoot;
     private String prefix;
     private boolean directoryList;
     private String serverVersion;
-    
     private String oddColour;
     private String evenColour;
     private String rowTextColour;
     private String directoryLabel;
     private String parentDirLabel;
     private String noDateLabel;
-    
     private String headerColour;
     private String headerTextColour;
     private String labelColour;
     private String labelTextColour;
-    
     private String rowTemplate;
     private String bodyTemplate;
-    
+
+    @Override
     public void init(final ServletConfig config) throws ServletException {
         super.init(config);
         this.webRoot = new File(config.getInitParameter("webRoot"));
@@ -98,67 +96,64 @@ public class StaticResourceServlet extends HttpServlet {
         String dirList = config.getInitParameter("directoryList");
         this.directoryList = (dirList == null) || dirList.equalsIgnoreCase("true") || dirList.equalsIgnoreCase("yes");
         serverVersion = WinstoneResourceBundle.getInstance().getString("ServerVersion");
-        
+
         oddColour = StringUtils.get(config.getInitParameter("oddColour"), "#dddddd");
         evenColour = StringUtils.get(config.getInitParameter("evenColour"), "#cbcbcb");
         rowTextColour = StringUtils.get(config.getInitParameter("rowTextColour"), "#000033");
         directoryLabel = StringUtils.get(config.getInitParameter("directoryLabel"), "directory");
         parentDirLabel = StringUtils.get(config.getInitParameter("parentDirLabel"), "(parent directory)");
         noDateLabel = StringUtils.get(config.getInitParameter("noDateLabel"), "-");
-        
+
         headerColour = StringUtils.get(config.getInitParameter("headerColour"), "#ffffff");
         headerTextColour = StringUtils.get(config.getInitParameter("headerTextColour"), "#000033");
         labelColour = StringUtils.get(config.getInitParameter("labelColour"), "#aeaeae");
         labelTextColour = StringUtils.get(config.getInitParameter("labelTextColour"), "#ffffff");
-        
+
         rowTemplate = WinstoneResourceBundle.getInstance().getString("StaticResourceServlet.Row");
         bodyTemplate = WinstoneResourceBundle.getInstance().getString("StaticResourceServlet.Body");
-        
+
     }
-    
+
+    @Override
     public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
     }
-    
+
+    @Override
     public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         boolean isInclude = (request.getAttribute(INCLUDE_SERVLET_PATH) != null);
         boolean isForward = (request.getAttribute(FORWARD_SERVLET_PATH) != null);
         String path = null;
-        
+
         if (isInclude) {
-            path = (String)request.getAttribute(INCLUDE_SERVLET_PATH);
+            path = (String) request.getAttribute(INCLUDE_SERVLET_PATH);
         } else {
             path = request.getServletPath();
         }
-        
+
         // URL decode path
         path = WinstoneRequest.decodeURLToken(path);
-        
+
         long cachedResDate = request.getDateHeader(CACHED_RESOURCE_DATE_HEADER);
-        logger.debug(StringUtils.replaceToken("[#0]: path=[#1]", getServletConfig().getServletName(), path));
-        
+        logger.debug("{}: path={}", getServletConfig().getServletName(), path);
+
         // Check for the resource
         File res = path.equals("") ? this.webRoot : new File(this.webRoot, path);
-        
+
         // Send a 404 if not found
         if (!res.exists()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, StringUtils.replaceToken("File [#0] not found", path));
-        }
-        // Check we are below the webroot
+        } // Check we are below the webroot
         else if (!isDescendant(this.webRoot, res, this.webRoot)) {
-            logger.debug(StringUtils.replaceToken("Requested path [#0] was outside the webroot [#1]", res.getCanonicalPath(), this.webRoot.toString()));
+            logger.debug("Requested path {} was outside the webroot {}", res.getCanonicalPath(), this.webRoot.toString());
             response.sendError(HttpServletResponse.SC_FORBIDDEN, StringUtils.replaceToken("Illegal path error - [#0]", path));
-        }
-
-        // Check we are not below the web-inf
+        } // Check we are not below the web-inf
         else if (!isInclude && !isForward && isDescendant(new File(this.webRoot, "WEB-INF"), res, this.webRoot)) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, StringUtils.replaceToken("Illegal path error - [#0]", path));
-        }
-        // Check we are not below the meta-inf
+        } // Check we are not below the meta-inf
         else if (!isInclude && !isForward && isDescendant(new File(this.webRoot, "META-INF"), res, this.webRoot)) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, StringUtils.replaceToken("Illegal path error - [#0]", path));
-        }
-        // check for the directory case
+        } // check for the directory case
         else if (res.isDirectory()) {
             if (path.endsWith("/")) {
                 // Try to match each of the welcome files
@@ -166,33 +161,33 @@ public class StaticResourceServlet extends HttpServlet {
                 // if (matchedWelcome != null)
                 // response.sendRedirect(this.prefix + path + matchedWelcome);
                 // else
-                if (this.directoryList)
+                if (this.directoryList) {
                     generateDirectoryList(request, response, path);
-                else
+                } else {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access to this resource is denied");
-            } else
+                }
+            } else {
                 response.sendRedirect(this.prefix + path + "/");
-        }
-
-        // Send a 304 if not modified
+            }
+        } // Send a 304 if not modified
         else if (!isInclude && (cachedResDate != -1) && (cachedResDate < (System.currentTimeMillis() / 1000L * 1000L)) && (cachedResDate >= (res.lastModified() / 1000L * 1000L))) {
             String mimeType = getServletContext().getMimeType(res.getName().toLowerCase());
-            if (mimeType != null)
+            if (mimeType != null) {
                 response.setContentType(mimeType);
+            }
             response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
             response.setContentLength(0);
             response.flushBuffer();
-        }
-
-        // Write out the resource if not range or is included
+        } // Write out the resource if not range or is included
         else if ((request.getHeader(RANGE_HEADER) == null) || isInclude) {
             String mimeType = getServletContext().getMimeType(res.getName().toLowerCase());
-            if (mimeType != null)
+            if (mimeType != null) {
                 response.setContentType(mimeType);
+            }
             InputStream resStream = new FileInputStream(res);
-            
+
             response.setStatus(HttpServletResponse.SC_OK);
-            response.setContentLength((int)res.length());
+            response.setContentLength((int) res.length());
             // response.addHeader(ACCEPT_RANGES_HEADER, "bytes");
             response.addDateHeader(LAST_MODIFIED_DATE_HEADER, res.lastModified());
             OutputStream out = null;
@@ -217,10 +212,11 @@ public class StaticResourceServlet extends HttpServlet {
             resStream.close();
         } else if (request.getHeader(RANGE_HEADER).startsWith("bytes=")) {
             String mimeType = getServletContext().getMimeType(res.getName().toLowerCase());
-            if (mimeType != null)
+            if (mimeType != null) {
                 response.setContentType(mimeType);
+            }
             InputStream resStream = new FileInputStream(res);
-            
+
             List<String> ranges = new ArrayList<String>();
             StringTokenizer st = new StringTokenizer(request.getHeader(RANGE_HEADER).substring(6).trim(), ",", false);
             int totalSent = 0;
@@ -228,12 +224,14 @@ public class StaticResourceServlet extends HttpServlet {
             while (st.hasMoreTokens()) {
                 String rangeBlock = st.nextToken();
                 int start = 0;
-                int end = (int)res.length();
+                int end = (int) res.length();
                 int delim = rangeBlock.indexOf('-');
-                if (delim != 0)
+                if (delim != 0) {
                     start = Integer.parseInt(rangeBlock.substring(0, delim).trim());
-                if (delim != rangeBlock.length() - 1)
+                }
+                if (delim != rangeBlock.length() - 1) {
                     end = Integer.parseInt(rangeBlock.substring(delim + 1).trim());
+                }
                 totalSent += (end - start);
                 rangeText += "," + start + "-" + end;
                 ranges.add(start + "-" + end);
@@ -241,7 +239,7 @@ public class StaticResourceServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
             response.addHeader(CONTENT_RANGE_HEADER, "bytes " + rangeText.substring(1) + "/" + res.length());
             response.setContentLength(totalSent);
-            
+
             response.addHeader(ACCEPT_RANGES_HEADER, "bytes");
             response.addDateHeader(LAST_MODIFIED_DATE_HEADER, res.lastModified());
             OutputStream out = response.getOutputStream();
@@ -254,8 +252,9 @@ public class StaticResourceServlet extends HttpServlet {
                 int read = 0;
                 while ((read != -1) && (bytesRead <= res.length())) {
                     read = resStream.read();
-                    if ((bytesRead >= start) && (bytesRead < end))
+                    if ((bytesRead >= start) && (bytesRead < end)) {
                         out.write(read);
+                    }
                     bytesRead++;
                 }
             }
@@ -264,7 +263,7 @@ public class StaticResourceServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
         }
     }
-    
+
     /**
      * Generate a list of the files in this directory
      */
@@ -273,18 +272,18 @@ public class StaticResourceServlet extends HttpServlet {
         File dir = path.equals("") ? this.webRoot : new File(this.webRoot, path);
         File children[] = dir.listFiles();
         Arrays.sort(children);
-        
+
         // Build row content
         StringWriter rowString = new StringWriter();
-        
+
         int rowCount = 0;
-        
+
         // Write the parent dir row
         if (!path.equals("") && !path.equals("/")) {
             rowString.write(StringUtils.replaceToken(rowTemplate, rowTextColour, evenColour, parentDirLabel, "..", noDateLabel, directoryLabel));
             rowCount++;
         }
-        
+
         // Write the rows for each file
         DateFormat sdfFileDate = new SimpleDateFormat("dd-MM-yyyy HH:mm");
         for (int n = 0; n < children.length; n++) {
@@ -300,17 +299,17 @@ public class StaticResourceServlet extends HttpServlet {
                 rowCount++;
             }
         }
-        
+
         // Build wrapper body
         String out = StringUtils.replaceToken(bodyTemplate, headerColour, headerTextColour, labelColour, labelTextColour, new Date().toString(), serverVersion, path.equals("") ? "/" : path, rowString.toString());
-        
+
         response.setContentLength(out.getBytes().length);
         response.setContentType("text/html");
         Writer w = response.getWriter();
         w.write(out);
         w.close();
     }
-    
+
     public static boolean isDescendant(final File parent, final File child, final File commonBase) throws IOException {
         if (child.equals(parent)) {
             return true;
@@ -321,7 +320,7 @@ public class StaticResourceServlet extends HttpServlet {
             if (canonicalChild.startsWith(canonicalParent)) {
                 return true;
             }
-            
+
             // If canonicals don't match, we're dealing with symlinked files, so if we can
             // build a path from the parent to the child,
             String childOCValue = constructOurCanonicalVersion(child, commonBase);
@@ -329,10 +328,10 @@ public class StaticResourceServlet extends HttpServlet {
             return childOCValue.startsWith(parentOCValue);
         }
     }
-    
+
     public static String constructOurCanonicalVersion(File current, final File stopPoint) {
         int backOnes = 0;
-        StringBuffer ourCanonicalVersion = new StringBuffer();
+        StringBuilder ourCanonicalVersion = new StringBuilder();
         while ((current != null) && !current.equals(stopPoint)) {
             if (current.getName().equals("..")) {
                 backOnes++;

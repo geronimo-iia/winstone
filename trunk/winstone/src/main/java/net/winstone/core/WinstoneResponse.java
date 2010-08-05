@@ -25,13 +25,13 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import net.winstone.WinstoneResourceBundle;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
-import net.winstone.util.StringUtils;
+
 import winstone.HostConfiguration;
 import winstone.SimpleRequestDispatcher;
 import winstone.WebAppConfiguration;
 import winstone.WinstoneSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Response for servlet
@@ -55,10 +55,10 @@ public class WinstoneResponse implements HttpServletResponse {
     private WebAppConfiguration webAppConfig;
     private WinstoneOutputStream outputStream;
     private PrintWriter outputWriter;
-    private List<String> headers;
+    private final List<String> headers;
     private String explicitEncoding;
     private String implicitEncoding;
-    private List<Cookie> cookies;
+    private final List<Cookie> cookies;
     private Locale locale;
     private String protocol;
     private String reqKeepAliveHeader;
@@ -102,18 +102,18 @@ public class WinstoneResponse implements HttpServletResponse {
     private String getEncodingFromLocale(Locale local) {
         String localeString = local.getLanguage() + "_" + local.getCountry();
         Map<String, String> encMap = this.webAppConfig.getLocaleEncodingMap();
-        logger.debug(StringUtils.replaceToken("Scanning for locale-encoding match: [#0] in [#1]", localeString, encMap + ""));
+        logger.debug("Scanning for locale-encoding match: {} in {}", localeString, encMap + "");
 
         String fullMatch = (String) encMap.get(localeString);
         if (fullMatch != null) {
-            logger.debug(StringUtils.replaceToken("Found locale-encoding match: [#0]", fullMatch));
+            logger.debug("Found locale-encoding match: {}", fullMatch);
             return fullMatch;
         } else {
             localeString = local.getLanguage();
-            logger.debug(StringUtils.replaceToken("Scanning for locale-encoding match: [#0] in [#1]", localeString, encMap + ""));
+            logger.debug("Scanning for locale-encoding match: {} in {}", localeString, encMap + "");
             String match = (String) encMap.get(localeString);
             if (match != null) {
-                logger.debug(StringUtils.replaceToken("Found locale-encoding match: [#0]", match));
+                logger.debug("Found locale-encoding match: {}", match);
             }
             return match;
         }
@@ -215,7 +215,7 @@ public class WinstoneResponse implements HttpServletResponse {
         if ((lengthHeader == null) && (this.statusCode >= 300)) {
             int bodyBytes = this.outputStream.getOutputStreamLength();
             if (getBufferSize() > bodyBytes) {
-                logger.debug(StringUtils.replaceToken("Keep-alive requested but no content length set. Setting to [#0] bytes", "" + bodyBytes));
+                logger.debug("Keep-alive requested but no content length set. Setting to {} bytes", "" + bodyBytes);
                 forceHeader(WinstoneConstant.CONTENT_LENGTH_HEADER, "" + bodyBytes);
                 lengthHeader = getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
             }
@@ -286,14 +286,14 @@ public class WinstoneResponse implements HttpServletResponse {
                 this.cookies.add(cookie); // don't call addCookie because we might be including
             }
         }
-        logger.debug(StringUtils.replaceToken("Headers prepared for writing: [#0]", "" + this.headers + ""));
+        logger.debug("Headers prepared for writing: {}", "" + this.headers + "");
     }
 
     /**
      * Writes out the http header for a single cookie
      */
     public String writeCookie(Cookie cookie) throws IOException {
-        logger.debug(StringUtils.replaceToken("Writing cookie to output: [#0]", "" + cookie + ""));
+        logger.debug("Writing cookie to output: {}", "" + cookie + "");
         StringBuffer out = new StringBuffer();
 
         // Set-Cookie or Set-Cookie2
@@ -439,7 +439,7 @@ public class WinstoneResponse implements HttpServletResponse {
     @Override
     public void setCharacterEncoding(String encoding) {
         if ((this.outputWriter == null) && !isCommitted()) {
-            logger.debug(StringUtils.replaceToken("Setting response character encoding to [#0]", encoding));
+            logger.debug("Setting response character encoding to {}", encoding);
             this.explicitEncoding = encoding;
             correctContentTypeHeaderEncoding(encoding);
         }
@@ -580,9 +580,9 @@ public class WinstoneResponse implements HttpServletResponse {
     @Override
     public void addHeader(String name, String value) {
         if (isIncluding()) {
-            logger.debug(StringUtils.replaceToken("Header ignored inside include - [#0]: [#1] ", name, value));
+            logger.debug("Header ignored inside include - {}: {} ", name, value);
         } else if (isCommitted()) {
-            logger.debug(StringUtils.replaceToken("Header ignored after response committed - [#0]: [#1] ", name, value));
+            logger.debug("Header ignored after response committed - {}: {} ", name, value);
         } else if (value != null) {
             if (name.equals(WinstoneConstant.CONTENT_TYPE_HEADER)) {
                 StringBuffer remainderHeader = new StringBuffer();
@@ -610,9 +610,9 @@ public class WinstoneResponse implements HttpServletResponse {
     @Override
     public void setHeader(String name, String value) {
         if (isIncluding()) {
-            logger.debug(StringUtils.replaceToken("Header ignored inside include - [#0]: [#1] ", name, value));
+            logger.debug("Header ignored inside include - {}: {} ", name, value);
         } else if (isCommitted()) {
-            logger.debug(StringUtils.replaceToken("Header ignored after response committed - [#0]: [#1] ", name, value));
+            logger.debug("Header ignored after response committed - {}: {} ", name, value);
         } else {
             boolean found = false;
             for (int n = 0; (n < this.headers.size()); n++) {
@@ -771,11 +771,10 @@ public class WinstoneResponse implements HttpServletResponse {
     @Override
     public void sendError(int sc, String msg) throws IOException {
         if (isIncluding()) {
-            logger.error(StringUtils.replaceToken("Error in include: [#0] [#1]", "" + sc, msg));
+            logger.error("Error in include: {} {}", "" + sc, msg);
             return;
         }
-        logger.debug(StringUtils.replaceToken("Sending error message to browser: code [#0], message: [#1]", "" + sc, msg));
-
+        logger.debug("Sending error message to browser: code {}, message: {}", "" + sc, msg);
         if ((this.webAppConfig != null) && (this.req != null)) {
 
             SimpleRequestDispatcher rd = this.webAppConfig.getErrorDispatcherByCode(sc, msg, null);
@@ -788,7 +787,9 @@ public class WinstoneResponse implements HttpServletResponse {
                 } catch (IOException err) {
                     throw err;
                 } catch (Throwable err) {
-                    logger.warn(StringUtils.replaceToken("Sending error message to browser: code [#0], message: [#1]", rd.getName(), sc + ""), err);
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("Sending error message to browser: code " + rd.getName() + ", message: " + sc, err);
+                    }
                     return;
                 }
             }
@@ -798,8 +799,8 @@ public class WinstoneResponse implements HttpServletResponse {
         if (this.errorStatusCode == null) {
             this.statusCode = sc;
         }
-        String output = StringUtils.replaceToken(WinstoneResourceBundle.getInstance().getString("WinstoneResponse.ErrorPage",
-                sc + "", (msg == null ? "" : msg), "", WinstoneResourceBundle.getInstance().getString("ServerVersion"), "" + new Date()));
+        String output = WinstoneResourceBundle.getInstance().getString("WinstoneResponse.ErrorPage",
+                sc + "", (msg == null ? "" : msg), "", WinstoneResourceBundle.getInstance().getString("ServerVersion"), "" + new Date());
         setContentLength(output.getBytes(getCharacterEncoding()).length);
         Writer out = getWriter();
         out.write(output);

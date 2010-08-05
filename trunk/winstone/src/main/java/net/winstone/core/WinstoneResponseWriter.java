@@ -10,9 +10,9 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
-import net.winstone.util.StringUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A hacked print writer that allows us to trigger an automatic flush on 
@@ -28,11 +28,11 @@ import net.winstone.util.StringUtils;
 public class WinstoneResponseWriter extends PrintWriter {
 
     protected static Logger logger = LoggerFactory.getLogger(WinstoneResponseWriter.class);
-    private WinstoneOutputStream outputStream;
-    private WinstoneResponse response;
+    private final WinstoneOutputStream outputStream;
+    private final WinstoneResponse response;
     private int bytesBuffered;
 
-    public WinstoneResponseWriter(WinstoneOutputStream out, WinstoneResponse response) throws UnsupportedEncodingException {
+    public WinstoneResponseWriter(final WinstoneOutputStream out, final WinstoneResponse response) throws UnsupportedEncodingException {
         super(new OutputStreamWriter(out, response.getCharacterEncoding()), false);
         this.outputStream = out;
         this.response = response;
@@ -46,7 +46,7 @@ public class WinstoneResponseWriter extends PrintWriter {
     }
 
     @Override
-    public void write(char[] buf, int off, int len) {
+    public void write(final char[] buf, final int off, final int len) {
         super.write(buf, off, len);
         if (buf != null) {
             appendByteCount(new String(buf, off, len));
@@ -54,14 +54,14 @@ public class WinstoneResponseWriter extends PrintWriter {
     }
 
     @Override
-    public void write(String s, int off, int len) {
+    public void write(final String s, final int off, final int len) {
         super.write(s, off, len);
         if (s != null) {
             appendByteCount(s.substring(off, len));
         }
     }
 
-    protected void appendByteCount(String input) {
+    protected void appendByteCount(final String input) {
         try {
             this.bytesBuffered += input.getBytes(response.getCharacterEncoding()).length;
         } catch (IOException err) {/* impossible */
@@ -87,7 +87,7 @@ public class WinstoneResponseWriter extends PrintWriter {
         if ((contentLengthHeader != null)
                 && ((this.outputStream.getOutputStreamLength() + this.bytesBuffered)
                 >= Integer.parseInt(contentLengthHeader))) {
-            logger.debug(StringUtils.replaceToken("Checking for auto-flush of print writer: contentLengthHeader=[#0], responseBytes=[#1]", contentLengthHeader, (this.outputStream.getOutputStreamLength() + this.bytesBuffered) + ""));
+            logger.debug("Checking for auto-flush of print writer: contentLengthHeader={}, responseBytes={}", contentLengthHeader, (this.outputStream.getOutputStreamLength() + this.bytesBuffered) + "");
             flush();
         }
     }
