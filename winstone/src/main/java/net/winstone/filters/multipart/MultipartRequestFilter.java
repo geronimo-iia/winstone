@@ -42,7 +42,8 @@ public class MultipartRequestFilter implements Filter {
     private String tooBigPage;
     private ServletContext context;
 
-    public void init(FilterConfig config) throws ServletException {
+    @Override
+    public void init(final FilterConfig config) throws ServletException {
         this.tooBigPage = config.getInitParameter("tooBigPage");
         String pmaxContentLength = config.getInitParameter("maxContentLength");
         if (pmaxContentLength == null) {
@@ -52,14 +53,15 @@ public class MultipartRequestFilter implements Filter {
         this.context = config.getServletContext();
     }
 
+    @Override
     public void destroy() {
         this.context = null;
         this.maxContentLength = -1;
         this.tooBigPage = null;
     }
 
-    public void doFilter(ServletRequest request, ServletResponse response,
-            FilterChain chain) throws IOException, ServletException {
+    @Override
+    public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException {
         String contentType = request.getContentType();
         if ((contentType != null) && contentType.startsWith("multipart/form-data")) {
             if (this.maxContentLength >= 0) {
