@@ -10,9 +10,9 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.net.Socket;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
+import java.net.Socket; 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import winstone.WinstoneSession;
 

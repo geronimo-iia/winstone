@@ -24,9 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import winstone.HostConfiguration;
 import winstone.HostGroup;
 import winstone.WebAppConfiguration;
@@ -87,7 +86,7 @@ public final class SimpleCluster implements Runnable, Cluster {
                 askClusterNodeForNodeList(st.nextToken());
             }
         }
-        logger.info("SimpleCluster.ClusterInit", Integer.toString(this.clusterAddresses.size()));
+        logger.info("Cluster initialised with {} nodes", Integer.toString(this.clusterAddresses.size()));
 
 
         while (!interrupted) {
@@ -100,7 +99,7 @@ public final class SimpleCluster implements Runnable, Cluster {
                     Date lastHeartBeat = (Date) this.clusterAddresses.get(ipPort);
                     if (lastHeartBeat.before(noHeartbeatDate)) {
                         this.clusterAddresses.remove(ipPort);
-                        logger.debug("SimpleCluster.ClusterRemovingAddress", ipPort);
+                        logger.debug("Removing address from cluster node list: {}", ipPort);
                     } // Send heartbeat
                     else {
                         sendHeartbeat(ipPort);
@@ -175,7 +174,7 @@ public final class SimpleCluster implements Runnable, Cluster {
         }
         if (answer != null) {
             answer.activate(webAppConfig);
-            logger.debug("SimpleCluster.SessionTransferred", senderThread);
+            logger.debug("Session transferred from: {}", senderThread);
         }
         return answer;
     }
@@ -215,9 +214,9 @@ public final class SimpleCluster implements Runnable, Cluster {
             in.close();
             clusterListSocket.close();
         } catch (ConnectException err) {
-            logger.debug("SimpleCluster.askClusterNodeForNodeList.ConnectException", address);
+            logger.debug("No cluster node detected at {} - ignoring", address);
         } catch (Throwable err) {
-            logger.error(err, "SimpleCluster.askClusterNodeForNodeList.Error", address);
+            logger.error("Error getting nodelist from: " + address, err);
         }
     }
 
@@ -239,11 +238,11 @@ public final class SimpleCluster implements Runnable, Cluster {
             outData.writeInt(this.controlPort);
             outData.close();
             heartbeatSocket.close();
-            logger.debug("SimpleCluster.Heartbeat.Send", address);
+            logger.debug("Heartbeat sent to: {}", address);
         } catch (ConnectException err) {/* ignore - 3 fails, and we remove */
 
         } catch (Throwable err) {
-            logger.error(err, "SimpleCluster.Heartbeat.Error", address);
+            logger.error("Error sending heartbeat to: " + address, err);
         }
     }
 
@@ -294,7 +293,7 @@ public final class SimpleCluster implements Runnable, Cluster {
                 if (inControl.readUTF().equals(ClusterSessionSearch.SESSION_RECEIVED)) {
                     session.passivate();
                 }
-                logger.debug("SimpleCluster.handleClusterSessionRequest", ipPortSender);
+                logger.debug("Session transferred to: {}", ipPortSender);
             } else {
                 outData.writeUTF(ClusterSessionSearch.SESSION_NOT_FOUND);
             }
@@ -344,6 +343,6 @@ public final class SimpleCluster implements Runnable, Cluster {
         inData.close();
         String ipPort = socket.getInetAddress().getHostAddress() + ":" + remoteControlPort;
         this.clusterAddresses.put(ipPort, new Date());
-        logger.debug("SimpleCluster.Heartbeat.Received", ipPort);
+        logger.debug("Heartbeat received from: {}", ipPort);
     }
 }
