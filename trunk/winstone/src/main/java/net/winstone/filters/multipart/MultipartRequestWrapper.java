@@ -42,7 +42,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-
 /**
  * This class is used to encapsulate the decoding of HTTP POST requests
  * using the "multipart/form-data" encoding type.
@@ -60,8 +59,8 @@ import javax.servlet.http.HttpServletRequestWrapper;
  * @version $Id: MultipartRequestWrapper.java,v 1.3 2005/09/08 02:42:02 rickknowles Exp $
  */
 public class MultipartRequestWrapper extends HttpServletRequestWrapper {
-    public final static String MPH_ATTRIBUTE = "MultipartRequestWrapper.reference";
 
+    public final static String MPH_ATTRIBUTE = "MultipartRequestWrapper.reference";
     private Map<String, String[]> stringParameters;
     private Map<String, File> tempFileNames;
     private Map<String, String> mimeTypes;
@@ -74,19 +73,16 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
      * a member array. Use getParameter etc to retrieve the contents.
      * @param request The Servlet's request object.
      */
-    public MultipartRequestWrapper(ServletRequest request)
-                     throws IOException {
+    public MultipartRequestWrapper(final ServletRequest request) throws IOException {
         super((HttpServletRequest) request);
         String contentType = request.getContentType();
 
         if (!contentType.toLowerCase().startsWith("multipart/form-data")) {
-            throw new IOException("The MIME Content-Type of the Request must be " + 
-                    '"' + "multipart/form-data" + '"' + ", not " + '"' + contentType + '"' + ".");
-        }
-        // If we find a request attribute with an mph already present, copy from that
+            throw new IOException("The MIME Content-Type of the Request must be "
+                    + '"' + "multipart/form-data" + '"' + ", not " + '"' + contentType + '"' + ".");
+        } // If we find a request attribute with an mph already present, copy from that
         else if (request.getAttribute(MPH_ATTRIBUTE) != null) {
-            MultipartRequestWrapper oldMPH = (MultipartRequestWrapper) 
-                    request.getAttribute(MPH_ATTRIBUTE);
+            MultipartRequestWrapper oldMPH = (MultipartRequestWrapper) request.getAttribute(MPH_ATTRIBUTE);
 
             this.stringParameters = oldMPH.stringParameters;
             this.mimeTypes = oldMPH.mimeTypes;
@@ -107,14 +103,14 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
             }
             inputServlet.close();
             MimeMultipart parts = new MimeMultipart(
-                    new MultipartRequestWrapperDataSource(contentType, 
-                            byteArray.toByteArray()));
+                    new MultipartRequestWrapperDataSource(contentType,
+                    byteArray.toByteArray()));
             byteArray.close();
 
-            Map<String, String[]> stringParameters = new HashMap<String, String[]>();
-            Map<String, String> mimeTypes = new HashMap<String, String>();
-            Map<String, File> tempFileNames = new HashMap<String, File>();
-            Map<String, String> uploadFileNames = new HashMap<String, String>();
+            Map<String, String[]> parameters = new HashMap<String, String[]>();
+            Map<String, String> mimes = new HashMap<String, String>();
+            Map<String, File> fileNames = new HashMap<String, File>();
+            Map<String, String> uploadNames = new HashMap<String, String>();
             String encoding = request.getCharacterEncoding();
             if (encoding == null) {
                 encoding = "8859_1";
@@ -126,8 +122,8 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
 
                 // Get the name field
                 if (headers.indexOf(" name=" + '"') == -1) {
-                    throw new MessagingException("No name header found in " +
-                            "Content-Disposition field.");
+                    throw new MessagingException("No name header found in "
+                            + "Content-Disposition field.");
                 } else {
                     // Get the name field
                     String namePart = headers.substring(headers.indexOf(" name=\"") + 7);
@@ -135,7 +131,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
                     String nameField = javax.mail.internet.MimeUtility.decodeText(namePart);
 
                     InputStream inRaw = current.getInputStream();
-                    
+
                     if (headers.indexOf(" filename=" + '"') != -1) {
                         String fileName = headers.substring(headers.indexOf(" filename=" + '"') + 11);
                         fileName = fileName.substring(0, fileName.indexOf('"'));
@@ -145,18 +141,18 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
                         if (fileName.lastIndexOf('\\') != -1) {
                             fileName = fileName.substring(fileName.lastIndexOf('\\') + 1);
                         }
-                        uploadFileNames.put(nameField, fileName);
-                        
-                        if (tempFileNames.containsKey(nameField)) {
+                        uploadNames.put(nameField, fileName);
+
+                        if (fileNames.containsKey(nameField)) {
                             throw new IOException("Multiple parameters named " + nameField);
                         }
-                    
+
                         if (current.getContentType() == null) {
-                            mimeTypes.put(nameField, "text/plain");
+                            mimes.put(nameField, "text/plain");
                         } else {
-                            mimeTypes.put(nameField, current.getContentType());
+                            mimes.put(nameField, current.getContentType());
                         }
-                        
+
                         // write out a file in temp space and store it
                         File tempFile = File.createTempFile("mph", ".tmp");
                         OutputStream outStream = new FileOutputStream(tempFile, true);
@@ -165,33 +161,33 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
                         }
                         inRaw.close();
                         outStream.close();
-                        tempFileNames.put(nameField, tempFile.getAbsoluteFile());
+                        fileNames.put(nameField, tempFile.getAbsoluteFile());
                     } else {
                         byte[] stash = new byte[inRaw.available()];
                         inRaw.read(stash);
                         inRaw.close();
 
-                        Object oldParam = stringParameters.get(nameField);
+                        Object oldParam = parameters.get(nameField);
                         if (oldParam == null) {
-                            stringParameters.put(nameField, new String[] {
-                                    new String(stash, encoding)
-                            });
+                            parameters.put(nameField, new String[]{
+                                        new String(stash, encoding)
+                                    });
                         } else {
-                            String oldParams[] = (String []) oldParam;
+                            String oldParams[] = (String[]) oldParam;
                             String newParams[] = new String[oldParams.length + 1];
                             System.arraycopy(oldParams, 0, newParams, 0, oldParams.length);
                             newParams[oldParams.length] = new String(stash, encoding);
-                            stringParameters.put(nameField, newParams);
+                            parameters.put(nameField, newParams);
                         }
                     }
                 }
             }
 
             parts = null;
-            this.stringParameters = Collections.unmodifiableMap(stringParameters);
-            this.mimeTypes = Collections.unmodifiableMap(mimeTypes);
-            this.tempFileNames = Collections.unmodifiableMap(tempFileNames);
-            this.uploadFileNames = Collections.unmodifiableMap(uploadFileNames);
+            this.stringParameters = Collections.unmodifiableMap(parameters);
+            this.mimeTypes = Collections.unmodifiableMap(mimes);
+            this.tempFileNames = Collections.unmodifiableMap(fileNames);
+            this.uploadFileNames = Collections.unmodifiableMap(uploadNames);
 
             // Set this handler into the request attribute set
             request.setAttribute(MPH_ATTRIBUTE, this);
@@ -200,8 +196,9 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public String getParameter(String name) {
-        String parameterValues[] =  getParameterValues(name);
+        String parameterValues[] = getParameterValues(name);
         if ((parameterValues == null) || (parameterValues.length == 0)) {
             return null;
         } else {
@@ -209,6 +206,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
+    @Override
     public Map<String, String[]> getParameterMap() {
         Map<String, String[]> paramMap = new HashMap<String, String[]>();
         for (Enumeration<String> names = this.getParameterNames(); names.hasMoreElements();) {
@@ -219,6 +217,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public Enumeration<String> getParameterNames() {
         Set<String> names = new HashSet<String>(this.stringParameters.keySet());
         names.addAll(this.tempFileNames.keySet());
@@ -227,10 +226,12 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
         return Collections.enumeration(names);
     }
 
+    @Override
     public ServletInputStream getInputStream() throws IOException {
         throw new IOException("InputStream already parsed by the MultipartRequestWrapper class");
     }
 
+    @Override
     public String[] getParameterValues(String name) {
         // Try parent first - since after a forward we want that to have precendence
         String parentValue[] = super.getParameterValues(name);
@@ -240,14 +241,14 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
             return null;
         } else if (name.endsWith(".filename") && isFileUploadParameter(
                 name.substring(0, name.length() - 9))) {
-            return new String[] {getUploadFileName(name.substring(0, name.length() - 9))};
+            return new String[]{getUploadFileName(name.substring(0, name.length() - 9))};
         } else if (name.endsWith(".content-type") && isFileUploadParameter(
                 name.substring(0, name.length() - 13))) {
-            return new String[] {getContentType(name.substring(0, name.length() - 13))};
+            return new String[]{getContentType(name.substring(0, name.length() - 13))};
         } else if (isNonFileUploadParameter(name)) {
-            return (String []) this.stringParameters.get(name);
+            return (String[]) this.stringParameters.get(name);
         } else if (this.isFileUploadParameter(name)) {
-            return new String[] {((File) this.tempFileNames.get(name)).getAbsolutePath()};
+            return new String[]{((File) this.tempFileNames.get(name)).getAbsolutePath()};
         } else {
             return null;
         }
@@ -310,13 +311,13 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
     public boolean isNonFileUploadParameter(String name) {
         return this.stringParameters.containsKey(name);
     }
-    
+
     /**
      * Retrieve a Map of the raw bytes of the parameters supplied in the HTTP POST request.
      */
     public Map<String, byte[]> getRawParameterMap() throws IOException {
         Map<String, byte[]> output = new HashMap<String, byte[]>();
-        for (Iterator<String> i = this.uploadFileNames.keySet().iterator(); i.hasNext(); ) {
+        for (Iterator<String> i = this.uploadFileNames.keySet().iterator(); i.hasNext();) {
             String key = (String) i.next();
             output.put(key, getRawParameter(key));
         }
@@ -336,21 +337,22 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
     public Map<String, String> getUploadFileNameMap() {
         return this.uploadFileNames;
     }
-    
+
     private class MultipartRequestWrapperDataSource implements DataSource {
 
         private byte mimeByteArray[];
         private String contentType;
-        
+
         private MultipartRequestWrapperDataSource(String contentType, byte mimeByteArray[]) {
             this.mimeByteArray = mimeByteArray;
             this.contentType = contentType;
         }
-        
+
         /**
          * Required for implementation of the DataSource interface.
          * Internal use only.
          */
+        @Override
         public String getName() {
             return "MultipartHandler";
         }
@@ -359,6 +361,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
          * Required for implementation of the DataSource interface.
          * Internal use only.
          */
+        @Override
         public String getContentType() {
             return contentType;
         }
@@ -367,6 +370,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
          * Required for implementation of the DataSource interface.
          * Internal use only.
          */
+        @Override
         public java.io.InputStream getInputStream() throws java.io.IOException {
             return new ByteArrayInputStream(this.mimeByteArray);
         }
@@ -375,6 +379,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
          * Required for implementation of the DataSource interface.
          * Internal use only.
          */
+        @Override
         public java.io.OutputStream getOutputStream() throws java.io.IOException {
             throw new IOException("This is a read-only datasource.");
         }
