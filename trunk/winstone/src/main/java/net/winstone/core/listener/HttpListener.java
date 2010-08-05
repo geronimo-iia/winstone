@@ -21,12 +21,11 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.winstone.WinstoneException;
 import net.winstone.WinstoneResourceBundle;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
-import net.winstone.util.StringUtils;
+
 import winstone.HostGroup;
 import winstone.ObjectPool;
 import winstone.RequestHandlerThread;
@@ -50,24 +49,20 @@ public class HttpListener implements Listener, Runnable {
     protected static int KEEP_ALIVE_TIMEOUT = 10000;
     protected static int KEEP_ALIVE_SLEEP = 20;
     protected static int KEEP_ALIVE_SLEEP_MAX = 500;
-    protected HostGroup hostGroup;
-    protected ObjectPool objectPool;
+    protected final HostGroup hostGroup;
+    protected final ObjectPool objectPool;
     protected boolean doHostnameLookups;
     protected int listenPort;
     protected String listenAddress;
-    protected boolean interrupted;
+    protected boolean interrupted = Boolean.FALSE;
     private final String serverVersion;
-
-    protected HttpListener() {
-        super();
-        serverVersion = WinstoneResourceBundle.getInstance().getString("ServerVersion");
-    }
 
     /**
      * Constructor
      */
-    public HttpListener(Map<String, String> args, ObjectPool objectPool, HostGroup hostGroup) throws IOException {
-        this();
+    public HttpListener(final Map<String, String> args, final ObjectPool objectPool, final HostGroup hostGroup) throws IOException {
+        super();
+        serverVersion = WinstoneResourceBundle.getInstance().getString("ServerVersion");
         // Load resources
         this.hostGroup = hostGroup;
         this.objectPool = objectPool;
@@ -82,7 +77,7 @@ public class HttpListener implements Listener, Runnable {
             return false;
         } else {
             this.interrupted = false;
-            Thread thread = new Thread(this, StringUtils.replaceToken("ConnectorThread:[[#0]-[#1]]", getConnectorName(), Integer.toString(this.listenPort)));
+            Thread thread = new Thread(this, "ConnectorThread:[" + getConnectorName() + "-" + Integer.toString(this.listenPort) + "]");
             thread.setDaemon(true);
             thread.start();
             return true;
@@ -124,7 +119,7 @@ public class HttpListener implements Listener, Runnable {
         try {
             ServerSocket ss = getServerSocket();
             ss.setSoTimeout(LISTENER_TIMEOUT);
-            logger.info("HttpListener.ListenerStart", getConnectorName().toUpperCase(), this.listenPort + "");
+            logger.info("{} Listener started: port={}", getConnectorName().toUpperCase(), this.listenPort + "");
 
             // Enter the main loop
             while (!interrupted) {
@@ -146,9 +141,9 @@ public class HttpListener implements Listener, Runnable {
             // Close server socket
             ss.close();
         } catch (Throwable err) {
-            logger.error(err, "HttpListener.ListenerShutdown.error", getConnectorName().toUpperCase());
+            logger.error("Error during " + getConnectorName().toUpperCase() + " listener init or shutdown", err);
         }
-        logger.info("HttpListener.ListenerShutdown.ok", getConnectorName().toUpperCase());
+        logger.info("{} Listener shutdown successfully", getConnectorName().toUpperCase());
     }
 
     /**
@@ -166,7 +161,7 @@ public class HttpListener implements Listener, Runnable {
      */
     @Override
     public void allocateRequestResponse(Socket socket, InputStream inSocket, OutputStream outSocket, RequestHandlerThread handler, boolean iAmFirst) throws SocketException, IOException {
-        logger.trace("HttpListener.allocateRequestResponse", Thread.currentThread().getName());
+        logger.trace("Allocating request/response", Thread.currentThread().getName());
 
         socket.setSoTimeout(CONNECTION_TIMEOUT);
 
@@ -321,7 +316,7 @@ public class HttpListener implements Listener, Runnable {
      * Processes the uri line into it's component parts, determining protocol, method and uri.
      */
     public static String parseURILine(final String uriLine, final WinstoneRequest request, final WinstoneResponse response) {
-        logger.trace("HttpListener.parseURILine", uriLine.trim());
+        logger.trace("URI Line:", uriLine.trim());
 
         // Method
         int spacePos = uriLine.indexOf(' ');

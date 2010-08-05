@@ -19,9 +19,8 @@ import javax.servlet.http.Cookie;
 import net.winstone.WinstoneException;
 
 import net.winstone.core.WinstoneOutputStream;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * Extends the winstone output stream, so that the ajp13 protocol requirements
  * can be fulfilled.
@@ -65,7 +64,7 @@ public class Ajp13OutputStream extends WinstoneOutputStream {
 
     @Override
     public void commit() throws IOException {
-        logger.trace("Ajp13OutputStream.CommittedBytes", "" + this.bytesCommitted);
+        logger.trace("Written {} bytes to response body", "" + this.bytesCommitted);
 
         this.buffer.flush();
 

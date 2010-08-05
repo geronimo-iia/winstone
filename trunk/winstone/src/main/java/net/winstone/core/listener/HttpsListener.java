@@ -26,14 +26,15 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.winstone.WinstoneException;
 
 import winstone.HostGroup;
 import winstone.ObjectPool;
 import winstone.WebAppConfiguration;
 import net.winstone.core.WinstoneRequest;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
 
 /**
  * Implements the main listener daemon thread. This is the class that gets launched by the command line, and owns the server socket, etc.
@@ -44,14 +45,14 @@ import net.winstone.log.LoggerFactory;
 public class HttpsListener extends HttpListener {
 
     private static Logger logger = LoggerFactory.getLogger(HttpListener.class);
-    private String keystore;
-    private String password;
-    private String keyManagerType;
+    private final String keystore;
+    private final String password;
+    private final String keyManagerType;
 
     /**
      * Constructor
      */
-    public HttpsListener(Map<String, String> args, ObjectPool objectPool, HostGroup hostGroup) throws IOException {
+    public HttpsListener(final Map<String, String> args, final ObjectPool objectPool, final HostGroup hostGroup) throws IOException {
         super(args, objectPool, hostGroup);
         this.keystore = WebAppConfiguration.stringArg(args, getConnectorName() + "KeyStore", "winstone.ks");
         this.password = WebAppConfiguration.stringArg(args, getConnectorName() + "KeyStorePassword", null);
@@ -153,17 +154,17 @@ public class HttpsListener extends HttpListener {
 
             File ksFile = new File(keyStoreName);
             if (!ksFile.exists() || !ksFile.isFile()) {
-                throw new WinstoneException("No SSL key store found at "+ ksFile.getPath());
+                throw new WinstoneException("No SSL key store found at " + ksFile.getPath());
             }
             InputStream in = new FileInputStream(ksFile);
             char[] passwordChars = password == null ? null : password.toCharArray();
             KeyStore ks = KeyStore.getInstance("JKS");
             ks.load(in, passwordChars);
             kmf.init(ks, passwordChars);
-            logger.debug("HttpsListener.KeyCount", ks.size() + "");
+            logger.debug("Keys/certificates found: {}", ks.size() + "");
             for (Enumeration<String> e = ks.aliases(); e.hasMoreElements();) {
                 String alias = e.nextElement();
-                logger.debug("HttpsListener.KeyFound", alias, ks.getCertificate(alias) + "");
+                logger.debug("Key: {} - {}", alias, ks.getCertificate(alias) + "");
             }
 
             SSLContext context = SSLContext.getInstance("SSL");

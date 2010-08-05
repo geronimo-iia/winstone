@@ -12,9 +12,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.winstone.WinstoneException;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
+import net.winstone.WinstoneException; 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import winstone.RequestHandlerThread;
 
@@ -49,7 +49,7 @@ public class Ajp13IncomingPacket {
     /**
      * Constructor
      */
-    public Ajp13IncomingPacket(InputStream in, RequestHandlerThread handler) throws IOException {
+    public Ajp13IncomingPacket(final InputStream in, final RequestHandlerThread handler) throws IOException {
         // Get the incoming packet flag
         byte headerBuffer[] = new byte[4];
         int headerBytesRead = 0;
@@ -93,53 +93,53 @@ public class Ajp13IncomingPacket {
         }
 
         this.method = decodeMethodType(packetBytes[position++]);
-        logger.debug("Ajp13IncomingPacket.Method", method);
+        logger.debug("Method: {}", method);
 
         // Protocol
         int protocolLength = readInteger(position, packetBytes, true);
         position += 2;
         this.protocol = (protocolLength > -1) ? readString(position, packetBytes, encoding, protocolLength) : null;
         position += protocolLength + 1;
-        logger.debug("Ajp13IncomingPacket.Protocol", protocol);
+        logger.debug("Protocol: {}", protocol);
 
         // URI
         int uriLength = readInteger(position, packetBytes, true);
         position += 2;
         this.uri = (uriLength > -1) ? readString(position, packetBytes, encoding, uriLength) : null;
         position += uriLength + 1;
-        logger.debug("Ajp13IncomingPacket.URI", uri);
+        logger.debug("URI: {}", uri);
 
         // Remote addr
         int remoteAddrLength = readInteger(position, packetBytes, true);
         position += 2;
         this.remoteAddr = (remoteAddrLength > -1) ? readString(position, packetBytes, encoding, remoteAddrLength) : null;
         position += remoteAddrLength + 1;
-        logger.debug("Ajp13IncomingPacket.RemoteAddress", remoteAddr);
+        logger.debug("Remote address: {}", remoteAddr);
 
         // Remote host
         int remoteHostLength = readInteger(position, packetBytes, true);
         position += 2;
         this.remoteHost = (remoteHostLength > -1) ? readString(position, packetBytes, encoding, remoteHostLength) : null;
         position += remoteHostLength + 1;
-        logger.debug("Ajp13IncomingPacket.RemoteHost", remoteHost);
+        logger.debug("RemoteHost: {}", remoteHost);
 
         // Server name
         int serverNameLength = readInteger(position, packetBytes, true);
         position += 2;
         this.serverName = (serverNameLength > -1) ? readString(position, packetBytes, encoding, serverNameLength) : null;
         position += serverNameLength + 1;
-        logger.debug("Ajp13IncomingPacket.ServerName", serverName);
+        logger.debug("Server name: {}", serverName);
 
         this.serverPort = readInteger(position, packetBytes, false);
         position += 2;
-        logger.debug("Ajp13IncomingPacket.ServerPort", "" + serverPort);
+        logger.debug("Server port: {}", "" + serverPort);
 
         this.isSSL = readBoolean(position++, packetBytes);
-        logger.debug("Ajp13IncomingPacket.SSL", "" + isSSL);
+        logger.debug("SSL: {}", "" + isSSL);
 
         // Read headers
         int headerCount = readInteger(position, packetBytes, false);
-        logger.debug("Ajp13IncomingPacket.HeaderCount", "" + headerCount);
+        logger.debug("Header Count: {}", "" + headerCount);
         position += 2;
         this.headers = new String[headerCount];
         for (int n = 0; n < headerCount; n++) {
@@ -159,7 +159,7 @@ public class Ajp13IncomingPacket {
             position += 2;
             this.headers[n] = headerName + ": " + ((headerValueLength > -1) ? readString(position, packetBytes, encoding, headerValueLength) : "");
             position += headerValueLength + 1;
-            logger.debug("Ajp13IncomingPacket.Header", this.headers[n]);
+            logger.debug("Header: {}", this.headers[n]);
         }
 
         // Attribute parsing
@@ -172,9 +172,9 @@ public class Ajp13IncomingPacket {
             position += attValueLength + 1;
 
             this.attributes.put(attName, attValue);
-            logger.debug("Ajp13IncomingPacket.Attribute", attName, attValue);
+            logger.debug("Attribute: {}={}", attName, attValue);
         }
-        logger.debug("Ajp13IncomingPacket.SuccessfullyReadRequest", "" + packetLength);
+        logger.debug("Successfully read AJP13 packet - length={}", "" + packetLength);
         return this.packetType;
     }
 
