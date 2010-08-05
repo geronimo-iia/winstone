@@ -33,6 +33,7 @@ import org.w3c.dom.Node;
 public class FilterConfiguration implements javax.servlet.FilterConfig {
 
     protected static org.slf4j.Logger logger = LoggerFactory.getLogger(FilterConfiguration.class);
+    
     private final String ELEM_NAME = "filter-name";
     //private final String ELEM_DISPLAY_NAME = "display-name";
     private final String ELEM_CLASS = "filter-class";

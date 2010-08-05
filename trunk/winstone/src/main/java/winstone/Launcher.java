@@ -52,7 +52,7 @@ import winstone.jndi.ContainerJNDIManager;
 public class Launcher implements Runnable {
 
     protected static org.slf4j.Logger logger = LoggerFactory.getLogger(Launcher.class);
-    public final static WinstoneResourceBundle RESOURCES = new WinstoneResourceBundle("winstone.LocalStrings");
+    //public final static WinstoneResourceBundle RESOURCES = new WinstoneResourceBundle("winstone.LocalStrings");
     public static final String EMBEDDED_PROPERTIES = "/embedded.properties";
     public static final String WINSTONE_PROPERTIES = "winstone.properties";
     public static final byte SHUTDOWN_TYPE = (byte) '0';
