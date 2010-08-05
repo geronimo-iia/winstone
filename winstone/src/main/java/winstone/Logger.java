@@ -29,8 +29,8 @@ import net.winstone.WinstoneResourceBundle;
  * @version $Id: Logger.java,v 1.8 2006/11/09 06:01:43 rickknowles Exp $
  */
 public class Logger {
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator"); 
-    
+
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
     public final static String DEFAULT_STREAM = "Winstone";
     public static int MIN = 1;
     public static int ERROR = 2;
@@ -40,7 +40,6 @@ public class Logger {
     public static int DEBUG = 7;
     public static int FULL_DEBUG = 8;
     public static int MAX = 9;
-
     protected static Boolean semaphore = new Boolean(true);
     protected static boolean initialised = false;
     protected static Writer defaultStream;
@@ -60,7 +59,7 @@ public class Logger {
     /**
      * Initialises default streams
      */
-    public static void init(int level, OutputStream defaultStream, 
+    public static void init(int level, OutputStream defaultStream,
             boolean showThrowingThreadArg) {
         synchronized (semaphore) {
             if (!initialised) { // recheck in case we were blocking on another init
@@ -113,10 +112,13 @@ public class Logger {
 
         Writer stream = getStreamByName(name);
         if (stream != null) {
-            try {stream.flush();} catch (IOException err) {}
+            try {
+                stream.flush();
+            } catch (IOException err) {
+            }
         }
     }
-    
+
     private static Writer getStreamByName(String streamName) {
         if ((streamName != null) && streamName.equals(DEFAULT_STREAM)) {
             // As long as the stream has not been nulled, assign the default if not found
@@ -130,14 +132,16 @@ public class Logger {
         } else {
             return defaultStream;
         }
-        
+
     }
 
     public static void setCurrentDebugLevel(int level) {
         if (!initialised) {
             init(level);
-        } else synchronized (semaphore) {
-            currentDebugLevel = level;
+        } else {
+            synchronized (semaphore) {
+                currentDebugLevel = level;
+            }
         }
     }
 
@@ -146,11 +150,11 @@ public class Logger {
      * the contents of the stream.
      */
     private static void logInternal(String streamName, String message, Throwable error) {
-        
+
         if (!initialised) {
             init(INFO);
         }
-        
+
         Writer stream = getStreamByName(streamName);
         if (stream != null) {
             Writer fullMessage = new StringWriter();
@@ -177,11 +181,11 @@ public class Logger {
                     pw.flush();
                 }
                 fullMessage.write(LINE_SEPARATOR);
-                
+
                 stream.write(fullMessage.toString());
                 stream.flush();
             } catch (IOException err) {
-                System.err.println(Launcher.RESOURCES.getString("Logger.StreamWriteError", message));
+                System.err.println("Error writing log message: " + message);
                 err.printStackTrace(System.err);
             }
         }
@@ -250,7 +254,7 @@ public class Logger {
         }
     }
 
-    public static void logDirectMessage(int level, String streamName, String message, 
+    public static void logDirectMessage(int level, String streamName, String message,
             Throwable error) {
         if (currentDebugLevel < level) {
             return;

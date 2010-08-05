@@ -17,6 +17,7 @@ import java.util.Set;
 import net.winstone.cluster.Cluster;
 
 import net.winstone.WinstoneException;
+import org.slf4j.LoggerFactory;
 
 /**
  * Manages the references to individual hosts within the container. This object handles the mapping of ip addresses and hostnames to groups
@@ -27,6 +28,7 @@ import net.winstone.WinstoneException;
  */
 public class HostGroup {
 
+    protected static org.slf4j.Logger logger = LoggerFactory.getLogger(HostGroup.class);
     private final static transient String DEFAULT_HOSTNAME = "default";
     /** map of host configuration */
     private final Map<String, HostConfiguration> hostConfigs;
@@ -41,11 +43,11 @@ public class HostGroup {
      * @param args
      * @throws IOException
      */
-    public HostGroup(ClassLoader commonLibCL, String jspClasspath, Map<String, String> args) throws IOException {
+    public HostGroup(final ClassLoader commonLibCL, final String jspClasspath, final Map<String, String> args) throws IOException {
         this(null, null, commonLibCL, jspClasspath, args);
     }
 
-    public HostGroup(Cluster cluster, ObjectPool objectPool, ClassLoader commonLibCL, String jspClasspath, Map<String, String> args) throws IOException {
+    public HostGroup(final Cluster cluster, final ObjectPool objectPool, final ClassLoader commonLibCL, final String jspClasspath, final Map<String, String> args) throws IOException {
         super();
         this.hostConfigs = new HashMap<String, HostConfiguration>();
 
@@ -57,15 +59,11 @@ public class HostGroup {
         if (hostDirName == null) {
             addHostConfiguration(webappsDirName, DEFAULT_HOSTNAME, cluster, objectPool, commonLibCL, jspClasspath, args);
             this.defaultHostName = DEFAULT_HOSTNAME;
-            Logger.log(Logger.DEBUG, Launcher.RESOURCES, "HostGroup.InitSingleComplete", new String[]{
-                        this.hostConfigs.size() + "", this.hostConfigs.keySet() + ""
-                    });
+            logger.debug("Initialized in non-virtual-host mode");
         } // Otherwise multi-host mode
         else {
             initMultiHostDir(hostDirName, cluster, objectPool, commonLibCL, jspClasspath, args);
-            Logger.log(Logger.DEBUG, Launcher.RESOURCES, "HostGroup.InitMultiComplete", new String[]{
-                        this.hostConfigs.size() + "", this.hostConfigs.keySet() + ""
-                    });
+            logger.debug("Initialized in virtual host mode with {} hosts: hostnames - {}", this.hostConfigs.size() + "", this.hostConfigs.keySet() + "");
         }
     }
 
@@ -99,7 +97,7 @@ public class HostGroup {
      */
     protected final void addHostConfiguration(String webappsDirName, String hostname, Cluster cluster, ObjectPool objectPool,
             ClassLoader commonLibCL, String jspClasspath, Map<String, String> args) throws IOException {
-        Logger.log(Logger.DEBUG, Launcher.RESOURCES, "HostGroup.DeployingHost", hostname);
+        logger.debug("Deploying host found at {}", hostname);
         HostConfiguration config = new HostConfiguration(hostname, cluster, objectPool, commonLibCL, jspClasspath, args, webappsDirName);
         this.hostConfigs.put(hostname, config);
     }
@@ -122,13 +120,13 @@ public class HostGroup {
         }
         File hostsDir = new File(hostsDirName);
         if (!hostsDir.exists()) {
-            throw new WinstoneException(Launcher.RESOURCES.getString("HostGroup.HostsDirNotFound", hostsDirName));
+            throw new WinstoneException("Hosts dir " + hostsDirName + " not foundd");
         } else if (!hostsDir.isDirectory()) {
-            throw new WinstoneException(Launcher.RESOURCES.getString("HostGroup.HostsDirIsNotDirectory", hostsDirName));
+            throw new WinstoneException("Hosts dir " + hostsDirName + " is not a directory");
         } else {
             File children[] = hostsDir.listFiles();
             if ((children == null) || (children.length == 0)) {
-                throw new WinstoneException(Launcher.RESOURCES.getString("HostGroup.HostsDirIsEmpty", hostsDirName));
+                throw new WinstoneException("Hosts dir " + hostsDirName + " is empty (no child webapps found)");
             }
             for (int n = 0; n < children.length; n++) {
                 String childName = children[n].getName();

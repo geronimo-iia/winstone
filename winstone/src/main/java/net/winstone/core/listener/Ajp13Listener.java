@@ -193,7 +193,7 @@ public class Ajp13Listener implements Listener, Runnable {
                 while (position < contentLength) {
                     outSocket.write(getBodyRequestPacket(Math.min(contentLength - position, 8184)));
                     position = getBodyResponsePacket(inSocket, bodyContent, position);
-                    logger.debug("Read {}/[#1] bytes from request body", "" + position, "" + contentLength);
+                    logger.debug("Read {}/{} bytes from request body", "" + position, "" + contentLength);
 
                 }
                 inData = new WinstoneInputStream(bodyContent);

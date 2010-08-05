@@ -142,17 +142,17 @@ public class StaticResourceServlet extends HttpServlet {
 
         // Send a 404 if not found
         if (!res.exists()) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, StringUtils.replaceToken("File [#0] not found", path));
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, StringUtils.replaceToken("File {} not found", path));
         } // Check we are below the webroot
         else if (!isDescendant(this.webRoot, res, this.webRoot)) {
             logger.debug("Requested path {} was outside the webroot {}", res.getCanonicalPath(), this.webRoot.toString());
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, StringUtils.replaceToken("Illegal path error - [#0]", path));
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, StringUtils.replaceToken("Illegal path error - {}", path));
         } // Check we are not below the web-inf
         else if (!isInclude && !isForward && isDescendant(new File(this.webRoot, "WEB-INF"), res, this.webRoot)) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, StringUtils.replaceToken("Illegal path error - [#0]", path));
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, StringUtils.replaceToken("Illegal path error - {}", path));
         } // Check we are not below the meta-inf
         else if (!isInclude && !isForward && isDescendant(new File(this.webRoot, "META-INF"), res, this.webRoot)) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, StringUtils.replaceToken("Illegal path error - [#0]", path));
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, StringUtils.replaceToken("Illegal path error - {}", path));
         } // check for the directory case
         else if (res.isDirectory()) {
             if (path.endsWith("/")) {
