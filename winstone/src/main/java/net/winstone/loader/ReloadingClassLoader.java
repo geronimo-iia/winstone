@@ -20,9 +20,8 @@ import java.util.jar.JarFile;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.winstone.util.StringUtils;
 import winstone.WebAppConfiguration;
 
@@ -43,7 +42,7 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
     private File classPaths[];
     private int classPathsLength;
 
-    public ReloadingClassLoader(URL urls[], ClassLoader parent) {
+    public ReloadingClassLoader(final URL urls[], final ClassLoader parent) {
         super(urls, parent);
         this.loadedClasses = new HashSet<String>();
         if (urls != null) {
@@ -55,7 +54,7 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
     }
 
     @Override
-    protected void addURL(URL url) {
+    protected void addURL(final URL url) {
         super.addURL(url);
         synchronized (this.loadedClasses) {
             if (this.classPaths == null) {
@@ -71,7 +70,7 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
     }
 
     @Override
-    public void contextInitialized(ServletContextEvent sce) {
+    public void contextInitialized(final ServletContextEvent sce) {
         this.webAppConfig = (WebAppConfiguration) sce.getServletContext();
         this.interrupted = false;
         synchronized (this) {
@@ -84,7 +83,7 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
     }
 
     @Override
-    public void contextDestroyed(ServletContextEvent sce) {
+    public void contextDestroyed(final ServletContextEvent sce) {
         this.interrupted = true;
         this.webAppConfig = null;
         synchronized (this) {
@@ -141,7 +140,7 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
                     if (classDate == null) {
                         if (!lostClasses.contains(className)) {
                             lostClasses.add(className);
-                            logger.debug(StringUtils.replace("WARNING: Maintenance thread can't find class [#0] - Lost ? Ignoring", "[#0]", className));
+                            logger.debug("WARNING: Maintenance thread can't find class {} - Lost ? Ignoring", className);
                         }
                         continue;
                     }
@@ -156,7 +155,9 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
                         classDateTable.put(className, classDate);
                     } else if (oldClassDate.compareTo(classDate) != 0) {
                         // Trigger reset of webAppConfig
-                        logger.info(StringUtils.replaceToken("Class [#0] changed at [#1] (old date [#2]) - reloading", className, new Date(classDate.longValue()).toString(), new Date(oldClassDate.longValue()).toString()));
+                        logger.info("Class {} changed at {} (old date {}) - reloading",
+                                new Object[]{
+                                    className, new Date(classDate.longValue()).toString(), new Date(oldClassDate.longValue()).toString()});
                         this.webAppConfig.resetClassLoader();
                     }
                 }
@@ -168,7 +169,7 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
     }
 
     @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
+    protected Class<?> findClass(final String name) throws ClassNotFoundException {
         synchronized (this) {
             this.loadedClasses.add("Class:" + name);
         }
@@ -176,7 +177,7 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
     }
 
     @Override
-    public URL findResource(String name) {
+    public URL findResource(final String name) {
         synchronized (this) {
             this.loadedClasses.add(name);
         }
@@ -186,7 +187,7 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
     /**
      * Iterates through a jar file searching for a class. If found, it returns that classes date
      */
-    private Long searchJarPath(String classResourceName, File path) throws IOException, InterruptedException {
+    private Long searchJarPath(final String classResourceName, final File path) throws IOException, InterruptedException {
         JarFile jar = new JarFile(path);
         for (Enumeration<JarEntry> e = jar.entries(); e.hasMoreElements() && !interrupted;) {
             JarEntry entry = (JarEntry) e.nextElement();
@@ -197,7 +198,7 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
         return null;
     }
 
-    private static String transformToFileFormat(String name) {
+    private static String transformToFileFormat(final String name) {
         if (!name.startsWith("Class:")) {
             return name;
         }

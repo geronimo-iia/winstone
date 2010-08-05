@@ -13,11 +13,10 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Map;
 
-import net.winstone.WinstoneResourceBundle;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
 import winstone.Launcher;
 import winstone.WebAppConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Included so that we can control winstone from the command line a little more easily.
@@ -30,30 +29,30 @@ import winstone.WebAppConfiguration;
  * @version $Id: WinstoneControl.java,v 1.6 2006/03/13 15:37:29 rickknowles Exp $
  */
 public class WinstoneControl {
-    private final static WinstoneResourceBundle TOOLS_RESOURCES = new WinstoneResourceBundle("net.winstone.tools");
+
     private final static int TIMEOUT = 10000;
     protected Logger logger = LoggerFactory.getLogger(getClass());
-    
+
     public WinstoneControl() {
         super();
     }
-    
+
     /**
      * Parses command line parameters, and calls the appropriate method for executing the winstone operation required.
      */
     public static void main(String argv[]) {
         new WinstoneControl().call(argv);
     }
-    
+
     /**
      * Displays the usage message
      */
     private static void printUsage() {
-        System.out.println(TOOLS_RESOURCES.getString("WinstoneControl.Usage"));
+        System.out.println("Winstone Command Line Controller\nUsage: java winstone.tools.WinstoneControl <operation> --host=<host> --port=<control port>\n\n<operation> can be \"shutdown\" or \"reload:<prefix>\"");
     }
-    
+
     public void call(String[] argv) {
-        
+
         // Load args from the config file
         Map<String, String> options = null;
         try {
@@ -63,35 +62,33 @@ public class WinstoneControl {
             return;
         }
         assert options != null;
-        
+
         String operation = options.get("operation");
         if (options.containsKey("controlPort") && !options.containsKey("port")) {
             options.put("port", options.get("controlPort"));
         }
-        
+
         if (operation == null || operation.equals("")) {
             printUsage();
             return;
         }
-        
+
         String host = WebAppConfiguration.stringArg(options, "host", "localhost");
         String port = WebAppConfiguration.stringArg(options, "port", "8081");
-        logger.info(TOOLS_RESOURCES.getString("WinstoneControl.UsingHostPort", host, port));
-        
+        logger.info("Connecting to {}:{}", host, port);
+
         // Check for shutdown
         if (operation.equalsIgnoreCase("shutdown")) {
             execute(host, port, Launcher.SHUTDOWN_TYPE, null);
-        }
-
-        // check for reload
+        } // check for reload
         else if (operation.toLowerCase().startsWith("reload:")) {
             execute(host, port, Launcher.RELOAD_TYPE, operation.substring("reload:".length()));
-            logger.info(TOOLS_RESOURCES.getString("WinstoneControl.ReloadOK", host, port));
+            logger.info("Successfully sent webapp reload command to {}:{}", host, port);
         } else {
             printUsage();
         }
     }
-    
+
     /**
      * Execute a call for the specified command.
      * 
@@ -113,14 +110,14 @@ public class WinstoneControl {
                 objOut.writeUTF(extra);
                 objOut.close();
             }
-            logger.info(TOOLS_RESOURCES.getString("WinstoneControl.ShutdownOK", host, port));
-            
+            logger.info("Successfully sent server shutdown command to {}:{}", host, port);
+
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.error("execute: " + command, e);
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            logger.error("execute: " + command, e);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("execute: " + command, e);
         } finally {
             if (socket != null) {
                 try {
@@ -130,5 +127,4 @@ public class WinstoneControl {
             }
         }
     }
-    
 }

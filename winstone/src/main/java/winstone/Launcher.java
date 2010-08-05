@@ -38,9 +38,9 @@ import net.winstone.cluster.SimpleCluster;
 import net.winstone.core.listener.Ajp13Listener;
 import net.winstone.core.listener.HttpListener;
 import net.winstone.core.listener.HttpsListener;
-import net.winstone.log.LoggerFactory;
+
 import net.winstone.util.FileUtils;
-import net.winstone.util.StringUtils;
+import org.slf4j.LoggerFactory;
 import winstone.jndi.ContainerJNDIManager;
 
 /**
@@ -51,9 +51,10 @@ import winstone.jndi.ContainerJNDIManager;
  */
 public class Launcher implements Runnable {
 
-    protected static net.winstone.log.Logger logger = LoggerFactory.getLogger(Launcher.class);
+    protected static org.slf4j.Logger logger = LoggerFactory.getLogger(Launcher.class);
+    public final static WinstoneResourceBundle RESOURCES = new WinstoneResourceBundle("winstone.LocalStrings");
     public static final String EMBEDDED_PROPERTIES = "/embedded.properties";
-    public static final String WINSTONE_PROPERTIES = "winstone.properties"; 
+    public static final String WINSTONE_PROPERTIES = "winstone.properties";
     public static final byte SHUTDOWN_TYPE = (byte) '0';
     public static final byte RELOAD_TYPE = (byte) '4';
     private static final String EMBEDDED_WAR = "/embedded.war";
@@ -61,7 +62,6 @@ public class Launcher implements Runnable {
     private int CONTROL_TIMEOUT = 2000; // wait 2s for control connection
     private int DEFAULT_CONTROL_PORT = -1;
     private Thread controlThread;
-    public final static WinstoneResourceBundle RESOURCES = new WinstoneResourceBundle("winstone.LocalStrings");
     private int controlPort;
     private HostGroup hostGroup;
     private ObjectPool objectPool;
@@ -91,7 +91,7 @@ public class Launcher implements Runnable {
             }
         }
 
-        logger.debug("Launcher.StartupArg", args.toString());
+        logger.debug("Winstone startup arguments: {}", args.toString());
 
         this.args = args;
         this.controlPort = (args.get("controlPort") == null ? DEFAULT_CONTROL_PORT : Integer.parseInt((String) args.get("controlPort")));
@@ -102,7 +102,7 @@ public class Launcher implements Runnable {
         // Check for java home
         String defaultJavaHome = System.getProperty("java.home");
         String javaHome = WebAppConfiguration.stringArg(args, "javaHome", defaultJavaHome);
-        logger.debug("Launcher.JavaHome", javaHome);
+        logger.debug("Using JAVA_HOME={}", javaHome);
         String toolsJarLocation = WebAppConfiguration.stringArg(args, "toolsJar", null);
         File toolsJar = null;
         if (toolsJarLocation == null) {
@@ -126,7 +126,7 @@ public class Launcher implements Runnable {
         if (toolsJar.exists()) {
             jars.add(toolsJar.toURI().toURL());
             jspClasspaths.add(toolsJar);
-            logger.debug("Launcher.AddingClasspath", toolsJar.getName());
+            logger.debug("Adding {} to common classpath", toolsJar.getName());
         } else if (WebAppConfiguration.booleanArg(args, "useJasper", false)) {
             logger.warn("WARNING: Tools.jar was not found - jsp compilation will cause errors. Maybe you should set JAVA_HOME using --javaHome");
         }
@@ -135,14 +135,14 @@ public class Launcher implements Runnable {
         String commonLibCLFolder = WebAppConfiguration.stringArg(args, "commonLibFolder", "lib");
         File libFolder = new File(commonLibCLFolder);
         if (libFolder.exists() && libFolder.isDirectory()) {
-            logger.debug("Launcher.CommonLibFolder", libFolder.getCanonicalPath());
+            logger.debug("Using common lib folder: {}", libFolder.getCanonicalPath());
             File children[] = libFolder.listFiles();
             for (int n = 0; n < children.length; n++) {
                 if (children[n].getName().endsWith(".jar") || children[n].getName().endsWith(".zip")) {
                     jars.add(children[n].toURI().toURL());
                     //jars.add(children[n].toURL());
                     jspClasspaths.add(children[n]);
-                    logger.debug("Launcher.AddingClasspath", children[n].getName());
+                    logger.debug("Adding {} to common classpath", children[n].getName());
                 }
             }
         } else {
@@ -158,7 +158,7 @@ public class Launcher implements Runnable {
                     jars.add(url);
                     // add for jsp classpath in webapp!
                     //commonLibCLPaths.add(children[n]);
-                    logger.debug("Launcher.AddingClasspath", childrenName[n]);
+                    logger.debug("Adding {} to common classpath", childrenName[n]);
                 }
             }
         } catch (URISyntaxException ex) {
@@ -168,8 +168,8 @@ public class Launcher implements Runnable {
 
 
         ClassLoader commonLibCL = new URLClassLoader((URL[]) jars.toArray(new URL[jars.size()]), getClass().getClassLoader());
-        logger.debug("Initializing Common Lib classloader: " + commonLibCL.toString());
-        logger.debug("Initializing JSP Common Lib classloader: " + jspClasspaths.toString());
+        logger.debug("Initializing Common Lib classloader: {}", commonLibCL.toString());
+        logger.debug("Initializing JSP Common Lib classloader: {}", jspClasspaths.toString());
         /** calcule de m'attribut pour les jsp */
         StringBuilder cp = new StringBuilder();
         File[] fa = (File[]) jspClasspaths.toArray(new File[0]);
@@ -220,7 +220,7 @@ public class Launcher implements Runnable {
             } catch (ClassNotFoundException err) {
                 logger.debug("JNDI disabled at container level - can't find JNDI Manager class");
             } catch (Throwable err) {
-                logger.error(StringUtils.replaceToken("JNDI disabled at container level - couldn't load JNDI Manager: [#0]", jndiMgrClassName), err);
+                logger.error("JNDI disabled at container level - couldn't load JNDI Manager: " + jndiMgrClassName, err);
             }
         }
 
@@ -235,10 +235,10 @@ public class Launcher implements Runnable {
             Class.forName("javax.net.ServerSocketFactory");
             spawnListener(HttpsListener.class.getName());
         } catch (ClassNotFoundException err) {
-            logger.debug("Launcher.ServerSocketFactory", HttpsListener.class.getName());
+            logger.debug("Listener class {} needs JDK1.4 support. Disabling", HttpsListener.class.getName());
         }
 
-        this.controlThread = new Thread(this, StringUtils.replaceToken("LauncherControlThread[ControlPort=[#0]]", Integer.toString(this.controlPort)));
+        this.controlThread = new Thread(this, "LauncherControlThread[ControlPort=" + Integer.toString(this.controlPort) + "]]");
         this.controlThread.setDaemon(false);
         this.controlThread.start();
 
@@ -263,9 +263,9 @@ public class Launcher implements Runnable {
                 this.listeners.add(listener);
             }
         } catch (ClassNotFoundException err) {
-            logger.info(StringUtils.replaceToken("Listener [#0] not found / disabled - ignoring", listenerClassName));
+            logger.info("Listener {} not found / disabled - ignoring", listenerClassName);
         } catch (Throwable err) {
-            logger.error("Error during listener startup" + listenerClassName, err);
+            logger.error("Error during listener startup " + listenerClassName, err);
         }
     }
 
@@ -292,8 +292,9 @@ public class Launcher implements Runnable {
                 controlSocket.setSoTimeout(CONTROL_TIMEOUT);
             }
             if (logger.isInfoEnabled()) {
-                logger.info(StringUtils.replaceToken("[#0] running: controlPort=[#1]",
-                        WinstoneResourceBundle.getInstance().getString("ServerVersion"), (this.controlPort > 0 ? Integer.toString(this.controlPort) : "disabled")));
+                logger.info("{} running: controlPort={}", new Object[]{
+                            WinstoneResourceBundle.getInstance().getString("ServerVersion"),
+                            (this.controlPort > 0 ? Integer.toString(this.controlPort) : "disabled")});
             }
 
             // Enter the main loop
@@ -354,7 +355,7 @@ public class Launcher implements Runnable {
                 inControl = new ObjectInputStream(inSocket);
                 String host = inControl.readUTF();
                 String prefix = inControl.readUTF();
-                logger.info("Reload request received via the controlPort. Commencing Winstone reload from " + host + prefix);
+                logger.info("Reload request received via the controlPort. Commencing Winstone reload from {}{}", host, prefix);
                 HostConfiguration hostConfig = this.hostGroup.getHostByName(host);
                 hostConfig.reloadWebApp(prefix);
             } else if (this.cluster != null) {
@@ -497,7 +498,7 @@ public class Launcher implements Runnable {
             loadPropsFromStream(inConfig, args);
             inConfig.close();
             initLogger(args);
-            logger.debug(StringUtils.replaceToken("Property file found ([#0]) - loading", configFilename));
+            logger.debug("Property file found ({}) - loading", configFilename);
         } else {
             initLogger(args);
         }
@@ -515,7 +516,7 @@ public class Launcher implements Runnable {
             String embeddedWebroot = WS_EMBEDDED_WAR;
             File tempWebroot = new File(tempWarfile.getParentFile(), embeddedWebroot);
             tempWebroot.mkdirs();
-            logger.debug(StringUtils.replaceToken("Extracting embedded warfile to [#0]", tempWarfile.getAbsolutePath()));
+            logger.debug("Extracting embedded warfile to {}", tempWarfile.getAbsolutePath());
             OutputStream out = new FileOutputStream(tempWarfile, true);
             int read = 0;
             byte buffer[] = new byte[2048];

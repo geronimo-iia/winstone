@@ -8,7 +8,7 @@ public final class Slf4jLogger extends AbstractLogger implements Logger {
     private final org.slf4j.Logger logger;
 
     public Slf4jLogger(final Map<String, String> bundle) {
-        this(bundle, "net.winstone.log");
+        this(null, "net.winstone.log");
     }
 
     public Slf4jLogger(final Map<String, String> bundle, final String name) {

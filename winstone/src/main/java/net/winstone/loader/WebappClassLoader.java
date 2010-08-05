@@ -11,9 +11,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
 
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
-import net.winstone.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implements the servlet spec model (v2.3 section 9.7.2) for classloading, which is different to the standard JDK model in that it
@@ -29,20 +28,20 @@ public class WebappClassLoader extends URLClassLoader {
     private Logger logger = LoggerFactory.getLogger(getClass());
     protected ClassLoader system = getSystemClassLoader();
 
-    public WebappClassLoader(URL[] urls) {
+    public WebappClassLoader(final URL[] urls) {
         super(urls);
     }
 
-    public WebappClassLoader(URL[] urls, ClassLoader parent) {
+    public WebappClassLoader(final URL[] urls, final ClassLoader parent) {
         super(urls, parent);
     }
 
-    public WebappClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
+    public WebappClassLoader(final URL[] urls, final ClassLoader parent, final URLStreamHandlerFactory factory) {
         super(urls, parent, factory);
     }
 
     @Override
-    protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+    protected synchronized Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
         // First, check if the class has already been loaded
         Class<?> c = findLoadedClass(name);
 
@@ -53,7 +52,7 @@ public class WebappClassLoader extends URLClassLoader {
             try {
                 c = system.loadClass(name);
                 if (c != null) {
-                    logger.debug(StringUtils.replace("Webapp classloader deferred to system classloader for loading [#0]", "[#0]", name));
+                    logger.debug("Webapp classloader deferred to system classloader for loading {}", name);
                 }
             } catch (ClassNotFoundException e) {
                 c = null;
@@ -66,7 +65,7 @@ public class WebappClassLoader extends URLClassLoader {
                 // If still not found, then invoke findClass in order to find the class.
                 c = findClass(name);
                 if (c != null) {
-                    logger.debug(StringUtils.replace("Webapp classloader found class locally when loading [#0]", "[#0]", name));
+                    logger.debug("Webapp classloader found class locally when loading {}", name);
                 }
             } catch (ClassNotFoundException e) {
                 c = null;
@@ -81,7 +80,7 @@ public class WebappClassLoader extends URLClassLoader {
             if (parent != null) {
                 c = parent.loadClass(name);
                 if (c != null) {
-                    logger.debug(StringUtils.replace("Webapp classloader deferred to parent for loading [#0]", "[#0]", name));
+                    logger.debug("Webapp classloader deferred to parent for loading {}", name);
                 }
             } else {
                 // We have no other hope for loading the class, so throw the class not found exception
@@ -96,10 +95,11 @@ public class WebappClassLoader extends URLClassLoader {
     }
 
     @Override
-    public InputStream getResourceAsStream(String name) {
+    public InputStream getResourceAsStream(final String name) {
+        String pName = name;
         if ((name != null) && name.startsWith("/")) {
-            name = name.substring(1);
+            pName = name.substring(1);
         }
-        return super.getResourceAsStream(name);
+        return super.getResourceAsStream(pName);
     }
 }
