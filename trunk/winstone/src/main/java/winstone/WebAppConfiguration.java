@@ -64,6 +64,7 @@ import net.winstone.core.WinstoneConstant;
 import net.winstone.core.authentication.realm.ArgumentsRealm;
 import net.winstone.loader.ReloadingClassLoader;
 import net.winstone.loader.WebappClassLoader;
+import net.winstone.servlet.ErrorServlet;
 import net.winstone.servlet.InvokerServlet;
 import net.winstone.servlet.StaticResourceServlet;
 import org.slf4j.LoggerFactory;
@@ -124,16 +125,9 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     private static final String JSPX_SERVLET_MAPPING = "*.jspx";
     private static final String JSP_SERVLET_LOG_LEVEL = "WARNING";
     private static final String INVOKER_SERVLET_NAME = "invoker";
-    //private static final String INVOKER_SERVLET_CLASS = "winstone.invoker.InvokerServlet";
     private static final String DEFAULT_INVOKER_PREFIX = "/servlet/";
     private static final String DEFAULT_SERVLET_NAME = "default";
-    //private static final String DEFAULT_SERVLET_CLASS = "winstone.StaticResourceServlet";
-    //private static final String DEFAULT_REALM_CLASS = "winstone.realm.ArgumentsRealm";
-    //private static final String DEFAULT_JNDI_MGR_CLASS = "winstone.jndi.WebAppJNDIManager";
-    //private static final String RELOADING_CL_CLASS = "winstone.classLoader.ReloadingClassLoader";
-    //private static final String WEBAPP_CL_CLASS = "winstone.classLoader.WebappClassLoader";
     private static final String ERROR_SERVLET_NAME = "winstoneErrorServlet";
-    //private static final String ERROR_SERVLET_CLASS = "winstone.ErrorServlet";
     private static final String WEB_INF = "WEB-INF";
     private static final String CLASSES = "classes/";
     private static final String LIB = "lib";
@@ -259,7 +253,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         // Check jasper is available - simple tests
         if (useJasper) {
             try {
-                Class.forName("javax.servlet.jsp.JspFactory", true, parentClassLoader);
+                Class.forName(WinstoneConstant.JAVAX_JSP_FACTORY, true, parentClassLoader);
                 Class.forName(WinstoneConstant.JSP_SERVLET_CLASS, true, this.loader);
             } catch (Throwable err) {
                 if (booleanArg(startupArgs, "useJasper", false)) {
@@ -791,7 +785,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 
         // If we don't have an instance of the default servlet, mount the inbuilt one
         if (this.servletInstances.get(this.errorServletName) == null) {
-            ServletConfiguration errorServlet = new ServletConfiguration(this, this.errorServletName, StaticResourceServlet.class.getName(), new HashMap<String, String>(), 0);
+            ServletConfiguration errorServlet = new ServletConfiguration(this, this.errorServletName, ErrorServlet.class.getName(), new HashMap<String, String>(), 0);
             this.servletInstances.put(this.errorServletName, errorServlet);
             startupServlets.add(errorServlet);
         }
