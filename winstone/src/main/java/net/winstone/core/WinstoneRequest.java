@@ -43,7 +43,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import winstone.auth.AuthenticationPrincipal;
+import net.winstone.core.authentication.AuthenticationPrincipal;
 
 import net.winstone.WinstoneException;
 

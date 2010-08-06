@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.winstone.util.StringUtils;
-import winstone.auth.AuthenticationPrincipal;
+import net.winstone.core.authentication.AuthenticationPrincipal;
 
 /**
  * Implements the main listener daemon thread. This is the class that gets launched by the command line, and owns the server socket, etc.

@@ -4,7 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone.auth;
+package net.winstone.core.authentication;
 
 import java.io.Serializable;
 import java.security.Principal;
@@ -33,6 +33,7 @@ public class AuthenticationPrincipal implements Principal, Serializable {
         this.roles = roles;
     }
 
+    @Override
     public String getName() {
         return this.userName;
     }
