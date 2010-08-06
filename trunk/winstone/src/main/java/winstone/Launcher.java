@@ -38,13 +38,15 @@ import net.winstone.cluster.SimpleCluster;
 import net.winstone.core.listener.Ajp13Listener;
 import net.winstone.core.listener.HttpListener;
 import net.winstone.core.listener.HttpsListener;
+import net.winstone.jndi.JndiManager;
 
 import net.winstone.util.FileUtils;
 import org.slf4j.LoggerFactory;
-import winstone.jndi.ContainerJNDIManager;
 
 /**
  * Implements the main launcher daemon thread. This is the class that gets launched by the command line, and owns the server socket, etc.
+ *
+ * TODO add jndi parameter analyse
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: Launcher.java,v 1.29 2007/04/23 02:55:35 rickknowles Exp $
@@ -52,7 +54,6 @@ import winstone.jndi.ContainerJNDIManager;
 public class Launcher implements Runnable {
 
     protected static org.slf4j.Logger logger = LoggerFactory.getLogger(Launcher.class);
-    //public final static WinstoneResourceBundle RESOURCES = new WinstoneResourceBundle("winstone.LocalStrings");
     public static final String EMBEDDED_PROPERTIES = "/embedded.properties";
     public static final String WINSTONE_PROPERTIES = "winstone.properties";
     public static final byte SHUTDOWN_TYPE = (byte) '0';
@@ -68,7 +69,7 @@ public class Launcher implements Runnable {
     private List<Listener> listeners;
     private Map<String, String> args;
     private Cluster cluster;
-    private JNDIManager globalJndiManager;
+    private JndiManager globalJndiManager;
 
     /**
      * Constructor - initialises the web app, object pools, control port and the available protocol listeners.
@@ -80,12 +81,12 @@ public class Launcher implements Runnable {
         // Set jndi resource handler if not set (workaround for JamVM bug)
         if (useJNDI) {
             try {
-                Class<?> ctxFactoryClass = Class.forName("winstone.jndi.java.javaURLContextFactory");
+                Class<?> ctxFactoryClass = Class.forName("net.winstone.jndi.java.javaURLContextFactory");
                 if (System.getProperty("java.naming.factory.initial") == null) {
                     System.setProperty("java.naming.factory.initial", ctxFactoryClass.getName());
                 }
                 if (System.getProperty("java.naming.factory.url.pkgs") == null) {
-                    System.setProperty("java.naming.factory.url.pkgs", "winstone.jndi");
+                    System.setProperty("java.naming.factory.url.pkgs", "net.winstone.jndi");
                 }
             } catch (ClassNotFoundException err) {
             }
@@ -206,17 +207,12 @@ public class Launcher implements Runnable {
 
         // If jndi is enabled, run the container wide jndi populator
         if (useJNDI) {
-            String jndiMgrClassName = WebAppConfiguration.stringArg(args, "containerJndiClassName", ContainerJNDIManager.class.getName()).trim();
+            String jndiMgrClassName = WebAppConfiguration.stringArg(args, "containerJndiClassName", JndiManager.class.getName()).trim();
             try {
                 // Build the realm
                 Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, true, commonLibCL);
-                Constructor<?> jndiMgrConstr = jndiMgrClass.getConstructor(new Class[]{
-                            Map.class, List.class, ClassLoader.class
-                        });
-                this.globalJndiManager = (JNDIManager) jndiMgrConstr.newInstance(new Object[]{
-                            args, null, commonLibCL
-                        });
-                this.globalJndiManager.setup();
+                this.globalJndiManager = (JndiManager) jndiMgrClass.newInstance();
+                this.globalJndiManager.initialize();
             } catch (ClassNotFoundException err) {
                 logger.debug("JNDI disabled at container level - can't find JNDI Manager class");
             } catch (Throwable err) {
@@ -395,7 +391,7 @@ public class Launcher implements Runnable {
         }
         this.hostGroup.destroy();
         if (this.globalJndiManager != null) {
-            this.globalJndiManager.tearDown();
+            this.globalJndiManager.destroy();
         }
 
         if (this.controlThread != null) {

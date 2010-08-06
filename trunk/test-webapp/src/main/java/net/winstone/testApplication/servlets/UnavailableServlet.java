@@ -26,6 +26,7 @@ public class UnavailableServlet extends HttpServlet {
     private static final long serialVersionUID = 4534971467464517373L;
     protected boolean errorAtInit;
     
+    @Override
     public void init() throws ServletException {
         String errorTime = getServletConfig().getInitParameter("errorTime");
         this.errorAtInit = ((errorTime == null) || errorTime.equals("init"));
@@ -33,6 +34,7 @@ public class UnavailableServlet extends HttpServlet {
             throw new UnavailableException("Error thrown deliberately during init");
     }
     
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         if (!this.errorAtInit)
             throw new UnavailableException("Error thrown deliberately during get");
