@@ -53,4 +53,5 @@ public class WinstoneConstant {
     // JSP Constant
     public static final transient String JSP_SERVLET_NAME = "JspServlet";
     public static final transient String JSP_SERVLET_CLASS = "org.apache.jasper.servlet.JspServlet";
+    public static final transient String JAVAX_JSP_FACTORY = "javax.servlet.jsp.JspFactory";
 }
