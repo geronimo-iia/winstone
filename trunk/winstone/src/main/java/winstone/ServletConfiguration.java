@@ -19,6 +19,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletResponse;
+import net.winstone.core.WinstoneConstant;
 import org.slf4j.LoggerFactory;
 
 import org.w3c.dom.Node;
@@ -144,7 +145,7 @@ public class ServletConfiguration implements javax.servlet.ServletConfig, Compar
         }
 
         if ((this.jspFile != null) && (this.className == null)) {
-            this.className = WebAppConfiguration.JSP_SERVLET_CLASS;
+            this.className = WinstoneConstant.JSP_SERVLET_CLASS;
             WebAppConfiguration.addJspServletParams(this.initParams);
         }
         logger.debug("Loaded servlet instance {} class: {}", this.servletName, this.className);
