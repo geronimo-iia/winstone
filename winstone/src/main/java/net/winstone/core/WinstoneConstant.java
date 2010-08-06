@@ -50,4 +50,7 @@ public class WinstoneConstant {
     public static final transient String ERROR_EXCEPTION = "javax.servlet.error.exception";
     public static final transient String ERROR_REQUEST_URI = "javax.servlet.error.request_uri";
     public static final transient String ERROR_SERVLET_NAME = "javax.servlet.error.servlet_name";
+    // JSP Constant
+    public static final transient String JSP_SERVLET_NAME = "JspServlet";
+    public static final transient String JSP_SERVLET_CLASS = "org.apache.jasper.servlet.JspServlet";
 }

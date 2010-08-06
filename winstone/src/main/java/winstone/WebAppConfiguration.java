@@ -27,7 +27,6 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +60,14 @@ import org.w3c.dom.NodeList;
 import net.winstone.core.authentication.AuthenticationHandler;
 import net.winstone.core.authentication.AuthenticationRealm;
 import net.winstone.cluster.Cluster;
+import net.winstone.core.WinstoneConstant;
+import net.winstone.core.authentication.realm.ArgumentsRealm;
+import net.winstone.loader.ReloadingClassLoader;
+import net.winstone.loader.WebappClassLoader;
+import net.winstone.servlet.InvokerServlet;
+import net.winstone.servlet.StaticResourceServlet;
 import org.slf4j.LoggerFactory;
+import winstone.jndi.WebAppJNDIManager;
 
 /**
  * Models the web.xml file's details ... basically just a bunch of configuration details, plus the actual instances of mounted servlets.
@@ -114,25 +120,23 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     private static final String DISPATCHER_FORWARD = "FORWARD";
     private static final String DISPATCHER_INCLUDE = "INCLUDE";
     private static final String DISPATCHER_ERROR = "ERROR";
-    private static final String JSP_SERVLET_NAME = "JspServlet";
     private static final String JSP_SERVLET_MAPPING = "*.jsp";
     private static final String JSPX_SERVLET_MAPPING = "*.jspx";
     private static final String JSP_SERVLET_LOG_LEVEL = "WARNING";
     private static final String INVOKER_SERVLET_NAME = "invoker";
-    private static final String INVOKER_SERVLET_CLASS = "winstone.invoker.InvokerServlet";
+    //private static final String INVOKER_SERVLET_CLASS = "winstone.invoker.InvokerServlet";
     private static final String DEFAULT_INVOKER_PREFIX = "/servlet/";
     private static final String DEFAULT_SERVLET_NAME = "default";
-    private static final String DEFAULT_SERVLET_CLASS = "winstone.StaticResourceServlet";
-    private static final String DEFAULT_REALM_CLASS = "winstone.realm.ArgumentsRealm";
-    private static final String DEFAULT_JNDI_MGR_CLASS = "winstone.jndi.WebAppJNDIManager";
-    private static final String RELOADING_CL_CLASS = "winstone.classLoader.ReloadingClassLoader";
-    private static final String WEBAPP_CL_CLASS = "winstone.classLoader.WebappClassLoader";
+    //private static final String DEFAULT_SERVLET_CLASS = "winstone.StaticResourceServlet";
+    //private static final String DEFAULT_REALM_CLASS = "winstone.realm.ArgumentsRealm";
+    //private static final String DEFAULT_JNDI_MGR_CLASS = "winstone.jndi.WebAppJNDIManager";
+    //private static final String RELOADING_CL_CLASS = "winstone.classLoader.ReloadingClassLoader";
+    //private static final String WEBAPP_CL_CLASS = "winstone.classLoader.WebappClassLoader";
     private static final String ERROR_SERVLET_NAME = "winstoneErrorServlet";
-    private static final String ERROR_SERVLET_CLASS = "winstone.ErrorServlet";
+    //private static final String ERROR_SERVLET_CLASS = "winstone.ErrorServlet";
     private static final String WEB_INF = "WEB-INF";
     private static final String CLASSES = "classes/";
     private static final String LIB = "lib";
-    static final String JSP_SERVLET_CLASS = "org.apache.jasper.servlet.JspServlet";
     private HostConfiguration ownerHostConfig;
     private Cluster cluster;
     private String webRoot;
@@ -256,7 +260,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         if (useJasper) {
             try {
                 Class.forName("javax.servlet.jsp.JspFactory", true, parentClassLoader);
-                Class.forName(JSP_SERVLET_CLASS, true, this.loader);
+                Class.forName(WinstoneConstant.JSP_SERVLET_CLASS, true, this.loader);
             } catch (Throwable err) {
                 if (booleanArg(startupArgs, "useJasper", false)) {
                     logger.warn("WARNING: Jasper servlet not found - disabling JSP support. Do you have all \nthe jasper libraries in the common lib folder (see --commonLibFolder setting) ?");
@@ -267,7 +271,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         }
         if (useInvoker) {
             try {
-                Class.forName(INVOKER_SERVLET_CLASS, false, this.loader);
+                Class.forName(InvokerServlet.class.getName(), false, this.loader);
             } catch (Throwable err) {
                 logger.warn("WARNING: Invoker servlet not found - disabling invoker support.");
                 useInvoker = false;
@@ -657,8 +661,8 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             } else {
                 authMethod = StringUtils.replace(authMethod, "-", "");
             }
-            String realmClassName = stringArg(startupArgs, "realmClassName", DEFAULT_REALM_CLASS).trim();
-            String authClassName = "winstone.auth." + authMethod.substring(0, 1).toUpperCase() + authMethod.substring(1).toLowerCase() + "AuthenticationHandler";
+            String realmClassName = stringArg(startupArgs, "realmClassName", ArgumentsRealm.class.getCanonicalName()).trim();
+            String authClassName = "net.winstone.core.authentication." + authMethod.substring(0, 1).toUpperCase() + authMethod.substring(1).toLowerCase() + "AuthenticationHandler";
             try {
                 // Build the realm
                 Class<?> realmClass = Class.forName(realmClassName, true, parentClassLoader);
@@ -687,8 +691,8 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         }
 
         // Instantiate the JNDI manager
-        String jndiMgrClassName = stringArg(startupArgs, "webappJndiClassName", DEFAULT_JNDI_MGR_CLASS).trim();
         if (useJNDI) {
+            String jndiMgrClassName = stringArg(startupArgs, "webappJndiClassName", WebAppJNDIManager.class.getName()).trim();
             try {
                 // Build the realm
                 Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, true, parentClassLoader);
@@ -775,19 +779,19 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         staticParams.put("directoryList", "" + useDirLists);
 
         if (this.servletInstances.get(this.defaultServletName) == null) {
-            ServletConfiguration defaultServlet = new ServletConfiguration(this, this.defaultServletName, DEFAULT_SERVLET_CLASS, staticParams, 0);
+            ServletConfiguration defaultServlet = new ServletConfiguration(this, this.defaultServletName, StaticResourceServlet.class.getName(), staticParams, 0);
             this.servletInstances.put(this.defaultServletName, defaultServlet);
             startupServlets.add(defaultServlet);
         }
         if (booleanArg(startupArgs, "alwaysMountDefaultServlet", true) && this.servletInstances.get(DEFAULT_SERVLET_NAME) == null) {
-            ServletConfiguration defaultServlet = new ServletConfiguration(this, DEFAULT_SERVLET_NAME, DEFAULT_SERVLET_CLASS, staticParams, 0);
+            ServletConfiguration defaultServlet = new ServletConfiguration(this, DEFAULT_SERVLET_NAME, StaticResourceServlet.class.getName(), staticParams, 0);
             this.servletInstances.put(DEFAULT_SERVLET_NAME, defaultServlet);
             startupServlets.add(defaultServlet);
         }
 
         // If we don't have an instance of the default servlet, mount the inbuilt one
         if (this.servletInstances.get(this.errorServletName) == null) {
-            ServletConfiguration errorServlet = new ServletConfiguration(this, this.errorServletName, ERROR_SERVLET_CLASS, new HashMap<String, String>(), 0);
+            ServletConfiguration errorServlet = new ServletConfiguration(this, this.errorServletName, StaticResourceServlet.class.getName(), new HashMap<String, String>(), 0);
             this.servletInstances.put(this.errorServletName, errorServlet);
             startupServlets.add(errorServlet);
         }
@@ -799,11 +803,11 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 
             Map<String, String> jspParams = new HashMap<String, String>();
             addJspServletParams(jspParams);
-            ServletConfiguration sc = new ServletConfiguration(this, JSP_SERVLET_NAME, JSP_SERVLET_CLASS, jspParams, 3);
-            this.servletInstances.put(JSP_SERVLET_NAME, sc);
+            ServletConfiguration sc = new ServletConfiguration(this, WinstoneConstant.JSP_SERVLET_NAME, WinstoneConstant.JSP_SERVLET_CLASS, jspParams, 3);
+            this.servletInstances.put(WinstoneConstant.JSP_SERVLET_NAME, sc);
             startupServlets.add(sc);
             for (Iterator<String> mapIt = jspMappings.iterator(); mapIt.hasNext();) {
-                processMapping(JSP_SERVLET_NAME, (String) mapIt.next(), this.exactServletMatchMounts, localFolderPatterns, localExtensionPatterns);
+                processMapping(WinstoneConstant.JSP_SERVLET_NAME, (String) mapIt.next(), this.exactServletMatchMounts, localFolderPatterns, localExtensionPatterns);
             }
         }
 
@@ -814,7 +818,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             Map<String, String> invokerParams = new HashMap<String, String>();
             invokerParams.put("prefix", this.prefix);
             invokerParams.put("invokerPrefix", invokerPrefix);
-            ServletConfiguration sc = new ServletConfiguration(this, INVOKER_SERVLET_NAME, INVOKER_SERVLET_CLASS, invokerParams, 3);
+            ServletConfiguration sc = new ServletConfiguration(this, INVOKER_SERVLET_NAME, InvokerServlet.class.getName(), invokerParams, 3);
             this.servletInstances.put(INVOKER_SERVLET_NAME, sc);
             processMapping(INVOKER_SERVLET_NAME, invokerPrefix + Mapping.STAR, this.exactServletMatchMounts, localFolderPatterns, localExtensionPatterns);
         }
@@ -909,9 +913,9 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 
         URL jarURLs[] = (URL[]) urlList.toArray(new URL[urlList.size()]);
 
-        String preferredClassLoader = stringArg(startupArgs, "preferredClassLoader", WEBAPP_CL_CLASS);
+        String preferredClassLoader = stringArg(startupArgs, "preferredClassLoader", WebappClassLoader.class.getName());
         if (booleanArg(startupArgs, "useServletReloading", false) && stringArg(startupArgs, "preferredClassLoader", "").equals("")) {
-            preferredClassLoader = RELOADING_CL_CLASS;
+            preferredClassLoader = ReloadingClassLoader.class.getName();
         }
 
         // Try to set up the preferred class loader, and if we fail, use the normal one
@@ -926,7 +930,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                             jarURLs, parentClassLoader
                         });
             } catch (Throwable err) {
-                if (!stringArg(startupArgs, "preferredClassLoader", "").equals("") || !preferredClassLoader.equals(WEBAPP_CL_CLASS)) {
+                if (!stringArg(startupArgs, "preferredClassLoader", "").equals("") || !preferredClassLoader.equals(WebappClassLoader.class.getName())) {
                     logger.error("Erroring setting class loader", err);
                 }
             }
