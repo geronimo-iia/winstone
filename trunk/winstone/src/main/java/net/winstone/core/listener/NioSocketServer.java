@@ -1,4 +1,4 @@
-package winstone.nio;
+package net.winstone.core.listener;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,6 +48,7 @@ public class NioSocketServer implements Runnable {
         this.thread.start();
     }
     
+    @Override
     public void run() {
         boolean interrupted = false;
         while (!interrupted) {
@@ -59,7 +60,6 @@ public class NioSocketServer implements Runnable {
                 }
                 interrupted = Thread.interrupted();
             } catch (IOException err) {
-                err.printStackTrace();
                 interrupted = true;
             }
         }

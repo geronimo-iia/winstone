@@ -21,7 +21,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.ServletResponseWrapper;
 import org.slf4j.LoggerFactory;
 
-import winstone.auth.AuthenticationHandler;
+import net.winstone.core.authentication.AuthenticationHandler;
 
 /**
  * This class implements both the SimpleRequestDispatcher and FilterChain components. On the first call to include() or forward(), it starts

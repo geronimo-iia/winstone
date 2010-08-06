@@ -4,7 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone.auth;
+package net.winstone.core.authentication;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
@@ -28,30 +27,30 @@ import javax.servlet.http.HttpServletRequest;
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: RetryRequestParams.java,v 1.2 2007/06/01 15:59:53 rickknowles Exp $
  */
-public class RetryRequestParams implements java.io.Serializable {
+public final class RetryRequestParams implements java.io.Serializable {
 
     private static final long serialVersionUID = 7900915469307853808L;
-    private String method;
-    private String scheme;
-    private String contextPath;
-    private String servletPath;
-    private String pathInfo;
-    private String queryString;
-    private String protocol;
-    private int contentLength;
-    private String contentType;
-    private String encoding;
+    private final String method;
+    private final String scheme;
+    private final String contextPath;
+    private final String servletPath;
+    private final String pathInfo;
+    private final String queryString;
+    private final String protocol;
+    private final int contentLength;
+    private final String contentType;
+    private final String encoding;
     @SuppressWarnings("unchecked")
-    private Map<String, Enumeration> headers;
-    private List<Locale> locales;
-    private Locale locale;
-    private byte[] bodyContent;
+    private final Map<String, Enumeration> headers;
+    private final List<Locale> locales;
+    private final Locale locale;
+    private final byte[] bodyContent;
 
     /**
      * Constructor - this populates the wrapper from the object in session
      */
     @SuppressWarnings("unchecked")
-    public RetryRequestParams(ServletRequest request) throws IOException {
+    public RetryRequestParams(final ServletRequest request) throws IOException {
         this.protocol = request.getProtocol();
         this.locales = new ArrayList<Locale>(Collections.list(request.getLocales()));
         this.locale = request.getLocale();
@@ -59,6 +58,7 @@ public class RetryRequestParams implements java.io.Serializable {
         this.contentType = request.getContentType();
         this.encoding = request.getCharacterEncoding();
         this.headers = new HashMap();
+        this.scheme = request.getScheme();
 
         if (request instanceof HttpServletRequest) {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
@@ -72,6 +72,12 @@ public class RetryRequestParams implements java.io.Serializable {
                 String name = (String) names.nextElement();
                 headers.put(name.toLowerCase(), httpRequest.getHeaders(name));
             }
+        } else {
+            this.method = null;
+            this.contextPath = null;
+            this.servletPath = null;
+            this.pathInfo = null;
+            this.queryString = null;
         }
 
         if (((this.method == null) || this.method.equalsIgnoreCase("POST")) && (this.contentLength != -1)) {
@@ -83,6 +89,8 @@ public class RetryRequestParams implements java.io.Serializable {
                 readCount += read;
             }
             inData.close();
+        } else {
+            bodyContent = null;
         }
     }
 

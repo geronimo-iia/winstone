@@ -4,20 +4,21 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone.realm;
+package net.winstone.core.authentication.realm;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
+import org.slf4j.LoggerFactory;
 
-import winstone.auth.AuthenticationPrincipal;
-import winstone.auth.AuthenticationRealm;
+import net.winstone.core.authentication.AuthenticationPrincipal;
+import net.winstone.core.authentication.AuthenticationRealm;
 
 /**
  * A JDBC authentication realm to be used with Winstone Servelet container.
@@ -28,23 +29,34 @@ import winstone.auth.AuthenticationRealm;
  * @author Rui Damas
  */
 public class JDBCRealm implements AuthenticationRealm {
-    
+
+    protected static org.slf4j.Logger logger = LoggerFactory.getLogger(JDBCRealm.class);
     // Command line arguments prefix
-    public static String ARGS = "JDBCRealm.";
-    
     // Command line arguments for connecting
-    public static String ARGS_DRIVER = ARGS + "driver", ARGS_URL = ARGS + "url", ARGS_USER = ARGS + "user", ARGS_PASSWORD = ARGS + "password";
-    
+    private static final transient String ARGS_DRIVER = "JDBCRealm.driver";
+    private static final transient String ARGS_URL = "JDBCRealm.url";
+    private static final transient String ARGS_USER = "JDBCRealm.user";
+    private static final transient String ARGS_PASSWORD = "JDBCRealm.password";
     // Command line arguments to SQL identifiers
-    public static String ARGS_USER_REL = ARGS + "userRel", ARGS_USER_NAME_COL = ARGS + "userNameCol", ARGS_USER_CRED_COL = ARGS + "userCredCol", ARGS_USER_ROLE_REL = ARGS + "userRoleRel", ARGS_ROLE_NAME_COL = ARGS + "roleNameCol";
-    
+    public static final transient String ARGS_USER_REL = "JDBCRealm.userRel";
+    private static final transient String ARGS_USER_NAME_COL = "JDBCRealm.userNameCol";
+    private static final transient String ARGS_USER_CRED_COL = "JDBCRealm.userCredCol";
+    private static final transient String ARGS_USER_ROLE_REL = "JDBCRealm.userRoleRel";
+    private static final transient String ARGS_ROLE_NAME_COL = "JDBCRealm.roleNameCol";
     // Defaults for SQL identifiers
-    public static String DEFAULT_USER_REL = "web_users", DEFAULT_USER_NAME_COL = "username", DEFAULT_USER_CRED_COL = "credential", DEFAULT_USER_ROLE_REL = "web_user_roles", DEFAULT_ROLE_NAME_COL = "rolename";
-    
+    public static final transient String DEFAULT_USER_REL = "web_users";
+    private static final transient String DEFAULT_USER_NAME_COL = "username";
+    private static final transient String DEFAULT_USER_CRED_COL = "credential";
+    private static final transient String DEFAULT_USER_ROLE_REL = "web_user_roles";
+    private static final transient String DEFAULT_ROLE_NAME_COL = "rolename";
     private Connection connection;
-    
-    private final String url, user, password, retriveUserQuery, authenticationQueryPostfix, userRolesQuery;
-    
+    private final String url;
+    private final String user;
+    private final String password;
+    private final String retriveUserQuery;
+    private final String authenticationQueryPostfix;
+    private final String userRolesQuery;
+
     /**
      * Creates a new instance of JDBCAuthenticationRealm.
      * <p>
@@ -53,62 +65,70 @@ public class JDBCRealm implements AuthenticationRealm {
      * <code>System.err</code>.
      * </p>
      */
-    public JDBCRealm(Set<String> rolesAllowed, Map<String, String> args) {
+    public JDBCRealm(final Set<String> rolesAllowed, final Map<String, String> args) {
         // Get connection arguments
-        String driver = args.get(ARGS_DRIVER), url = args.get(ARGS_URL), user = args.get(ARGS_USER), password = args.get(ARGS_PASSWORD);
-        
-        this.url = url;
-        this.user = user;
-        this.password = password;
-        
+        String driver = args.get(ARGS_DRIVER);
+        url = args.get(ARGS_URL);
+        user = args.get(ARGS_USER);
+        password = args.get(ARGS_PASSWORD);
+
         // Get SQL identifier arguments
         String userRel = args.get(ARGS_USER_REL), userNameCol = args.get(ARGS_USER_NAME_COL), userCredCol = args.get(ARGS_USER_CRED_COL), userRoleRel = args.get(ARGS_USER_ROLE_REL), roleNameCol = args.get(ARGS_ROLE_NAME_COL);
-        
+
         // Get defaults if necessary
-        if (userRel == null)
+        if (userRel == null) {
             userRel = DEFAULT_USER_REL;
-        if (userNameCol == null)
+        }
+        if (userNameCol == null) {
             userNameCol = DEFAULT_USER_NAME_COL;
-        if (userCredCol == null)
+        }
+        if (userCredCol == null) {
             userCredCol = DEFAULT_USER_CRED_COL;
-        if (userRoleRel == null)
+        }
+        if (userRoleRel == null) {
             userRoleRel = DEFAULT_USER_ROLE_REL;
-        if (roleNameCol == null)
+        }
+        if (roleNameCol == null) {
             roleNameCol = DEFAULT_ROLE_NAME_COL;
-        
+        }
+
         retriveUserQuery = "SELECT 1\n" + "  FROM \"" + userRel + "\"\n" + "  WHERE \"" + userNameCol + "\" = ?";
-        
+
         // Prepare query prefixes
         authenticationQueryPostfix = "\n    AND \"" + userCredCol + "\" = ?";
-        
+
         userRolesQuery = "SELECT \"" + roleNameCol + "\"\n" + "  FROM \"" + userRoleRel + "\"\n" + "  WHERE \"" + userNameCol + "\" = ?";
-        
+
         // If the driver was specified
-        if (driver != null)
+        if (driver != null) {
             try {
                 // Try to load the driver
                 Class.forName(driver);
                 // and notify if loaded
-                System.out.println("JDBCRealm loaded jdbc driver: " + driver);
+                logger.info("JDBCRealm loaded jdbc driver: " + driver);
             } catch (ClassNotFoundException cnfe) {
                 // Notify if fails
-                System.err.println("JDBCRealm failed to load jdbc driver: " + driver);
+                logger.error("JDBCRealm failed to load jdbc driver: " + driver);
             }
+        }
     }
-    
-    public AuthenticationPrincipal getPrincipal(String userName, String password, boolean usePassword) {
+
+    public AuthenticationPrincipal getPrincipal(final String userName, final String password, final boolean usePassword) {
         try {
             // Get a connection
-            if ((connection == null) || connection.isClosed())
+            if ((connection == null) || connection.isClosed()) {
                 connection = DriverManager.getConnection(url, user, this.password);
+            }
             // Query for user
             String query = retriveUserQuery;
-            if (usePassword)
+            if (usePassword) {
                 query = query + authenticationQueryPostfix;
+            }
             PreparedStatement ps = connection.prepareStatement(query);
             ps.setString(1, userName);
-            if (usePassword)
+            if (usePassword) {
                 ps.setString(2, password);
+            }
             ResultSet resultSet = ps.executeQuery();
             // If there is a user (row)
             if (resultSet.next()) {
@@ -118,32 +138,35 @@ public class JDBCRealm implements AuthenticationRealm {
                 ps.setString(1, userName);
                 resultSet = ps.executeQuery();
                 // Load list
-                List<String> roles = new Vector<String>();
-                while (resultSet.next())
+                List<String> roles = new ArrayList<String>();
+                while (resultSet.next()) {
                     roles.add(resultSet.getString(1));
+                }
                 return new AuthenticationPrincipal(userName, password, roles);
             }
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            logger.error("getPrincipal Error:", sqle);
         }
         return null;
     }
-    
+
     /**
      * Authenticate the user - do we know them ? Return a distinct id once we know them.
      * 
      * @return <code>getPrincipal(userName, password, true);</code>
      */
-    public AuthenticationPrincipal authenticateByUsernamePassword(String userName, String password) {
+    @Override
+    public AuthenticationPrincipal authenticateByUsernamePassword(final String userName, final String password) {
         return getPrincipal(userName, password, true);
     }
-    
+
     /**
      * Retrieve an authenticated user
      * 
      * @return <code>getPrincipal(userName, password, false);</code>
      */
-    public AuthenticationPrincipal retrieveUser(String userName) {
+    @Override
+    public AuthenticationPrincipal retrieveUser(final String userName) {
         return getPrincipal(userName, null, false);
     }
 }

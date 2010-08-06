@@ -8,7 +8,7 @@ public class WinstoneResourceBundleTest extends TestCase {
         WinstoneResourceBundle bundle = WinstoneResourceBundle.getInstance();
         assertNotNull(bundle);
         String[] keys = {
-            "ServerVersion", "WinstoneResponse.ErrorPage", "StaticResourceServlet.Row", "StaticResourceServlet.Body", "UsageInstructions"
+            "ServerVersion","PoweredByHeader", "WinstoneResponse.ErrorPage", "StaticResourceServlet.Row", "StaticResourceServlet.Body", "UsageInstructions"
         };
         for (String key : keys) {
             assertNotNull(bundle.getString(key));

@@ -58,8 +58,8 @@ import net.winstone.util.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import winstone.auth.AuthenticationHandler;
-import winstone.auth.AuthenticationRealm;
+import net.winstone.core.authentication.AuthenticationHandler;
+import net.winstone.core.authentication.AuthenticationRealm;
 import net.winstone.cluster.Cluster;
 import org.slf4j.LoggerFactory;
 

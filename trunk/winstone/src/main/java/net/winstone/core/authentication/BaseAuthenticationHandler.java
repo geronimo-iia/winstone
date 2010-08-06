@@ -4,7 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone.auth;
+package net.winstone.core.authentication;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,11 +16,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.winstone.WinstoneResourceBundle;
+import org.slf4j.LoggerFactory;
 
 import org.w3c.dom.Node;
 
-import winstone.Logger;
 import winstone.WebAppConfiguration;
 
 /**
@@ -31,45 +30,48 @@ import winstone.WebAppConfiguration;
  * @version $Id: BaseAuthenticationHandler.java,v 1.6 2006/02/28 07:32:47 rickknowles Exp $
  */
 public abstract class BaseAuthenticationHandler implements AuthenticationHandler {
-    static final String ELEM_REALM_NAME = "realm-name";
-    
-    protected SecurityConstraint constraints[];
-    protected AuthenticationRealm realm;
+
+    private static org.slf4j.Logger logger = LoggerFactory.getLogger(BaseAuthenticationHandler.class);
+    private static final transient String ELEM_REALM_NAME = "realm-name";
+    protected final SecurityConstraint constraints[];
+    protected final AuthenticationRealm realm;
     protected String realmName;
-    public final static WinstoneResourceBundle AUTH_RESOURCES = new WinstoneResourceBundle("winstone.auth.LocalStrings");
-    
+
     /**
      * Factory method - this parses the web.xml nodes and builds the correct subclass for handling that auth type.
      */
-    protected BaseAuthenticationHandler(Node loginConfigNode, List constraintNodes, Set rolesAllowed, AuthenticationRealm realm) {
+    protected BaseAuthenticationHandler(final Node loginConfigNode, List constraintNodes, final Set rolesAllowed, final AuthenticationRealm realm) {
         this.realm = realm;
-        
+
         for (int m = 0; m < loginConfigNode.getChildNodes().getLength(); m++) {
             Node loginElm = loginConfigNode.getChildNodes().item(m);
-            if (loginElm.getNodeType() != Node.ELEMENT_NODE)
+            if (loginElm.getNodeType() != Node.ELEMENT_NODE) {
                 continue;
-            else if (loginElm.getNodeName().equals(ELEM_REALM_NAME))
+            } else if (loginElm.getNodeName().equals(ELEM_REALM_NAME)) {
                 realmName = WebAppConfiguration.getTextFromNode(loginElm);
+            }
         }
-        
+
         // Build security constraints
         this.constraints = new SecurityConstraint[constraintNodes.size()];
-        for (int n = 0; n < constraints.length; n++)
-            this.constraints[n] = new SecurityConstraint((Node)constraintNodes.get(n), rolesAllowed, n);
+        for (int n = 0; n < constraints.length; n++) {
+            this.constraints[n] = new SecurityConstraint((Node) constraintNodes.get(n), rolesAllowed, n);
+        }
     }
-    
+
     /**
      * Evaluates any authentication constraints, intercepting if auth is required. The relevant authentication handler subclass's logic is
      * used to actually authenticate.
      * 
      * @return A boolean indicating whether to continue after this request
      */
-    public boolean processAuthentication(ServletRequest inRequest, ServletResponse inResponse, String pathRequested) throws IOException, ServletException {
-        Logger.log(Logger.FULL_DEBUG, AUTH_RESOURCES, "BaseAuthenticationHandler.StartAuthCheck");
-        
-        HttpServletRequest request = (HttpServletRequest)inRequest;
-        HttpServletResponse response = (HttpServletResponse)inResponse;
-        
+    @Override
+    public boolean processAuthentication(final ServletRequest inRequest, final ServletResponse inResponse, final String pathRequested) throws IOException, ServletException {
+        logger.debug("Starting authentication check");
+
+        HttpServletRequest request = (HttpServletRequest) inRequest;
+        HttpServletResponse response = (HttpServletResponse) inResponse;
+
         // Give previous attempts a chance to be validated
         if (!validatePossibleAuthenticationResponse(request, response, pathRequested)) {
             return false;
@@ -77,25 +79,24 @@ public abstract class BaseAuthenticationHandler implements AuthenticationHandler
             return doRoleCheck(request, response, pathRequested);
         }
     }
-    
-    protected boolean doRoleCheck(HttpServletRequest request, HttpServletResponse response, String pathRequested) throws IOException, ServletException {
+
+    protected boolean doRoleCheck(final HttpServletRequest request, final HttpServletResponse response, final String pathRequested) throws IOException, ServletException {
         // Loop through constraints
         boolean foundApplicable = false;
         for (int n = 0; (n < this.constraints.length) && !foundApplicable; n++) {
-            Logger.log(Logger.FULL_DEBUG, AUTH_RESOURCES, "BaseAuthenticationHandler.EvalConstraint", this.constraints[n].getName());
-            
+            logger.debug("Evaluating security constraint: {}", this.constraints[n].getName());
+
             // Find one that applies, then
             if (this.constraints[n].isApplicable(pathRequested, request.getMethod())) {
-                Logger.log(Logger.FULL_DEBUG, AUTH_RESOURCES, "BaseAuthenticationHandler.ApplicableConstraint", this.constraints[n].getName());
+                logger.debug("Found applicable security constraint: {}", this.constraints[n].getName());
                 foundApplicable = true;
-                
-                if (this.constraints[n].needsSSL() && !request.isSecure()) {
-                    Logger.log(Logger.DEBUG, AUTH_RESOURCES, "BaseAuthenticationHandler.ConstraintNeedsSSL", this.constraints[n].getName());
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, AUTH_RESOURCES.getString("BaseAuthenticationHandler.ConstraintNeedsSSL", this.constraints[n].getName()));
-                    return false;
-                }
 
-                else if (!this.constraints[n].isAllowed(request)) {
+                if (this.constraints[n].needsSSL() && !request.isSecure()) {
+                    String msg = "Security constraint requires SSL (failed): " + this.constraints[n].getName();
+                    logger.debug(msg);
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, msg);
+                    return false;
+                } else if (!this.constraints[n].isAllowed(request)) {
                     // Logger.log(Logger.FULL_DEBUG, "Not allowed - requesting auth");
                     requestAuthentication(request, response, pathRequested);
                     return false;
@@ -106,25 +107,25 @@ public abstract class BaseAuthenticationHandler implements AuthenticationHandler
                 }
             }
         }
-        
+
         // If we made it this far without a check being run, there must be none applicable
-        Logger.log(Logger.FULL_DEBUG, AUTH_RESOURCES, "BaseAuthenticationHandler.PassedAuthCheck");
+        logger.debug("Passed authentication check");
         return true;
     }
-    
+
     protected void setNoCache(HttpServletResponse response) {
         response.setHeader("Pragma", "No-cache");
         response.setHeader("Cache-Control", "No-cache");
         response.setDateHeader("Expires", 1);
     }
-    
+
     /**
      * The actual auth request implementation.
      */
-    protected abstract void requestAuthentication(HttpServletRequest request, HttpServletResponse response, String pathRequested) throws IOException, ServletException;
-    
+    protected abstract void requestAuthentication(final HttpServletRequest request, final HttpServletResponse response, final String pathRequested) throws IOException, ServletException;
+
     /**
      * Handling the (possible) response
      */
-    protected abstract boolean validatePossibleAuthenticationResponse(HttpServletRequest request, HttpServletResponse response, String pathRequested) throws ServletException, IOException;
+    protected abstract boolean validatePossibleAuthenticationResponse(final HttpServletRequest request, final HttpServletResponse response, final String pathRequested) throws ServletException, IOException;
 }

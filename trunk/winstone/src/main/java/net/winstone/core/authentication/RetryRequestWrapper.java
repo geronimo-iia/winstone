@@ -4,7 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone.auth;
+package net.winstone.core.authentication;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone; 
+import java.util.TimeZone;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -26,9 +26,9 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import net.winstone.WinstoneException;
 
 import net.winstone.core.WinstoneInputStream;
-import net.winstone.core.WinstoneRequest;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
+import net.winstone.core.WinstoneRequest; 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is used by the ACL filter to allow a retry by using a key lookup
@@ -38,28 +38,28 @@ import net.winstone.log.LoggerFactory;
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: RetryRequestWrapper.java,v 1.3 2007/02/26 00:28:05 rickknowles Exp $
  */
-public class RetryRequestWrapper extends HttpServletRequestWrapper {
+public final class RetryRequestWrapper extends HttpServletRequestWrapper {
 
-    protected static final DateFormat headerDF = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
     protected static Logger logger = LoggerFactory.getLogger(RetryRequestWrapper.class);
+    private final static transient String METHOD_HEAD = "GET";
+    private final static transient String METHOD_GET = "GET";
+    private final static transient String METHOD_POST = "POST";
+    private final static transient String POST_PARAMETERS = "application/x-www-form-urlencoded";
+    protected static final DateFormat headerDF = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
 
     static {
         headerDF.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
-    private final static String METHOD_HEAD = "GET";
-    private final static String METHOD_GET = "GET";
-    private final static String METHOD_POST = "POST";
-    private final static String POST_PARAMETERS = "application/x-www-form-urlencoded";
-    private RetryRequestParams oldRequest;
+    private final RetryRequestParams oldRequest;
     // PARAMETER/BODY RELATED FUNCTIONS
-    private String encoding;
+    private  String encoding;
     private Map parsedParams;
     private ServletInputStream inData;
 
     /**
      * Constructor - this populates the wrapper from the object in session
      */
-    public RetryRequestWrapper(HttpServletRequest request, RetryRequestParams oldRequest)
+    public RetryRequestWrapper(final HttpServletRequest request,final  RetryRequestParams oldRequest)
             throws IOException {
         super(request);
         this.oldRequest = oldRequest;
@@ -133,8 +133,7 @@ public class RetryRequestWrapper extends HttpServletRequestWrapper {
             String servletPath = this.oldRequest.getServletPath();
             String pathInfo = this.oldRequest.getPathInfo();
             String queryString = this.oldRequest.getQueryString();
-            return contextPath + servletPath + ((pathInfo == null) ? "" : pathInfo)
-                    + ((queryString == null) ? "" : ("?" + queryString));
+            return contextPath + servletPath + ((pathInfo == null) ? "" : pathInfo)                     + ((queryString == null) ? "" : ("?" + queryString));
         }
     }
 
