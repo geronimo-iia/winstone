@@ -11,13 +11,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
+ 
 import net.winstone.util.DateCache;
 import net.winstone.util.StringUtils;
 import net.winstone.core.WinstoneRequest;
 import net.winstone.core.WinstoneResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Simulates an apache "combined" style logger, which logs User-Agent, Referer, etc

@@ -13,9 +13,7 @@ import java.util.Map;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
+import junit.framework.TestSuite; 
 
 import org.xml.sax.SAXException;
 
@@ -26,6 +24,8 @@ import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebImage;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test case for the Http Connector to Winstone. Simulates a simple connect and
