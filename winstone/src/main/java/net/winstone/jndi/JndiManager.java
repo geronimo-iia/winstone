@@ -19,9 +19,10 @@ import javax.naming.NamingException;
 
 import net.winstone.jndi.resources.DataSourceConfig;
 import net.winstone.jndi.resources.SimpleDatasource;
-import net.winstone.log.Logger;
-import net.winstone.log.LoggerFactory;
+
 import net.winstone.util.LifeCycle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Jndi Manager
