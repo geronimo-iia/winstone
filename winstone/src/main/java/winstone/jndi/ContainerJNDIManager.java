@@ -22,7 +22,6 @@ import javax.naming.InitialContext;
 import javax.naming.Name;
 import javax.naming.NamingException;
 
-import net.winstone.WinstoneResourceBundle;
 import org.slf4j.LoggerFactory;
 
 import org.w3c.dom.Node;

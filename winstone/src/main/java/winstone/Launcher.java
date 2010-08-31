@@ -493,10 +493,7 @@ public class Launcher implements Runnable {
             InputStream inConfig = new FileInputStream(configFile);
             loadPropsFromStream(inConfig, args);
             inConfig.close();
-            initLogger(args);
             logger.debug("Property file found ({}) - loading", configFilename);
-        } else {
-            initLogger(args);
         }
         return args;
     }
@@ -539,23 +536,6 @@ public class Launcher implements Runnable {
             }
         }
         props.clear();
-    }
-
-    public static void initLogger(Map<String, String> args) throws IOException {
-        // Reset the log level
-        //int logLevel = WebAppConfiguration.intArg(args, "debug", Logger.INFO);
-        // boolean showThrowingLineNo = WebAppConfiguration.booleanArg(args, "logThrowingLineNo", false);
-        //boolean showThrowingThread = WebAppConfiguration.booleanArg(args, "logThrowingThread", false);
-//        OutputStream logStream = null;
-//        if (args.get("logfile") != null) {
-//            logStream = new FileOutputStream((String) args.get("logfile"));
-//        } else if (WebAppConfiguration.booleanArg(args, "logToStdErr", false)) {
-//            logStream = System.err;
-//        } else {
-//            logStream = System.out;
-//        }
-        // Logger.init(logLevel, logStream, showThrowingLineNo, showThrowingThread);
-        //Logger.init(logLevel, logStream, showThrowingThread);
     }
 
     protected static void printUsage() {
