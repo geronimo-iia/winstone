@@ -1,5 +1,9 @@
 package net.winstone.util;
-
+/**
+ * Base 64 implementation.
+ *
+ * TODO add encode function, and test unit around this.
+ */
 public final class Base64 {
     
     private static byte B64_DECODE_ARRAY[] = new byte[] {
