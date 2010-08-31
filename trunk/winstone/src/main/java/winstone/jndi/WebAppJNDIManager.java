@@ -9,7 +9,6 @@ package winstone.jndi;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.w3c.dom.Node;
