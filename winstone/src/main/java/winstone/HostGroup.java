@@ -67,20 +67,22 @@ public class HostGroup {
         }
     }
 
-    public HostConfiguration getHostByName(String hostname) {
-        HostConfiguration host = (HostConfiguration) this.hostConfigs.get(hostname);
+    public HostConfiguration getHostByName(final String hostname) {
+        HostConfiguration host = this.hostConfigs.get(hostname);
         return host != null ? host : this.hostConfigs.get(this.defaultHostName);
     }
 
     public void destroy() {
-        Set<String> hostnames = new HashSet<String>(this.hostConfigs.keySet());
-        for (Iterator<String> i = hostnames.iterator(); i.hasNext();) {
-            String hostname = i.next();
-            HostConfiguration host = (HostConfiguration) this.hostConfigs.get(hostname);
-            host.destroy();
-            this.hostConfigs.remove(hostname);
+        if (this.hostConfigs != null) {
+            // obtain a copy of name
+            Set<String> hostnames = new HashSet<String>(this.hostConfigs.keySet());
+            for (Iterator<String> i = hostnames.iterator(); i.hasNext();) {
+                String hostname = i.next();
+                hostConfigs.get(hostname).destroy();
+                hostConfigs.remove(hostname);
+            }
+            this.hostConfigs.clear();
         }
-        this.hostConfigs.clear();
     }
 
     /**
