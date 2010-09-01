@@ -4,8 +4,12 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone;
+package net.winstone.core;
 
+import net.winstone.core.WebAppConfiguration;
+import net.winstone.core.ServletConfiguration;
+import net.winstone.core.Mapping;
+import net.winstone.core.FilterConfiguration;
 import net.winstone.core.WinstoneResponse;
 import net.winstone.core.WinstoneRequest;
 import net.winstone.core.WinstoneConstant;

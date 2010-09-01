@@ -25,10 +25,9 @@ import java.util.Map;
 
 import net.winstone.WinstoneException;
 
-import winstone.HostGroup;
-import winstone.ObjectPool;
-import winstone.RequestHandlerThread;
-import winstone.WebAppConfiguration;
+import net.winstone.core.HostGroup;
+import net.winstone.core.ObjectPool;
+import net.winstone.core.WebAppConfiguration;
 import net.winstone.core.WinstoneInputStream;
 import net.winstone.core.WinstoneOutputStream;
 import net.winstone.core.WinstoneRequest;

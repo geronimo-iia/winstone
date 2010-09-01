@@ -23,7 +23,7 @@ import javax.servlet.ServletContextListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.winstone.util.StringUtils;
-import winstone.WebAppConfiguration;
+import net.winstone.core.WebAppConfiguration;
 
 /**
  * This subclass of WinstoneClassLoader is the reloading version. It runs a monitoring thread in the background that checks for updates to

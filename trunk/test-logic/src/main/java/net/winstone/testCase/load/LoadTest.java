@@ -13,8 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-
-import winstone.WebAppConfiguration;
+import net.winstone.core.WebAppConfiguration;
 
 import com.meterware.httpunit.WebConversation;
 import org.slf4j.LoggerFactory;
@@ -55,6 +54,7 @@ public class LoadTest {
                 });
     }
 
+    @SuppressWarnings("SleepWhileHoldingLock")
     public void test() throws InterruptedException {
         WebConversation wc = null;
 
@@ -119,7 +119,7 @@ public class LoadTest {
         if (options.isEmpty()) {
             printUsage();
             return;
-        } 
+        }
 
         String url = WebAppConfiguration.stringArg(options, "url", "http://localhost:8080/");
         boolean keepAlive = WebAppConfiguration.booleanArg(options, "keepAlive", true);

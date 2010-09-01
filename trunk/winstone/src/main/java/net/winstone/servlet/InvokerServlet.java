@@ -18,10 +18,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import winstone.Mapping;
-import winstone.ServletConfiguration;
-import winstone.SimpleRequestDispatcher;
-import winstone.WebAppConfiguration;
+import net.winstone.core.Mapping;
+import net.winstone.core.ServletConfiguration;
+import net.winstone.core.SimpleRequestDispatcher;
+import net.winstone.core.WebAppConfiguration;
 
 /**
  * If a URI matches a servlet class name, mount an instance of that servlet, and try to process the request using that servlet.

@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import org.w3c.dom.Node;
 
-import winstone.Mapping;
-import winstone.WebAppConfiguration;
+import net.winstone.core.Mapping;
+import net.winstone.core.WebAppConfiguration;
 
 /**
  * Models a restriction on a particular set of resources in the webapp.
@@ -29,7 +29,7 @@ public final class SecurityConstraint {
     protected static Logger logger = LoggerFactory.getLogger(SecurityConstraint.class);
     private final static transient String ELEM_DISPLAY_NAME = "display-name";
     private final static transient String ELEM_WEB_RESOURCES = "web-resource-collection";
-    private final static transient String ELEM_WEB_RESOURCE_NAME = "web-resource-name";
+    // private final static transient String ELEM_WEB_RESOURCE_NAME = "web-resource-name";
     private final static transient String ELEM_URL_PATTERN = "url-pattern";
     private final static transient String ELEM_HTTP_METHOD = "http-method";
     private final static transient String ELEM_AUTH_CONSTRAINT = "auth-constraint";

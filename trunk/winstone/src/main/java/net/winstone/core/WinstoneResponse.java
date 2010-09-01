@@ -26,10 +26,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import net.winstone.WinstoneResourceBundle;
 
-import winstone.HostConfiguration;
-import winstone.SimpleRequestDispatcher;
-import winstone.WebAppConfiguration;
-import winstone.WinstoneSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

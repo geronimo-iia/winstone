@@ -20,7 +20,7 @@ import javax.servlet.http.HttpSession;
 
 import org.w3c.dom.Node;
 
-import winstone.WebAppConfiguration;
+import net.winstone.core.WebAppConfiguration;
 import net.winstone.core.WinstoneRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
