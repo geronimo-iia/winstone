@@ -15,7 +15,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
-import winstone.RequestHandlerThread;
 
 /**
  * Interface that defines the necessary methods for being a connection listener

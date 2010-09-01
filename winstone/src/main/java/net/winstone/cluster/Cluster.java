@@ -11,9 +11,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import winstone.HostGroup;
-import winstone.WebAppConfiguration;
-import winstone.WinstoneSession;
+import net.winstone.core.HostGroup;
+import net.winstone.core.WebAppConfiguration;
+import net.winstone.core.WinstoneSession;
 
 /**
  * Represents a cluster implementation, which is basically the communication

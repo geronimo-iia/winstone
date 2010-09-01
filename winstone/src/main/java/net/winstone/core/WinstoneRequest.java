@@ -47,11 +47,6 @@ import net.winstone.core.authentication.AuthenticationPrincipal;
 
 import net.winstone.WinstoneException;
 
-import winstone.HostConfiguration;
-import winstone.HostGroup;
-import winstone.ServletConfiguration;
-import winstone.WebAppConfiguration;
-import winstone.WinstoneSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

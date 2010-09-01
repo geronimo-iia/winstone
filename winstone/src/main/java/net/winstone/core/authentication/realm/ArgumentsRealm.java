@@ -17,7 +17,7 @@ import java.util.StringTokenizer;
 
 import org.slf4j.LoggerFactory;
 
-import winstone.WebAppConfiguration;
+import net.winstone.core.WebAppConfiguration;
 import net.winstone.core.authentication.AuthenticationPrincipal;
 import net.winstone.core.authentication.AuthenticationRealm;
 

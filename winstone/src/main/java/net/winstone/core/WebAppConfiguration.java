@@ -4,11 +4,15 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone;
+package net.winstone.core;
 
+import net.winstone.core.ServletConfiguration;
+import net.winstone.core.Mapping;
+import net.winstone.core.HostConfiguration;
+import net.winstone.core.FilterConfiguration;
 import net.winstone.core.WinstoneResponse;
 import net.winstone.core.WinstoneRequest;
-import winstone.jndi.JNDIManager;
+import net.winstone.boot.JNDIManager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,7 +72,7 @@ import net.winstone.servlet.ErrorServlet;
 import net.winstone.servlet.InvokerServlet;
 import net.winstone.servlet.StaticResourceServlet;
 import org.slf4j.LoggerFactory;
-import winstone.jndi.WebAppJNDIManager;
+import net.winstone.boot.WebAppJNDIManager;
 
 /**
  * Models the web.xml file's details ... basically just a bunch of configuration details, plus the actual instances of mounted servlets.
@@ -1262,11 +1266,11 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     /**
      * Add/Remove the session from the collection
      */
-    void removeSessionById(String sessionId) {
+    public void removeSessionById(final String sessionId) {
         this.sessions.remove(sessionId);
     }
 
-    void addSession(String sessionId, WinstoneSession session) {
+    public void addSession(final String sessionId, final WinstoneSession session) {
         this.sessions.put(sessionId, session);
     }
 

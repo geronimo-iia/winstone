@@ -14,7 +14,7 @@ import java.net.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import winstone.WinstoneSession;
+import net.winstone.core.WinstoneSession;
 
 /**
  * Contains all the logic for reading in sessions

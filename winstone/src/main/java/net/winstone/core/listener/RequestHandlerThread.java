@@ -4,8 +4,10 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone;
+package net.winstone.core.listener;
 
+import net.winstone.core.WebAppConfiguration;
+import net.winstone.core.HostConfiguration;
 import net.winstone.core.listener.Listener;
 import net.winstone.core.WinstoneResponse;
 import net.winstone.core.WinstoneRequest;
@@ -24,6 +26,8 @@ import javax.servlet.ServletRequestListener;
 
 import net.winstone.accesslog.AccessLogger;
 import org.slf4j.LoggerFactory;
+import net.winstone.core.ObjectPool;
+import net.winstone.core.SimpleRequestDispatcher;
 
 /**
  * The threads to which incoming requests get allocated.

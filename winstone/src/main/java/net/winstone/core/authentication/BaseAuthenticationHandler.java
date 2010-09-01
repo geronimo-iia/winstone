@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import org.w3c.dom.Node;
 
-import winstone.WebAppConfiguration;
+import net.winstone.core.WebAppConfiguration;
 
 /**
  * Base class for managers of authentication within Winstone. This class also acts as a factory, loading the appropriate subclass for the

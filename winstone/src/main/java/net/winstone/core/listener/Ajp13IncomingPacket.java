@@ -16,7 +16,6 @@ import net.winstone.WinstoneException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import winstone.RequestHandlerThread;
 
 /**
  * Models a single incoming ajp13 packet. Fixes by Cory Osborn 2007/4/3 - IIS related. Thanks

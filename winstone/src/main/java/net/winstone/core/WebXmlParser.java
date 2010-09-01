@@ -4,7 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package winstone;
+package net.winstone.core;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class WebXmlParser implements EntityResolver, ErrorHandler {
      * web.xml application deployment descriptors. Returns null if the parse fails,
      * so the effect is as if there was no web.xml file available.
      */
-    protected Document parseStreamToXML(File webXmlFile) {
+    public Document parseStreamToXML(File webXmlFile) {
         DocumentBuilderFactory factory = getBaseDBF();
 
         URL localXSD25 = this.commonLoader.getResource(LOCAL_ENTITY_TABLE[3][2]);
@@ -164,6 +164,7 @@ public class WebXmlParser implements EntityResolver, ErrorHandler {
      * requests by the parser for webapp DTDs to local copies. It's faster and
      * it means you can run winstone without being web-connected.
      */
+    @Override
     public InputSource resolveEntity(String publicName, String url)
             throws SAXException, IOException {
         logger.debug("Resolving entity - public={}, url={}", publicName, url);

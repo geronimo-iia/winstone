@@ -13,8 +13,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Map;
 
-import winstone.Launcher;
-import winstone.WebAppConfiguration;
+import net.winstone.Launcher;
+import net.winstone.core.WebAppConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

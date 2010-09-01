@@ -4,9 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package net.winstone.core;
-
-import winstone.Launcher;
+package net.winstone.boot;
 
 /**
  * A jvm hook to force the calling of the web-app destroy before the process terminates
@@ -16,17 +14,17 @@ import winstone.Launcher;
  */
 public class ShutdownHook extends Thread {
 
-    private Launcher launcher;
+    private Server server;
 
-    public ShutdownHook(final Launcher launcher) {
-        this.launcher = launcher;
+    public ShutdownHook(final Server server) {
+        this.server = server;
     }
 
     @Override
     public void run() {
-        if (this.launcher != null) {
-            this.launcher.shutdown();
-            this.launcher = null;
+        if (this.server != null) {
+            this.server.shutdown();
+            this.server = null;
         }
     }
 }

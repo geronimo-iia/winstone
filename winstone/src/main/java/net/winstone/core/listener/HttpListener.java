@@ -26,10 +26,9 @@ import org.slf4j.LoggerFactory;
 import net.winstone.WinstoneException;
 import net.winstone.WinstoneResourceBundle;
 
-import winstone.HostGroup;
-import winstone.ObjectPool;
-import winstone.RequestHandlerThread;
-import winstone.WebAppConfiguration;
+import net.winstone.core.HostGroup;
+import net.winstone.core.ObjectPool;
+import net.winstone.core.WebAppConfiguration;
 
 /**
  * Implements the main listener daemon thread. This is the class that gets launched by the command line, and owns the server socket, etc.
