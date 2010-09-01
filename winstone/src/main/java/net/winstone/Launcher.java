@@ -28,6 +28,7 @@ public class Launcher {
     private static final String EMBEDDED_PROPERTIES = "/embedded.properties";
     private static final String WINSTONE_PROPERTIES = "winstone.properties";
     protected static org.slf4j.Logger logger = LoggerFactory.getLogger(Launcher.class);
+    // server attribut member
     private Server server;
 
     public Launcher() {
