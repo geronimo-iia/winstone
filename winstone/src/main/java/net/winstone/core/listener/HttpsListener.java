@@ -33,8 +33,8 @@ import net.winstone.WinstoneException;
 
 import net.winstone.core.HostGroup;
 import net.winstone.core.ObjectPool;
-import net.winstone.core.WebAppConfiguration;
 import net.winstone.core.WinstoneRequest;
+import net.winstone.util.StringUtils;
 
 /**
  * Implements the main listener daemon thread. This is the class that gets launched by the command line, and owns the server socket, etc.
@@ -54,9 +54,9 @@ public class HttpsListener extends HttpListener {
      */
     public HttpsListener(final Map<String, String> args, final ObjectPool objectPool, final HostGroup hostGroup) throws IOException {
         super(args, objectPool, hostGroup);
-        this.keystore = WebAppConfiguration.stringArg(args, getConnectorName() + "KeyStore", "winstone.ks");
-        this.password = WebAppConfiguration.stringArg(args, getConnectorName() + "KeyStorePassword", null);
-        this.keyManagerType = WebAppConfiguration.stringArg(args, getConnectorName() + "KeyManagerType", "SunX509");
+        this.keystore = StringUtils.stringArg(args, getConnectorName() + "KeyStore", "winstone.ks");
+        this.password = StringUtils.stringArg(args, getConnectorName() + "KeyStorePassword", null);
+        this.keyManagerType = StringUtils.stringArg(args, getConnectorName() + "KeyManagerType", "SunX509");
     }
 
     /**

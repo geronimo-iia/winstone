@@ -69,8 +69,8 @@ public class Ajp13Listener implements Listener, Runnable {
         this.hostGroup = hostGroup;
         this.objectPool = objectPool;
 
-        this.listenPort = Integer.parseInt(WebAppConfiguration.stringArg(args, "ajp13Port", "" + DEFAULT_PORT));
-        this.listenAddress = WebAppConfiguration.stringArg(args, "ajp13ListenAddress", null);
+        this.listenPort = Integer.parseInt(StringUtils.stringArg(args, "ajp13Port", "" + DEFAULT_PORT));
+        this.listenAddress = StringUtils.stringArg(args, "ajp13ListenAddress", null);
     }
 
     @Override

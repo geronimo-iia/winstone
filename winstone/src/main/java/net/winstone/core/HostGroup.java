@@ -43,11 +43,11 @@ public class HostGroup {
      * @param args
      * @throws IOException
      */
-    public HostGroup(final ClassLoader commonLibCL, final String jspClasspath, final Map<String, String> args) throws IOException {
-        this(null, null, commonLibCL, jspClasspath, args);
+    public HostGroup(final ClassLoader commonLibCL, final Map<String, String> args) throws IOException {
+        this(null, null, commonLibCL, args);
     }
 
-    public HostGroup(final Cluster cluster, final ObjectPool objectPool, final ClassLoader commonLibCL, final String jspClasspath, final Map<String, String> args) throws IOException {
+    public HostGroup(final Cluster cluster, final ObjectPool objectPool, final ClassLoader commonLibCL, final Map<String, String> args) throws IOException {
         super();
         this.hostConfigs = new HashMap<String, HostConfiguration>();
 
@@ -57,12 +57,12 @@ public class HostGroup {
 
         // If host mode
         if (hostDirName == null) {
-            addHostConfiguration(webappsDirName, DEFAULT_HOSTNAME, cluster, objectPool, commonLibCL, jspClasspath, args);
+            addHostConfiguration(webappsDirName, DEFAULT_HOSTNAME, cluster, objectPool, commonLibCL, args);
             this.defaultHostName = DEFAULT_HOSTNAME;
             logger.debug("Initialized in non-virtual-host mode");
         } // Otherwise multi-host mode
         else {
-            initMultiHostDir(hostDirName, cluster, objectPool, commonLibCL, jspClasspath, args);
+            initMultiHostDir(hostDirName, cluster, objectPool, commonLibCL, args);
             logger.debug("Initialized in virtual host mode with {} hosts: hostnames - {}", this.hostConfigs.size() + "", this.hostConfigs.keySet() + "");
         }
     }
@@ -98,9 +98,9 @@ public class HostGroup {
      * @throws IOException
      */
     protected final void addHostConfiguration(String webappsDirName, String hostname, Cluster cluster, ObjectPool objectPool,
-            ClassLoader commonLibCL, String jspClasspath, Map<String, String> args) throws IOException {
+            ClassLoader commonLibCL, Map<String, String> args) throws IOException {
         logger.debug("Deploying host found at {}", hostname);
-        HostConfiguration config = new HostConfiguration(hostname, cluster, objectPool, commonLibCL, jspClasspath, args, webappsDirName);
+        HostConfiguration config = new HostConfiguration(hostname, cluster, objectPool, commonLibCL, args, webappsDirName);
         this.hostConfigs.put(hostname, config);
     }
 
@@ -115,7 +115,7 @@ public class HostGroup {
      * @param args
      * @throws IOException
      */
-    protected final void initMultiHostDir(String hostsDirName, Cluster cluster, ObjectPool objectPool, ClassLoader commonLibCL, String jspClasspath, Map<String, String> args) throws IOException {
+    protected final void initMultiHostDir(String hostsDirName, Cluster cluster, ObjectPool objectPool, ClassLoader commonLibCL, Map<String, String> args) throws IOException {
         if (hostsDirName == null) {
             // never reach in this implementation
             hostsDirName = "hosts";
@@ -136,7 +136,7 @@ public class HostGroup {
                 // Mount directories as host dirs
                 if (children[n].isDirectory()) {
                     if (!this.hostConfigs.containsKey(childName)) {
-                        addHostConfiguration(children[n].getCanonicalPath(), childName, cluster, objectPool, commonLibCL, jspClasspath, args);
+                        addHostConfiguration(children[n].getCanonicalPath(), childName, cluster, objectPool, commonLibCL, args);
                     }
                 }
                 // set default host name

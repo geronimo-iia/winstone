@@ -7,10 +7,7 @@
 package net.winstone.core;
 
 import net.winstone.core.listener.RequestHandlerThread;
-import net.winstone.core.WebAppConfiguration;
 import net.winstone.core.listener.Listener;
-import net.winstone.core.WinstoneResponse;
-import net.winstone.core.WinstoneRequest;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -20,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.winstone.WinstoneException;
+import net.winstone.util.StringUtils;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -59,7 +57,7 @@ public class ObjectPool implements Runnable {
      * Constructs an instance of the object pool, including handlers, requests and responses
      */
     public ObjectPool(Map<String, String> args) throws IOException {
-        this.simulateModUniqueId = WebAppConfiguration.booleanArg(args, "simulateModUniqueId", false);
+        this.simulateModUniqueId = StringUtils.booleanArg(args, "simulateModUniqueId", false);
         this.saveSessions = WebAppConfiguration.useSavedSessions(args);
 
         // Build the initial pool of handler threads

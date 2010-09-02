@@ -28,7 +28,7 @@ import net.winstone.WinstoneResourceBundle;
 
 import net.winstone.core.HostGroup;
 import net.winstone.core.ObjectPool;
-import net.winstone.core.WebAppConfiguration;
+import net.winstone.util.StringUtils;
 
 /**
  * Implements the main listener daemon thread. This is the class that gets launched by the command line, and owns the server socket, etc.
@@ -65,9 +65,9 @@ public class HttpListener implements Listener, Runnable {
         // Load resources
         this.hostGroup = hostGroup;
         this.objectPool = objectPool;
-        this.listenPort = Integer.parseInt(WebAppConfiguration.stringArg(args, getConnectorName() + "Port", "" + getDefaultPort()));
-        this.listenAddress = WebAppConfiguration.stringArg(args, getConnectorName() + "ListenAddress", null);
-        this.doHostnameLookups = WebAppConfiguration.booleanArg(args, getConnectorName() + "DoHostnameLookups", DEFAULT_HNL);
+        this.listenPort = Integer.parseInt(StringUtils.stringArg(args, getConnectorName() + "Port", "" + getDefaultPort()));
+        this.listenAddress = StringUtils.stringArg(args, getConnectorName() + "ListenAddress", null);
+        this.doHostnameLookups = StringUtils.booleanArg(args, getConnectorName() + "DoHostnameLookups", DEFAULT_HNL);
     }
 
     @Override

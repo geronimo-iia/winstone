@@ -13,9 +13,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.winstone.core.WebAppConfiguration;
 
 import com.meterware.httpunit.WebConversation;
+import net.winstone.util.StringUtils;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -121,13 +121,13 @@ public class LoadTest {
             return;
         }
 
-        String url = WebAppConfiguration.stringArg(options, "url", "http://localhost:8080/");
-        boolean keepAlive = WebAppConfiguration.booleanArg(options, "keepAlive", true);
-        String startThreads = WebAppConfiguration.stringArg(options, "startThreads", "20");
-        String endThreads = WebAppConfiguration.stringArg(options, "endThreads", "1000");
-        String stepSize = WebAppConfiguration.stringArg(options, "stepSize", "20");
-        String stepPeriod = WebAppConfiguration.stringArg(options, "stepPeriod", "5000");
-        String gracePeriod = WebAppConfiguration.stringArg(options, "gracePeriod", "5000");
+        String url = StringUtils.stringArg(options, "url", "http://localhost:8080/");
+        boolean keepAlive = StringUtils.booleanArg(options, "keepAlive", true);
+        String startThreads = StringUtils.stringArg(options, "startThreads", "20");
+        String endThreads = StringUtils.stringArg(options, "endThreads", "1000");
+        String stepSize = StringUtils.stringArg(options, "stepSize", "20");
+        String stepPeriod = StringUtils.stringArg(options, "stepPeriod", "5000");
+        String gracePeriod = StringUtils.stringArg(options, "gracePeriod", "5000");
 
         LoadTest lt = new LoadTest(url, keepAlive, Integer.parseInt(startThreads), Integer.parseInt(endThreads), Integer.parseInt(stepSize), Integer.parseInt(stepPeriod), Integer.parseInt(gracePeriod));
 

@@ -13,8 +13,9 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Map;
 
-import net.winstone.Launcher;
-import net.winstone.core.WebAppConfiguration;
+import net.winstone.boot.BootStrap;
+import net.winstone.boot.Command;
+import net.winstone.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,10 +55,8 @@ public class WinstoneControl {
     public void call(String[] argv) {
 
         // Load args from the config file
-        Map<String, String> options = null;
-        try {
-            options = Launcher.loadArgsFromCommandLineAndConfig(argv, "operation");
-        } catch (IOException e) {
+        Map<String, String> options = new BootStrap(argv).loadArgs("operation");
+        if (options.isEmpty() || options.containsKey("usage") || options.containsKey("help")) {
             printUsage();
             return;
         }
@@ -73,16 +72,16 @@ public class WinstoneControl {
             return;
         }
 
-        String host = WebAppConfiguration.stringArg(options, "host", "localhost");
-        String port = WebAppConfiguration.stringArg(options, "port", "8081");
+        String host = StringUtils.stringArg(options, "host", "localhost");
+        String port = StringUtils.stringArg(options, "port", "8081");
         logger.info("Connecting to {}:{}", host, port);
 
         // Check for shutdown
         if (operation.equalsIgnoreCase("shutdown")) {
-            execute(host, port, Launcher.SHUTDOWN_TYPE, null);
+            execute(host, port, Command.SHUTDOWN, null);
         } // check for reload
         else if (operation.toLowerCase().startsWith("reload:")) {
-            execute(host, port, Launcher.RELOAD_TYPE, operation.substring("reload:".length()));
+            execute(host, port, Command.RELOAD, operation.substring("reload:".length()));
             logger.info("Successfully sent webapp reload command to {}:{}", host, port);
         } else {
             printUsage();
@@ -97,13 +96,13 @@ public class WinstoneControl {
      * @param command
      * @param extra
      */
-    private void execute(String host, String port, byte command, String extra) {
+    private void execute(String host, String port, Command command, String extra) {
         Socket socket = null;
         try {
             socket = new Socket(host, Integer.parseInt(port));
             socket.setSoTimeout(TIMEOUT);
             OutputStream out = socket.getOutputStream();
-            out.write(command);
+            out.write(command.getCode());
             if (extra != null) {
                 ObjectOutputStream objOut = new ObjectOutputStream(out);
                 objOut.writeUTF(host);

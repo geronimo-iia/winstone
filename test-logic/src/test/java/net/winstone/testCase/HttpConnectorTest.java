@@ -13,16 +13,18 @@ import java.util.Map;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
-import junit.framework.TestSuite; 
+import junit.framework.TestSuite;
 
 import org.xml.sax.SAXException;
- 
+
 
 import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebImage;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
+import java.util.Arrays;
+import java.util.Collections;
 import net.winstone.Launcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +67,7 @@ public class HttpConnectorTest extends TestCase {
         args.put("debug", "8");
         args.put("logThrowingLineNo", "true");
         Launcher winstone = new Launcher(args);
-
+        winstone.launch();
         // Check for a simple connection
         WebConversation wc = new WebConversation();
         WebRequest wreq = new GetMethodWebRequest("http://localhost:10003/examples/CountRequestsServlet");
@@ -92,7 +94,7 @@ public class HttpConnectorTest extends TestCase {
         args.put("debug", "8");
         args.put("logThrowingLineNo", "true");
         Launcher winstone = new Launcher(args);
-
+        winstone.launch();
         // Check for a simple connection
         WebConversation wc = new WebConversation();
         WebRequest wreq = new GetMethodWebRequest(
@@ -128,7 +130,7 @@ public class HttpConnectorTest extends TestCase {
         args.put("debug", "8");
         args.put("logThrowingLineNo", "true");
         Launcher winstone = new Launcher(args);
-
+        winstone.launch();
         // Check for a simple connection
         WebConversation wc = new WebConversation();
         WebRequest wreq = new GetMethodWebRequest(
@@ -139,6 +141,4 @@ public class HttpConnectorTest extends TestCase {
         winstone.shutdown();
         Thread.sleep(500);
     }
-
-   
 }
