@@ -17,9 +17,9 @@ import java.util.StringTokenizer;
 
 import org.slf4j.LoggerFactory;
 
-import net.winstone.core.WebAppConfiguration;
 import net.winstone.core.authentication.AuthenticationPrincipal;
 import net.winstone.core.authentication.AuthenticationRealm;
+import net.winstone.util.StringUtils;
 
 /**
  * Base class for authentication realms. Subclasses provide the source of authentication roles, usernames, passwords, etc, and when asked
@@ -49,7 +49,7 @@ public class ArgumentsRealm implements AuthenticationRealm {
                 String userName = key.substring(PASSWORD_PREFIX.length());
                 String password = (String) args.get(key);
 
-                String roleList = WebAppConfiguration.stringArg(args, ROLES_PREFIX + userName, "");
+                String roleList = StringUtils.stringArg(args, ROLES_PREFIX + userName, "");
                 if (roleList.equals("")) {
                     logger.warn("WARNING: No roles detected in configuration for user {}", userName);
                 } else {

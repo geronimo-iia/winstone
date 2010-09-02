@@ -50,7 +50,6 @@ public class HostConfiguration implements Runnable {
     private final Cluster cluster;
     private final ObjectPool objectPool;
     private final ClassLoader commonLibCL;
-    private final String jspClasspath;
     private Thread thread;
 
     /**
@@ -63,18 +62,17 @@ public class HostConfiguration implements Runnable {
      * @param webappsDirName
      * @throws IOException
      */
-    public HostConfiguration(final String hostname, final ClassLoader commonLibCL, final String jspClasspath, final Map<String, String> args, final String webappsDirName) throws IOException {
-        this(hostname, null, null, commonLibCL, jspClasspath, args, webappsDirName);
+    public HostConfiguration(final String hostname, final ClassLoader commonLibCL, final Map<String, String> args, final String webappsDirName) throws IOException {
+        this(hostname, null, null, commonLibCL, args, webappsDirName);
     }
 
-    public HostConfiguration(final String hostname, final Cluster cluster, final ObjectPool objectPool, final ClassLoader commonLibCL, final String jspClasspath, final Map<String, String> args, final String webappsDirName) throws IOException {
+    public HostConfiguration(final String hostname, final Cluster cluster, final ObjectPool objectPool, final ClassLoader commonLibCL, final Map<String, String> args, final String webappsDirName) throws IOException {
         this.hostname = hostname;
         this.args = args;
         this.webapps = new HashMap<String, WebAppConfiguration>();
         this.cluster = cluster;
         this.objectPool = objectPool;
         this.commonLibCL = commonLibCL;
-        this.jspClasspath = jspClasspath;
 
         // Is this the single or multiple configuration ? Check args
         String warfile = (String) args.get("warfile");
@@ -142,7 +140,7 @@ public class HostConfiguration implements Runnable {
 
         // Instantiate the webAppConfig
         return new WebAppConfiguration(this, this.cluster, webRoot.getCanonicalPath(), prefix,
-                this.objectPool, this.args, webXMLParentNode, this.commonLibCL, this.jspClasspath, contextName);
+                this.objectPool, this.args, webXMLParentNode, this.commonLibCL, contextName);
     }
 
     public String getHostname() {
@@ -230,7 +228,7 @@ public class HostConfiguration implements Runnable {
                 unzippedDir = new File(requestedWebroot);
             } else {
                 // compute which temp directory to use
-                String tempDirectory = WebAppConfiguration.stringArg(args, "tempDirectory", null);
+                String tempDirectory = StringUtils.stringArg(args, "tempDirectory", null);
                 String child = "winstone" + File.pathSeparator;
                 if (tempDirectory == null) {
                     // find default temp directory

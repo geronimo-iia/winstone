@@ -1,6 +1,5 @@
 package net.winstone.boot;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -10,14 +9,10 @@ import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import net.winstone.Launcher;
 import net.winstone.WinstoneException;
 import net.winstone.WinstoneResourceBundle;
 import net.winstone.cluster.Cluster;
@@ -31,8 +26,8 @@ import net.winstone.core.listener.HttpListener;
 import net.winstone.core.listener.HttpsListener;
 import net.winstone.core.listener.Listener;
 import net.winstone.jndi.JndiManager;
-import net.winstone.util.FileUtils;
 import net.winstone.util.LifeCycle;
+import net.winstone.util.StringUtils;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -47,6 +42,7 @@ public class Server implements LifeCycle, Runnable {
     private int DEFAULT_CONTROL_PORT = -1;
     // parameter
     private final Map<String, String> args;
+    private final ClassLoader commonLibClassLoader;
     // control
     private Thread controlThread;
     private int controlPort;
@@ -56,12 +52,13 @@ public class Server implements LifeCycle, Runnable {
     private Cluster cluster;
     private JndiManager globalJndiManager;
 
-    public Server(final Map<String, String> args) throws IllegalArgumentException {
+    public Server(final Map<String, String> args, final ClassLoader commonLibClassLoader) throws IllegalArgumentException {
         super();
         if (args == null) {
             throw new IllegalArgumentException("arg can not be null or empty");
         }
         this.args = args;
+        this.commonLibClassLoader = commonLibClassLoader;
         controlThread = null;
         controlPort = DEFAULT_CONTROL_PORT;
         hostGroup = null;
@@ -73,10 +70,6 @@ public class Server implements LifeCycle, Runnable {
 
     public void start() {
         initialize();
-        if (controlThread != null) {
-            controlThread.start();
-        }
-
     }
 
     /**
@@ -85,7 +78,7 @@ public class Server implements LifeCycle, Runnable {
     @Override
     public void initialize() {
         try {
-            boolean useJNDI = WebAppConfiguration.booleanArg(args, "useJNDI", false);
+            boolean useJNDI = StringUtils.booleanArg(args, "useJNDI", false);
 
             // Set jndi resource handler if not set (workaround for JamVM bug)
             if (useJNDI) {
@@ -104,89 +97,6 @@ public class Server implements LifeCycle, Runnable {
             logger.debug("Winstone startup arguments: {}", args.toString());
 
             this.controlPort = (args.get("controlPort") == null ? DEFAULT_CONTROL_PORT : Integer.parseInt((String) args.get("controlPort")));
-
-            List<URL> jars = new ArrayList<URL>();
-            List<File> jspClasspaths = new ArrayList<File>();
-
-            // Check for java home
-            String defaultJavaHome = System.getProperty("java.home");
-            String javaHome = WebAppConfiguration.stringArg(args, "javaHome", defaultJavaHome);
-            logger.debug("Using JAVA_HOME={}", javaHome);
-            String toolsJarLocation = WebAppConfiguration.stringArg(args, "toolsJar", null);
-            File toolsJar = null;
-            if (toolsJarLocation == null) {
-                toolsJar = new File(javaHome, "lib/tools.jar");
-
-                // first try - if it doesn't exist, try up one dir since we might have
-                // the JRE home by mistake
-                if (!toolsJar.exists()) {
-                    File javaHome2 = new File(javaHome).getParentFile();
-                    File toolsJar2 = new File(javaHome2, "lib/tools.jar");
-                    if (toolsJar2.exists()) {
-                        javaHome = javaHome2.getCanonicalPath();
-                        toolsJar = toolsJar2;
-                    }
-                }
-            } else {
-                toolsJar = new File(toolsJarLocation);
-            }
-
-            // Add tools jar to classloader path
-            if (toolsJar.exists()) {
-                jars.add(toolsJar.toURI().toURL());
-                jspClasspaths.add(toolsJar);
-                logger.debug("Adding {} to common classpath", toolsJar.getName());
-            } else if (WebAppConfiguration.booleanArg(args, "useJasper", false)) {
-                logger.warn("WARNING: Tools.jar was not found - jsp compilation will cause errors. Maybe you should set JAVA_HOME using --javaHome");
-            }
-
-            // Set up common lib class loader
-            String commonLibCLFolder = WebAppConfiguration.stringArg(args, "commonLibFolder", "lib");
-            File libFolder = new File(commonLibCLFolder);
-            if (libFolder.exists() && libFolder.isDirectory()) {
-                logger.debug("Using common lib folder: {}", libFolder.getCanonicalPath());
-                File children[] = libFolder.listFiles();
-                for (int n = 0; n < children.length; n++) {
-                    if (children[n].getName().endsWith(".jar") || children[n].getName().endsWith(".zip")) {
-                        jars.add(children[n].toURI().toURL());
-                        //jars.add(children[n].toURL());
-                        jspClasspaths.add(children[n]);
-                        logger.debug("Adding {} to common classpath", children[n].getName());
-                    }
-                }
-            } else {
-                logger.debug("No common lib folder found");
-            }
-            try {
-                // try to find in META-INF/lib
-                //TODO explode them in a temp folder?
-                String[] childrenName = FileUtils.getResourceListing(getClass(), "META-INF/lib");
-                for (int n = 0; n < childrenName.length; n++) {
-                    if (childrenName[n].endsWith(".jar") || childrenName[n].endsWith(".zip")) {
-                        URL url = getClass().getClassLoader().getResource("META-INF/lib/" + childrenName[n]);
-                        jars.add(url);
-                        // add for jsp classpath in webapp!
-                        //commonLibCLPaths.add(children[n]);
-                        logger.debug("Adding {} to common classpath", childrenName[n]);
-                    }
-                }
-            } catch (URISyntaxException ex) {
-                logger.error("Reading META-INF/lib", ex);
-            }
-
-
-
-            ClassLoader commonLibCL = new URLClassLoader((URL[]) jars.toArray(new URL[jars.size()]), getClass().getClassLoader());
-            logger.debug("Initializing Common Lib classloader: {}", commonLibCL.toString());
-            logger.debug("Initializing JSP Common Lib classloader: {}", jspClasspaths.toString());
-            /** calcule de m'attribut pour les jsp */
-            StringBuilder cp = new StringBuilder();
-            File[] fa = (File[]) jspClasspaths.toArray(new File[0]);
-            for (int n = 0; n < fa.length; n++) {
-                cp.append(fa[n].getCanonicalPath()).append(File.pathSeparatorChar);
-            }
-            String jspClasspath = cp.length() > 0 ? cp.substring(0, cp.length() - 1) : "";
-
             this.objectPool = new ObjectPool(args);
 
             // Optionally set up clustering if enabled and libraries are available
@@ -196,7 +106,7 @@ public class Server implements LifeCycle, Runnable {
                 if (this.controlPort < 0) {
                     logger.info("Clustering disabled - control port must be enabled");
                 } else {
-                    String clusterClassName = WebAppConfiguration.stringArg(args, "clusterClassName", SimpleCluster.class.getName()).trim();
+                    String clusterClassName = StringUtils.stringArg(args, "clusterClassName", SimpleCluster.class.getName()).trim();
                     try {
                         Class<?> clusterClass = Class.forName(clusterClassName);
                         Constructor<?> clusterConstructor = clusterClass.getConstructor(new Class[]{
@@ -215,10 +125,10 @@ public class Server implements LifeCycle, Runnable {
 
             // If jndi is enabled, run the container wide jndi populator
             if (useJNDI) {
-                String jndiMgrClassName = WebAppConfiguration.stringArg(args, "containerJndiClassName", JndiManager.class.getName()).trim();
+                String jndiMgrClassName = StringUtils.stringArg(args, "containerJndiClassName", JndiManager.class.getName()).trim();
                 try {
                     // Build the realm
-                    Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, true, commonLibCL);
+                    Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, true, commonLibClassLoader);
                     this.globalJndiManager = (JndiManager) jndiMgrClass.newInstance();
                     this.globalJndiManager.initialize();
                 } catch (ClassNotFoundException err) {
@@ -229,7 +139,7 @@ public class Server implements LifeCycle, Runnable {
             }
 
             // Open the web apps
-            this.hostGroup = new HostGroup(this.cluster, this.objectPool, commonLibCL, jspClasspath, args);
+            this.hostGroup = new HostGroup(this.cluster, this.objectPool, commonLibClassLoader, args);
 
             // Create connectors (http, https and ajp)
             this.listeners = new ArrayList<Listener>();
@@ -241,12 +151,13 @@ public class Server implements LifeCycle, Runnable {
             } catch (ClassNotFoundException err) {
                 logger.debug("Listener class {} needs JDK1.4 support. Disabling", HttpsListener.class.getName());
             }
+            if (!listeners.isEmpty()) {
+                this.controlThread = new Thread(this, "LauncherControlThread[ControlPort=" + Integer.toString(this.controlPort) + "]]");
+                this.controlThread.setDaemon(false);
+                this.controlThread.start();
 
-            this.controlThread = new Thread(this, "LauncherControlThread[ControlPort=" + Integer.toString(this.controlPort) + "]]");
-            this.controlThread.setDaemon(false);
-            this.controlThread.start();
-
-            Runtime.getRuntime().addShutdownHook(new ShutdownHook(this));
+                Runtime.getRuntime().addShutdownHook(new ShutdownHook(this));
+            }
 
         } catch (IOException iOException) {
             throw new WinstoneException("Server.initialize", iOException);
@@ -292,7 +203,7 @@ public class Server implements LifeCycle, Runnable {
             if (this.controlPort > 0) {
                 // Without password, we limit control port on local interface or from controlAddress in parameter.
                 InetAddress inetAddress = null;
-                String controlAddress = WebAppConfiguration.stringArg(args, "controlAddress", null);
+                String controlAddress = StringUtils.stringArg(args, "controlAddress", null);
                 if (controlAddress != null) {
                     inetAddress = InetAddress.getByName(controlAddress);
                 }
@@ -356,7 +267,6 @@ public class Server implements LifeCycle, Runnable {
     public void shutdown() {
         destroy();
         Thread.yield();
-        logger.info("Winstone shutdown successfully");
     }
 
     public boolean isRunning() {
@@ -370,10 +280,10 @@ public class Server implements LifeCycle, Runnable {
         try {
             inSocket = csAccepted.getInputStream();
             int reqType = inSocket.read();
-            if ((byte) reqType == Launcher.SHUTDOWN_TYPE) {
+            if ((byte) reqType == Command.SHUTDOWN.getCode()) {
                 logger.info("Shutdown request received via the controlPort. Commencing Winstone shutdowny");
                 shutdown();
-            } else if ((byte) reqType == Launcher.RELOAD_TYPE) {
+            } else if ((byte) reqType == Command.RELOAD.getCode()) {
                 inControl = new ObjectInputStream(inSocket);
                 String host = inControl.readUTF();
                 String prefix = inControl.readUTF();

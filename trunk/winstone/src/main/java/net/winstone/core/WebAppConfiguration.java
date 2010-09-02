@@ -6,12 +6,6 @@
  */
 package net.winstone.core;
 
-import net.winstone.core.ServletConfiguration;
-import net.winstone.core.Mapping;
-import net.winstone.core.HostConfiguration;
-import net.winstone.core.FilterConfiguration;
-import net.winstone.core.WinstoneResponse;
-import net.winstone.core.WinstoneRequest;
 import net.winstone.boot.JNDIManager;
 import java.io.File;
 import java.io.IOException;
@@ -64,7 +58,6 @@ import org.w3c.dom.NodeList;
 import net.winstone.core.authentication.AuthenticationHandler;
 import net.winstone.core.authentication.AuthenticationRealm;
 import net.winstone.cluster.Cluster;
-import net.winstone.core.WinstoneConstant;
 import net.winstone.core.authentication.realm.ArgumentsRealm;
 import net.winstone.loader.ReloadingClassLoader;
 import net.winstone.loader.WebappClassLoader;
@@ -177,23 +170,6 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     private final Map<String, FilterConfiguration[]> filterMatchCache;
     private boolean useSavedSessions;
 
-    public static boolean booleanArg(final Map<String, String> args, final String name, final boolean defaultTrue) {
-        String value = (String) args.get(name);
-        if (defaultTrue) {
-            return (value == null) || (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("yes"));
-        } else {
-            return (value != null) && (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("yes"));
-        }
-    }
-
-    public static String stringArg(final Map<String, String> args, final String name, final String defaultValue) {
-        return (String) (args.get(name) == null ? defaultValue : args.get(name));
-    }
-
-    public static int intArg(final Map<String, String> args, final String name, final int defaultValue) {
-        return Integer.parseInt(stringArg(args, name, "" + defaultValue));
-    }
-
     public static String getTextFromNode(final Node node) {
         if (node == null) {
             return null;
@@ -211,7 +187,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     }
 
     public static boolean useSavedSessions(final Map<String, String> args) {
-        return booleanArg(args, "useSavedSessions", false);
+        return StringUtils.booleanArg(args, "useSavedSessions", false);
     }
 
     /**
@@ -226,15 +202,15 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
      * @param parentClassPaths
      * @param contextName
      */
-    public WebAppConfiguration(final HostConfiguration ownerHostConfig, final String webRoot, final String prefix, final Map<String, String> startupArgs, final Node elm, final ClassLoader parentClassLoader, final String jspClasspath, final String contextName) {
-        this(ownerHostConfig, null, webRoot, prefix, null, startupArgs, elm, parentClassLoader, jspClasspath, contextName);
+    public WebAppConfiguration(final HostConfiguration ownerHostConfig, final String webRoot, final String prefix, final Map<String, String> startupArgs, final Node elm, final ClassLoader parentClassLoader, final String contextName) {
+        this(ownerHostConfig, null, webRoot, prefix, null, startupArgs, elm, parentClassLoader, contextName);
     }
 
     /**
      * Constructor. This parses the xml and sets up for basic routing
      */
     public WebAppConfiguration(final HostConfiguration ownerHostConfig, final Cluster cluster, final String webRoot, final String prefix, final ObjectPool objectPool, final Map<String, String> startupArgs, final Node elm, final ClassLoader parentClassLoader,
-            final String jspClasspath, final String contextName) {
+            final String contextName) {
         this.ownerHostConfig = ownerHostConfig;
         this.webRoot = webRoot;
         if (!prefix.equals("") && !prefix.startsWith("/")) {
@@ -249,9 +225,9 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         this.loader = buildWebAppClassLoader(startupArgs, parentClassLoader, webRoot, localLoaderClassPathFiles);
 
         // Build switch values
-        boolean useJasper = booleanArg(startupArgs, "useJasper", true);
-        boolean useInvoker = booleanArg(startupArgs, "useInvoker", false);
-        boolean useJNDI = booleanArg(startupArgs, "useJNDI", false);
+        boolean useJasper = StringUtils.booleanArg(startupArgs, "useJasper", true);
+        boolean useInvoker = StringUtils.booleanArg(startupArgs, "useInvoker", false);
+        boolean useJNDI = StringUtils.booleanArg(startupArgs, "useJNDI", false);
         this.useSavedSessions = useSavedSessions(startupArgs);
 
         // Check jasper is available - simple tests
@@ -260,7 +236,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 Class.forName(WinstoneConstant.JAVAX_JSP_FACTORY, true, parentClassLoader);
                 Class.forName(WinstoneConstant.JSP_SERVLET_CLASS, true, this.loader);
             } catch (Throwable err) {
-                if (booleanArg(startupArgs, "useJasper", false)) {
+                if (StringUtils.booleanArg(startupArgs, "useJasper", false)) {
                     logger.warn("WARNING: Jasper servlet not found - disabling JSP support. Do you have all \nthe jasper libraries in the common lib folder (see --commonLibFolder setting) ?");
                     logger.debug("Error loading Jasper JSP compilation servlet");
                 }
@@ -659,7 +635,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             } else {
                 authMethod = StringUtils.replace(authMethod, "-", "");
             }
-            String realmClassName = stringArg(startupArgs, "realmClassName", ArgumentsRealm.class.getCanonicalName()).trim();
+            String realmClassName = StringUtils.stringArg(startupArgs, "realmClassName", ArgumentsRealm.class.getCanonicalName()).trim();
             String authClassName = "net.winstone.core.authentication." + authMethod.substring(0, 1).toUpperCase() + authMethod.substring(1).toLowerCase() + "AuthenticationHandler";
             try {
                 // Build the realm
@@ -684,13 +660,13 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             } catch (Throwable err) {
                 logger.error("Authentication disabled - couldn't load authentication handler: " + authClassName + " or realm: " + realmClassName, err);
             }
-        } else if (!stringArg(startupArgs, "realmClassName", "").trim().equals("")) {
+        } else if (!StringUtils.stringArg(startupArgs, "realmClassName", "").trim().equals("")) {
             logger.debug("WARNING: Realm configuration ignored, because there are no roles defined in the web.xml ");
         }
 
         // Instantiate the JNDI manager
         if (useJNDI) {
-            String jndiMgrClassName = stringArg(startupArgs, "webappJndiClassName", WebAppJNDIManager.class.getName()).trim();
+            String jndiMgrClassName = StringUtils.stringArg(startupArgs, "webappJndiClassName", WebAppJNDIManager.class.getName()).trim();
             try {
                 // Build the realm
                 Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, true, parentClassLoader);
@@ -710,10 +686,10 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             }
         }
 
-        String loggerClassName = stringArg(startupArgs, "accessLoggerClassName", "").trim();
+        String loggerClassName = StringUtils.stringArg(startupArgs, "accessLoggerClassName", "").trim();
         if (!loggerClassName.equals("")) {
             try {
-                this.accessLogger = AccessLoggerProviderFactory.getAccessLogger(this.getOwnerHostname(), this.getContextName(), PatternType.valueOf(WebAppConfiguration.stringArg(startupArgs, "simpleAccessLogger.format", "combined")), WebAppConfiguration.stringArg(startupArgs, "simpleAccessLogger.file", "logs/###host###/###webapp###_access.log"));
+                this.accessLogger = AccessLoggerProviderFactory.getAccessLogger(this.getOwnerHostname(), this.getContextName(), PatternType.valueOf(StringUtils.stringArg(startupArgs, "simpleAccessLogger.format", "combined")), StringUtils.stringArg(startupArgs, "simpleAccessLogger.file", "logs/###host###/###webapp###_access.log"));
             } catch (Throwable err) {
                 logger.error("Error instantiating access logger class: " + loggerClassName, err);
             }
@@ -770,7 +746,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         }
 
         // If we don't have an instance of the default servlet, mount the inbuilt one
-        boolean useDirLists = booleanArg(startupArgs, "directoryListings", true);
+        boolean useDirLists = StringUtils.booleanArg(startupArgs, "directoryListings", true);
         Map<String, String> staticParams = new HashMap<String, String>();
         staticParams.put("webRoot", webRoot);
         staticParams.put("prefix", this.prefix);
@@ -781,7 +757,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             this.servletInstances.put(this.defaultServletName, defaultServlet);
             startupServlets.add(defaultServlet);
         }
-        if (booleanArg(startupArgs, "alwaysMountDefaultServlet", true) && this.servletInstances.get(DEFAULT_SERVLET_NAME) == null) {
+        if (StringUtils.booleanArg(startupArgs, "alwaysMountDefaultServlet", true) && this.servletInstances.get(DEFAULT_SERVLET_NAME) == null) {
             ServletConfiguration defaultServlet = new ServletConfiguration(this, DEFAULT_SERVLET_NAME, StaticResourceServlet.class.getName(), staticParams, 0);
             this.servletInstances.put(DEFAULT_SERVLET_NAME, defaultServlet);
             startupServlets.add(defaultServlet);
@@ -797,7 +773,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         // Initialise jasper servlet if requested
         if (useJasper) {
             setAttribute("org.apache.catalina.classloader", this.loader);
-            setAttribute("org.apache.catalina.jsp_classpath", (jspClasspath != null ? jspClasspath : ""));
+            setAttribute("org.apache.catalina.jsp_classpath", StringUtils.stringArg(startupArgs, "jspClasspath", ""));
 
             Map<String, String> jspParams = new HashMap<String, String>();
             addJspServletParams(jspParams);
@@ -812,7 +788,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         // Initialise invoker servlet if requested
         if (useInvoker) {
             // Get generic options
-            String invokerPrefix = stringArg(startupArgs, "invokerPrefix", DEFAULT_INVOKER_PREFIX);
+            String invokerPrefix = StringUtils.stringArg(startupArgs, "invokerPrefix", DEFAULT_INVOKER_PREFIX);
             Map<String, String> invokerParams = new HashMap<String, String>();
             invokerParams.put("prefix", this.prefix);
             invokerParams.put("invokerPrefix", invokerPrefix);
@@ -911,8 +887,8 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 
         URL jarURLs[] = (URL[]) urlList.toArray(new URL[urlList.size()]);
 
-        String preferredClassLoader = stringArg(startupArgs, "preferredClassLoader", WebappClassLoader.class.getName());
-        if (booleanArg(startupArgs, "useServletReloading", false) && stringArg(startupArgs, "preferredClassLoader", "").equals("")) {
+        String preferredClassLoader = StringUtils.stringArg(startupArgs, "preferredClassLoader", WebappClassLoader.class.getName());
+        if (StringUtils.booleanArg(startupArgs, "useServletReloading", false) && StringUtils.stringArg(startupArgs, "preferredClassLoader", "").equals("")) {
             preferredClassLoader = ReloadingClassLoader.class.getName();
         }
 
@@ -928,7 +904,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                             jarURLs, parentClassLoader
                         });
             } catch (Throwable err) {
-                if (!stringArg(startupArgs, "preferredClassLoader", "").equals("") || !preferredClassLoader.equals(WebappClassLoader.class.getName())) {
+                if (!StringUtils.stringArg(startupArgs, "preferredClassLoader", "").equals("") || !preferredClassLoader.equals(WebappClassLoader.class.getName())) {
                     logger.error("Erroring setting class loader", err);
                 }
             }
