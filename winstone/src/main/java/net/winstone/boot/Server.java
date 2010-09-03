@@ -10,6 +10,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +22,6 @@ import net.winstone.cluster.SimpleCluster;
 import net.winstone.core.HostConfiguration;
 import net.winstone.core.HostGroup;
 import net.winstone.core.ObjectPool;
-import net.winstone.core.WebAppConfiguration;
 import net.winstone.core.listener.Ajp13Listener;
 import net.winstone.core.listener.HttpListener;
 import net.winstone.core.listener.HttpsListener;
@@ -35,23 +36,32 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Jerome Guibert
  */
-public class Server implements LifeCycle, Runnable {
+public class Server implements LifeCycle {
 
     protected static org.slf4j.Logger logger = LoggerFactory.getLogger(Server.class);
-    private int CONTROL_TIMEOUT = 2000; // wait 2s for control connection
     private int DEFAULT_CONTROL_PORT = -1;
     // parameter
     private final Map<String, String> args;
     private final ClassLoader commonLibClassLoader;
     // control
-    private Thread controlThread;
-    private int controlPort;
-    private HostGroup hostGroup;
-    private ObjectPool objectPool;
-    private List<Listener> listeners;
-    private Cluster cluster;
-    private JndiManager globalJndiManager;
+    private Thread controlThread = null;
+    private int controlPort = DEFAULT_CONTROL_PORT;
+    // host and cluster
+    private HostGroup hostGroup = null;
+    private Cluster cluster = null;
+    // object pool
+    private ObjectPool objectPool = null;
+    // listener
+    private List<Listener> listeners = null;
+    // jndi manager
+    private JndiManager globalJndiManager = null;
 
+    /**
+     * Build a new instance of server.
+     * @param args configuration
+     * @param commonLibClassLoader class loader of common lib folder
+     * @throws IllegalArgumentException
+     */
     public Server(final Map<String, String> args, final ClassLoader commonLibClassLoader) throws IllegalArgumentException {
         super();
         if (args == null) {
@@ -59,15 +69,11 @@ public class Server implements LifeCycle, Runnable {
         }
         this.args = args;
         this.commonLibClassLoader = commonLibClassLoader;
-        controlThread = null;
-        controlPort = DEFAULT_CONTROL_PORT;
-        hostGroup = null;
-        objectPool = null;
-        listeners = null;
-        cluster = null;
-        globalJndiManager = null;
     }
 
+    /**
+     * Start server
+     */
     public void start() {
         initialize();
     }
@@ -78,81 +84,16 @@ public class Server implements LifeCycle, Runnable {
     @Override
     public void initialize() {
         try {
-            boolean useJNDI = StringUtils.booleanArg(args, "useJNDI", false);
-
-            // Set jndi resource handler if not set (workaround for JamVM bug)
-            if (useJNDI) {
-                try {
-                    Class<?> ctxFactoryClass = Class.forName("net.winstone.jndi.java.javaURLContextFactory");
-                    if (System.getProperty("java.naming.factory.initial") == null) {
-                        System.setProperty("java.naming.factory.initial", ctxFactoryClass.getName());
-                    }
-                    if (System.getProperty("java.naming.factory.url.pkgs") == null) {
-                        System.setProperty("java.naming.factory.url.pkgs", "net.winstone.jndi");
-                    }
-                } catch (ClassNotFoundException err) {
-                }
-            }
-
             logger.debug("Winstone startup arguments: {}", args.toString());
-
-            this.controlPort = (args.get("controlPort") == null ? DEFAULT_CONTROL_PORT : Integer.parseInt((String) args.get("controlPort")));
+            initializeJndi();
             this.objectPool = new ObjectPool(args);
-
-            // Optionally set up clustering if enabled and libraries are available
-            String useCluster = (String) args.get("useCluster");
-            boolean switchOnCluster = (useCluster != null) && (useCluster.equalsIgnoreCase("true") || useCluster.equalsIgnoreCase("yes"));
-            if (switchOnCluster) {
-                if (this.controlPort < 0) {
-                    logger.info("Clustering disabled - control port must be enabled");
-                } else {
-                    String clusterClassName = StringUtils.stringArg(args, "clusterClassName", SimpleCluster.class.getName()).trim();
-                    try {
-                        Class<?> clusterClass = Class.forName(clusterClassName);
-                        Constructor<?> clusterConstructor = clusterClass.getConstructor(new Class[]{
-                                    Map.class, Integer.class
-                                });
-                        this.cluster = (Cluster) clusterConstructor.newInstance(new Object[]{
-                                    args, new Integer(this.controlPort)
-                                });
-                    } catch (ClassNotFoundException err) {
-                        logger.debug("Clustering disabled - cluster implementation class not found");
-                    } catch (Throwable err) {
-                        logger.error("WARNING: Error during startup of cluster implementation - ignoring", err);
-                    }
-                }
-            }
-
-            // If jndi is enabled, run the container wide jndi populator
-            if (useJNDI) {
-                String jndiMgrClassName = StringUtils.stringArg(args, "containerJndiClassName", JndiManager.class.getName()).trim();
-                try {
-                    // Build the realm
-                    Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, true, commonLibClassLoader);
-                    this.globalJndiManager = (JndiManager) jndiMgrClass.newInstance();
-                    this.globalJndiManager.initialize();
-                } catch (ClassNotFoundException err) {
-                    logger.debug("JNDI disabled at container level - can't find JNDI Manager class");
-                } catch (Throwable err) {
-                    logger.error("JNDI disabled at container level - couldn't load JNDI Manager: " + jndiMgrClassName, err);
-                }
-            }
-
+            this.controlPort = (args.get("controlPort") == null ? DEFAULT_CONTROL_PORT : Integer.parseInt((String) args.get("controlPort")));
+            initializeCluster();
             // Open the web apps
             this.hostGroup = new HostGroup(this.cluster, this.objectPool, commonLibClassLoader, args);
-
-            // Create connectors (http, https and ajp)
-            this.listeners = new ArrayList<Listener>();
-            spawnListener(HttpListener.class.getName());
-            spawnListener(Ajp13Listener.class.getName());
-            try {
-                Class.forName("javax.net.ServerSocketFactory");
-                spawnListener(HttpsListener.class.getName());
-            } catch (ClassNotFoundException err) {
-                logger.debug("Listener class {} needs JDK1.4 support. Disabling", HttpsListener.class.getName());
-            }
+            initializeListener();
             if (!listeners.isEmpty()) {
-                this.controlThread = new Thread(this, "LauncherControlThread[ControlPort=" + Integer.toString(this.controlPort) + "]]");
+                this.controlThread = new Thread(new ServerControlThread(), "LauncherControlThread[ControlPort=" + Integer.toString(this.controlPort) + "]]");
                 this.controlThread.setDaemon(false);
                 this.controlThread.start();
 
@@ -191,136 +132,190 @@ public class Server implements LifeCycle, Runnable {
         }
     }
 
-    /**
-     * The main run method. This handles the normal thread processing.
-     */
-    @Override
-    public void run() {
-        boolean interrupted = false;
-        try {
-            ServerSocket controlSocket = null;
-
-            if (this.controlPort > 0) {
-                // Without password, we limit control port on local interface or from controlAddress in parameter.
-                InetAddress inetAddress = null;
-                String controlAddress = StringUtils.stringArg(args, "controlAddress", null);
-                if (controlAddress != null) {
-                    inetAddress = InetAddress.getByName(controlAddress);
-                }
-                if (inetAddress == null) {
-                    inetAddress = InetAddress.getLocalHost();
-                }
-                controlSocket = new ServerSocket(this.controlPort, 0, inetAddress);
-                controlSocket.setSoTimeout(CONTROL_TIMEOUT);
-            }
-            if (logger.isInfoEnabled()) {
-                logger.info("{} running: controlPort={}", new Object[]{
-                            WinstoneResourceBundle.getInstance().getString("ServerVersion"),
-                            (this.controlPort > 0 ? Integer.toString(this.controlPort) : "disabled")});
-            }
-
-            // Enter the main loop
-            while (!interrupted) {
-                // this.objectPool.removeUnusedRequestHandlers();
-                // this.hostGroup.invalidateExpiredSessions();
-
-                // Check for control request
-                Socket accepted = null;
-                try {
-                    if (controlSocket != null) {
-                        accepted = controlSocket.accept();
-                        if (accepted != null) {
-                            handleControlRequest(accepted);
-                        }
-                    } else {
-                        Thread.sleep(CONTROL_TIMEOUT);
-                    }
-                } catch (InterruptedIOException err) {
-                } catch (InterruptedException err) {
-                    interrupted = true;
-                } catch (Throwable err) {
-                    logger.error("Error during listener init or shutdown", err);
-                } finally {
-                    if (accepted != null) {
-                        try {
-                            accepted.close();
-                        } catch (IOException err) {
-                        }
-                    }
-                    if (Thread.interrupted()) {
-                        interrupted = true;
-                    }
-                }
-            }
-
-            // Close server socket
-            if (controlSocket != null) {
-                controlSocket.close();
-            }
-        } catch (Throwable err) {
-            logger.error("Error during listener init or shutdown", err);
-        }
-        logger.info("Winstone shutdown successfully");
-    }
-
     @SuppressWarnings("CallToThreadYield")
     public void shutdown() {
         destroy();
         Thread.yield();
     }
 
+    /**
+     * @return true is the server is running.
+     */
     public boolean isRunning() {
         return (this.controlThread != null) && this.controlThread.isAlive();
     }
 
-    protected void handleControlRequest(Socket csAccepted) throws IOException {
-        InputStream inSocket = null;
-        OutputStream outSocket = null;
-        ObjectInputStream inControl = null;
+    /**
+     * Instanciate listener.
+     */
+    private void initializeListener() {
+        //TODO create a paramater for list this
+        // Create connectors (http, https and ajp)
+        this.listeners = new ArrayList<Listener>();
+        spawnListener(HttpListener.class.getName());
+        spawnListener(Ajp13Listener.class.getName());
         try {
-            inSocket = csAccepted.getInputStream();
-            int reqType = inSocket.read();
-            if ((byte) reqType == Command.SHUTDOWN.getCode()) {
-                logger.info("Shutdown request received via the controlPort. Commencing Winstone shutdowny");
-                shutdown();
-            } else if ((byte) reqType == Command.RELOAD.getCode()) {
-                inControl = new ObjectInputStream(inSocket);
-                String host = inControl.readUTF();
-                String prefix = inControl.readUTF();
-                logger.info("Reload request received via the controlPort. Commencing Winstone reload from {}{}", host, prefix);
-                HostConfiguration hostConfig = this.hostGroup.getHostByName(host);
-                hostConfig.reloadWebApp(prefix);
-            } else if (this.cluster != null) {
-                outSocket = csAccepted.getOutputStream();
-                this.cluster.clusterRequest((byte) reqType, inSocket, outSocket, csAccepted, this.hostGroup);
-            }
-        } finally {
-            if (inControl != null) {
+            Class.forName("javax.net.ServerSocketFactory");
+            spawnListener(HttpsListener.class.getName());
+        } catch (ClassNotFoundException err) {
+            logger.debug("Listener class {} needs JDK1.4 support. Disabling", HttpsListener.class.getName());
+        }
+    }
+
+    /**
+     * Instanciate cluster if needed.
+     */
+    private void initializeCluster() {
+        // Optionally set up clustering if enabled and libraries are available
+        String useCluster = (String) args.get("useCluster");
+        boolean switchOnCluster = (useCluster != null) && (useCluster.equalsIgnoreCase("true") || useCluster.equalsIgnoreCase("yes"));
+        if (switchOnCluster) {
+            if (this.controlPort < 0) {
+                logger.info("Clustering disabled - control port must be enabled");
+            } else {
+                String clusterClassName = StringUtils.stringArg(args, "clusterClassName", SimpleCluster.class.getName()).trim();
                 try {
-                    inControl.close();
-                } catch (IOException err) {
-                }
-            }
-            if (inSocket != null) {
-                try {
-                    inSocket.close();
-                } catch (IOException err) {
-                }
-            }
-            if (outSocket != null) {
-                try {
-                    outSocket.close();
-                } catch (IOException err) {
+                    Class<?> clusterClass = Class.forName(clusterClassName);
+                    Constructor<?> clusterConstructor = clusterClass.getConstructor(new Class[]{Map.class, Integer.class});
+                    this.cluster = (Cluster) clusterConstructor.newInstance(new Object[]{
+                                args, new Integer(this.controlPort)
+                            });
+                } catch (ClassNotFoundException err) {
+                    logger.debug("Clustering disabled - cluster implementation class not found");
+                } catch (Throwable err) {
+                    logger.error("WARNING: Error during startup of cluster implementation - ignoring", err);
                 }
             }
         }
     }
 
     /**
+     * Instanciate Jndi Manaher if needed.
+     */
+    private void initializeJndi() {
+        // If jndi is enabled, run the container wide jndi populator
+        if (StringUtils.booleanArg(args, "useJNDI", false)) {
+            // Set jndi resource handler if not set (workaround for JamVM bug)
+            try {
+                Class<?> ctxFactoryClass = Class.forName("net.winstone.jndi.java.javaURLContextFactory");
+                if (System.getProperty("java.naming.factory.initial") == null) {
+                    System.setProperty("java.naming.factory.initial", ctxFactoryClass.getName());
+                }
+                if (System.getProperty("java.naming.factory.url.pkgs") == null) {
+                    System.setProperty("java.naming.factory.url.pkgs", "net.winstone.jndi");
+                }
+            } catch (ClassNotFoundException err) {
+            }
+            // instanciate Jndi Manager
+            String jndiMgrClassName = StringUtils.stringArg(args, "containerJndiClassName", JndiManager.class.getName()).trim();
+            try {
+                // Build the realm
+                Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, true, commonLibClassLoader);
+                this.globalJndiManager = (JndiManager) jndiMgrClass.newInstance();
+                this.globalJndiManager.initialize();
+            } catch (ClassNotFoundException err) {
+                logger.debug("JNDI disabled at container level - can't find JNDI Manager class");
+            } catch (Throwable err) {
+                logger.error("JNDI disabled at container level - couldn't load JNDI Manager: " + jndiMgrClassName, err);
+            }
+            // bind necessary object
+            //TODO
+
+            Map<String, Object> objectsToCreate = new HashMap<String, Object>();
+
+            Collection<String> keys = new ArrayList<String>(args != null ? args.keySet() : (Collection<String>) new ArrayList<String>());
+            for (Iterator<String> i = keys.iterator(); i.hasNext();) {
+                String key = (String) i.next();
+
+                if (key.startsWith("jndi.resource.")) {
+                    String resName = key.substring(14);
+                    String className = (String) args.get(key);
+                    String value = (String) args.get("jndi.param." + resName + ".value");
+                    logger.debug("Creating object: {} from startup arguments", resName);
+                    Object obj = createObject(resName.trim(), className.trim(), value, args);
+                    if (obj != null) {
+                        objectsToCreate.put(resName, obj);
+                    }
+                }
+            }
+
+
+
+        }
+    }
+
+     /**
+     * Build an object to insert into the jndi space
+     */
+    protected final Object createObject(String name, String className, String value, Map<String, String> args ) {
+
+        if ((className == null) || (name == null)) {
+            return null;
+        }
+
+
+        try {
+            // If we are working with a datasource
+            if (className.equals("javax.sql.DataSource")) {
+                try {
+                    return null;//new WinstoneDataSource(name, extractRelevantArgs(args, name), loader);
+                } catch (Throwable err) {
+                    logger.error("Error building JDBC Datasource object " + name, err);
+                }
+            } // If we are working with a mail session
+            else if (className.equals("javax.mail.Session")) {
+                try {
+                    Class<?> smtpClass = Class.forName(className, true, loader);
+                    Method smtpMethod = smtpClass.getMethod("getInstance", new Class[]{
+                                Properties.class, Class.forName("javax.mail.Authenticator")
+                            });
+                    return smtpMethod.invoke(null, new Object[]{
+                                extractRelevantArgs(args, name), null
+                            });
+                    // return Session.getInstance(extractRelevantArgs(args, name), null);
+                } catch (Throwable err) {
+                    logger.error("Error building JavaMail session " + name, err);
+                }
+            } // If unknown type, try to instantiate with the string constructor
+            else if (value != null) {
+                try {
+                    Class<?> objClass = Class.forName(className.trim(), true, loader);
+                    Constructor<?> objConstr = objClass.getConstructor(new Class[]{
+                                String.class
+                            });
+                    return objConstr.newInstance(new Object[]{
+                                value
+                            });
+                } catch (Throwable err) {
+                    logger.error("Error building JNDI object " + name + " (class: " + className + ")", err);
+                }
+            }
+
+            return null;
+
+        } finally { 
+        }
+    }
+    
+    /**
+     * Rips the parameters relevant to a particular resource from the command args
+     */
+    private Map<String, String> extractRelevantArgs(final Map<String, String> input, final String name) {
+        Map<String, String> relevantArgs = new HashMap<String, String>();
+        for (Iterator<String> i = input.keySet().iterator(); i.hasNext();) {
+            String key = (String) i.next();
+            if (key.startsWith("jndi.param." + name + ".")) {
+                relevantArgs.put(key.substring(12 + name.length()), input.get(key));
+            }
+        }
+        return relevantArgs;
+    }
+
+    /**
      * Instantiates listeners. Note that an exception thrown in the constructor is interpreted as the listener being disabled, so don't do
      * anything too adventurous in the constructor, or if you do, catch and log any errors locally before rethrowing.
      */
-    protected final void spawnListener(String listenerClassName) {
+    protected final void spawnListener(final String listenerClassName) {
         try {
             Class<?> listenerClass = Class.forName(listenerClassName);
             Constructor<?> listenerConstructor = listenerClass.getConstructor(new Class[]{
@@ -336,6 +331,132 @@ public class Server implements LifeCycle, Runnable {
             logger.info("Listener {} not found / disabled - ignoring", listenerClassName);
         } catch (Throwable err) {
             logger.error("Error during listener startup " + listenerClassName, err);
+        }
+    }
+
+    /**
+     * ServerControl Thread.
+     *
+     * @author Jerome Guibert
+     */
+    private final class ServerControlThread implements Runnable {
+
+        private final static transient int CONTROL_TIMEOUT = 2000; // wait 2s for control connection
+
+        /**
+         * The main run method. This handles the normal thread processing.
+         */
+        @Override
+        @SuppressWarnings("SleepWhileHoldingLock")
+        public void run() {
+            boolean interrupted = false;
+            try {
+                ServerSocket controlSocket = null;
+
+                if (controlPort > 0) {
+                    // Without password, we limit control port on local interface or from controlAddress in parameter.
+                    InetAddress inetAddress = null;
+                    String controlAddress = StringUtils.stringArg(args, "controlAddress", null);
+                    if (controlAddress != null) {
+                        inetAddress = InetAddress.getByName(controlAddress);
+                    }
+                    if (inetAddress == null) {
+                        inetAddress = InetAddress.getLocalHost();
+                    }
+                    controlSocket = new ServerSocket(controlPort, 0, inetAddress);
+                    controlSocket.setSoTimeout(CONTROL_TIMEOUT);
+                }
+                if (logger.isInfoEnabled()) {
+                    logger.info("{} running: controlPort={}", new Object[]{
+                                WinstoneResourceBundle.getInstance().getString("ServerVersion"),
+                                (controlPort > 0 ? Integer.toString(controlPort) : "disabled")});
+                }
+
+                // Enter the main loop
+                while (!interrupted) {
+                    // this.objectPool.removeUnusedRequestHandlers();
+                    // this.hostGroup.invalidateExpiredSessions();
+
+                    // Check for control request
+                    Socket accepted = null;
+                    try {
+                        if (controlSocket != null) {
+                            accepted = controlSocket.accept();
+                            if (accepted != null) {
+                                handleControlRequest(accepted);
+                            }
+                        } else {
+                            Thread.sleep(CONTROL_TIMEOUT);
+                        }
+                    } catch (InterruptedIOException err) {
+                    } catch (InterruptedException err) {
+                        interrupted = true;
+                    } catch (Throwable err) {
+                        logger.error("Error during listener init or shutdown", err);
+                    } finally {
+                        if (accepted != null) {
+                            try {
+                                accepted.close();
+                            } catch (IOException err) {
+                            }
+                        }
+                        if (Thread.interrupted()) {
+                            interrupted = true;
+                        }
+                    }
+                }
+
+                // Close server socket
+                if (controlSocket != null) {
+                    controlSocket.close();
+                }
+            } catch (Throwable err) {
+                logger.error("Error during listener init or shutdown", err);
+            }
+            logger.info("Winstone shutdown successfully");
+        }
+
+        protected void handleControlRequest(Socket csAccepted) throws IOException {
+            InputStream inSocket = null;
+            OutputStream outSocket = null;
+            ObjectInputStream inControl = null;
+            try {
+                inSocket = csAccepted.getInputStream();
+                int reqType = inSocket.read();
+                if ((byte) reqType == Command.SHUTDOWN.getCode()) {
+                    logger.info("Shutdown request received via the controlPort. Commencing Winstone shutdowny");
+                    shutdown();
+                } else if ((byte) reqType == Command.RELOAD.getCode()) {
+                    inControl = new ObjectInputStream(inSocket);
+                    String host = inControl.readUTF();
+                    String prefix = inControl.readUTF();
+                    logger.info("Reload request received via the controlPort. Commencing Winstone reload from {}{}", host, prefix);
+                    HostConfiguration hostConfig = hostGroup.getHostByName(host);
+                    hostConfig.reloadWebApp(prefix);
+                } else if (cluster != null) {
+                    outSocket = csAccepted.getOutputStream();
+                    cluster.clusterRequest((byte) reqType, inSocket, outSocket, csAccepted, hostGroup);
+                }
+            } finally {
+                if (inControl != null) {
+                    try {
+                        inControl.close();
+                    } catch (IOException err) {
+                    }
+                }
+                if (inSocket != null) {
+                    try {
+                        inSocket.close();
+                    } catch (IOException err) {
+                    }
+                }
+                if (outSocket != null) {
+                    try {
+                        outSocket.close();
+                    } catch (IOException err) {
+                    }
+                }
+            }
         }
     }
 }

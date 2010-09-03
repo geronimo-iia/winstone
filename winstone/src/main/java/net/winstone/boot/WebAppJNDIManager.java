@@ -35,7 +35,7 @@ public class WebAppJNDIManager extends ContainerJNDIManager {
      * the java:/comp/env context
      */
     public WebAppJNDIManager(Map<String, String> args, List<Node> webXMLNodes, ClassLoader loader) {
-        super(args, webXMLNodes, loader);
+        super(args,  loader);
 
         // If the webXML nodes are not null, validate that all the entries we
         // wanted have been created
