@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import net.winstone.WinstoneResourceBundle;
-import net.winstone.core.WebAppConfiguration;
 import net.winstone.util.FileUtils;
 import net.winstone.util.StringUtils;
 import org.slf4j.LoggerFactory;

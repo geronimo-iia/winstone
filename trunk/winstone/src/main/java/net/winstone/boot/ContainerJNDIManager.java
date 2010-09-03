@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -24,7 +23,6 @@ import javax.naming.NamingException;
 
 import org.slf4j.LoggerFactory;
 
-import org.w3c.dom.Node;
 
 /**
  * Implements a simple web.xml + command line arguments style jndi manager
@@ -32,7 +30,7 @@ import org.w3c.dom.Node;
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: ContainerJNDIManager.java,v 1.3 2006/02/28 07:32:48 rickknowles Exp $
  */
-public class ContainerJNDIManager implements JNDIManager {
+public class ContainerJNDIManager   {
 
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(ContainerJNDIManager.class);
     protected Map<String, Object> objectsToCreate;
@@ -41,7 +39,7 @@ public class ContainerJNDIManager implements JNDIManager {
      * Gets the relevant list of objects from the args, validating against the web.xml nodes supplied. All node addresses are assumed to be
      * relative to the java:/comp/env context
      */
-    public ContainerJNDIManager(Map<String, String> args, List<Node> webXmlNodes, ClassLoader loader) {
+    public ContainerJNDIManager(Map<String, String> args, ClassLoader loader) {
         // Build all the objects we wanted
         this.objectsToCreate = new HashMap<String, Object>();
 
@@ -65,7 +63,6 @@ public class ContainerJNDIManager implements JNDIManager {
     /**
      * Add the objects passed to the constructor to the JNDI Context addresses specified
      */
-    @Override
     public void setup() {
 
         try {
@@ -98,8 +95,7 @@ public class ContainerJNDIManager implements JNDIManager {
 
     /**
      * Remove the objects under administration from the JNDI Context, and then destroy the objects
-     */
-    @Override
+     */ 
     public void tearDown() {
         try {
             InitialContext ic = new InitialContext();
