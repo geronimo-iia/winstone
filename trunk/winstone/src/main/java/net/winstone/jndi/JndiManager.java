@@ -49,6 +49,7 @@ public class JndiManager implements LifeCycle {
         // Instantiate scheduler with a initial pool size of one thread.
         scheduler = Executors.newScheduledThreadPool(1);
         // initiate context factory
+        @SuppressWarnings("UseOfObsoleteCollectionType")
         Hashtable<Object, Object> env = new Hashtable<Object, Object>();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "net.winstone.jndi.url.java.javaURLContextFactory");
         env.put(Context.URL_PKG_PREFIXES, "net.winstone.jndi.url");
@@ -105,9 +106,9 @@ public class JndiManager implements LifeCycle {
     }
 
     /**
-     * Create and bind a datasource in Naming context.
+     * Create and bindSmtpSession a datasource in Naming context.
      * 
-     * @param dataSourceConfig the datasource configuration to bind.
+     * @param dataSourceConfig the datasource configuration to bindSmtpSession.
      * @param loader the classloader to use
      * @throws IllegalStateException If Jndi manager is closed
      * @throws NamingException If binding already exists.
@@ -140,7 +141,7 @@ public class JndiManager implements LifeCycle {
     }
 
     /**
-     * Create and bind a mail session.
+     * Create and bindSmtpSession a mail session.
      * 
      * @param name
      * @param properties
@@ -148,7 +149,7 @@ public class JndiManager implements LifeCycle {
      * @throws IllegalStateException
      * @throws NamingException
      */
-    public void bind(final String name, final Properties properties, final ClassLoader loader) throws IllegalStateException, NamingException {
+    public void bindSmtpSession(final String name, final Properties properties, final ClassLoader loader) throws IllegalStateException, NamingException {
         try {
             Class<?> smtpClass = Class.forName("javax.mail.Session", true, loader);
             Method smtpMethod = smtpClass.getMethod("getInstance", new Class[]{
@@ -158,7 +159,7 @@ public class JndiManager implements LifeCycle {
             Object object = smtpMethod.invoke(null, new Object[]{
                         properties, null
                     });
-            // bind it
+            // bindSmtpSession it
             initialContext.bind(name, object);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
@@ -176,7 +177,7 @@ public class JndiManager implements LifeCycle {
     }
 
     /**
-     * Create and bind an simple object.
+     * Create and bindSmtpSession an simple object.
      * 
      * @param name name of binding
      * @param className class name
@@ -198,7 +199,7 @@ public class JndiManager implements LifeCycle {
                 Object object = objConstr.newInstance(new Object[]{
                             value
                         });
-                // bind it
+                // bindSmtpSession it
                 initialContext.bind(name, object);
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e);
@@ -223,10 +224,10 @@ public class JndiManager implements LifeCycle {
     }
 
     /**
-     * Utility method to bind an object: we build all needed sub context.
+     * Utility method to bindSmtpSession an object: we build all needed sub context.
      * 
      * @param name the name
-     * @param object object to bind
+     * @param object object to bindSmtpSession
      * @throws IllegalStateException If Jndi manager is closed
      * @throws NamingException
      */

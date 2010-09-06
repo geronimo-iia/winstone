@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import net.winstone.WinstoneException;
 import net.winstone.WinstoneResourceBundle;
 import net.winstone.cluster.Cluster;
@@ -27,7 +28,9 @@ import net.winstone.core.listener.HttpListener;
 import net.winstone.core.listener.HttpsListener;
 import net.winstone.core.listener.Listener;
 import net.winstone.jndi.JndiManager;
+import net.winstone.jndi.resources.DataSourceConfig;
 import net.winstone.util.LifeCycle;
+import net.winstone.util.MapConverter;
 import net.winstone.util.StringUtils;
 import org.slf4j.LoggerFactory;
 
@@ -108,24 +111,29 @@ public class Server implements LifeCycle {
     @Override
     public void destroy() {
         // Release all listeners/pools/webapps
-        for (Iterator<Listener> i = this.listeners.iterator(); i.hasNext();) {
-            i.next().destroy();
+        if (listeners != null) {
+            for (Iterator<Listener> i = this.listeners.iterator(); i.hasNext();) {
+                i.next().destroy();
+            }
+            listeners.clear();
+            listeners = null;
         }
-        listeners.clear();
-        listeners = null;
-        this.objectPool.destroy();
-        this.objectPool = null;
+        if (objectPool != null) {
+            this.objectPool.destroy();
+            this.objectPool = null;
+        }
         if (this.cluster != null) {
             this.cluster.destroy();
             cluster = null;
         }
-        this.hostGroup.destroy();
-        hostGroup = null;
+        if (hostGroup != null) {
+            this.hostGroup.destroy();
+            hostGroup = null;
+        }
         if (this.globalJndiManager != null) {
             this.globalJndiManager.destroy();
             globalJndiManager = null;
         }
-
         if (this.controlThread != null) {
             this.controlThread.interrupt();
             controlThread = null;
@@ -218,24 +226,16 @@ public class Server implements LifeCycle {
             } catch (Throwable err) {
                 logger.error("JNDI disabled at container level - couldn't load JNDI Manager: " + jndiMgrClassName, err);
             }
-            // bind necessary object
-            //TODO
-
-            Map<String, Object> objectsToCreate = new HashMap<String, Object>();
-
+            // instanciate data
             Collection<String> keys = new ArrayList<String>(args != null ? args.keySet() : (Collection<String>) new ArrayList<String>());
             for (Iterator<String> i = keys.iterator(); i.hasNext();) {
                 String key = (String) i.next();
-
                 if (key.startsWith("jndi.resource.")) {
-                    String resName = key.substring(14);
-                    String className = (String) args.get(key);
-                    String value = (String) args.get("jndi.param." + resName + ".value");
-                    logger.debug("Creating object: {} from startup arguments", resName);
-                    Object obj = createObject(resName.trim(), className.trim(), value, args);
-                    if (obj != null) {
-                        objectsToCreate.put(resName, obj);
-                    }
+                    String resourceName = key.substring(14);
+                    String className = args.get(key);
+                    String value = args.get("jndi.param." + resourceName + ".value");
+                    logger.debug("Creating object: {} from startup arguments", resourceName);
+                    createObject(resourceName.trim(), className.trim(), value, args, commonLibClassLoader);
                 }
             }
 
@@ -244,66 +244,66 @@ public class Server implements LifeCycle {
         }
     }
 
-     /**
+    /**
      * Build an object to insert into the jndi space
      */
-    protected final Object createObject(String name, String className, String value, Map<String, String> args ) {
-
+    protected final void createObject(String name, String className, String value, Map<String, String> args, ClassLoader loader) {
+        // basic check
         if ((className == null) || (name == null)) {
-            return null;
+            return;
         }
-
-
         try {
             // If we are working with a datasource
             if (className.equals("javax.sql.DataSource")) {
                 try {
-                    return null;//new WinstoneDataSource(name, extractRelevantArgs(args, name), loader);
+                    DataSourceConfig dataSourceConfig = MapConverter.apply(extractRelevantArgs(args, name), new DataSourceConfig());
+                    globalJndiManager.bind(dataSourceConfig, commonLibClassLoader);
+                    return;
                 } catch (Throwable err) {
                     logger.error("Error building JDBC Datasource object " + name, err);
                 }
             } // If we are working with a mail session
             else if (className.equals("javax.mail.Session")) {
                 try {
-                    Class<?> smtpClass = Class.forName(className, true, loader);
-                    Method smtpMethod = smtpClass.getMethod("getInstance", new Class[]{
-                                Properties.class, Class.forName("javax.mail.Authenticator")
-                            });
-                    return smtpMethod.invoke(null, new Object[]{
-                                extractRelevantArgs(args, name), null
-                            });
-                    // return Session.getInstance(extractRelevantArgs(args, name), null);
+//                    Class<?> smtpClass = Class.forName(className, true, loader);
+//                    Method smtpMethod = smtpClass.getMethod("getInstance", new Class[]{
+//                                Properties.class, Class.forName("javax.mail.Authenticator")
+//                            });
+                    //smtpMethod.invoke(null, new Object[]{extractRelevantArgs(args, name), null});
+                    // AKA Session.getInstance(extractRelevantArgs(args, name), null);
+                    Properties p = new Properties();
+                    p.putAll(extractRelevantArgs(args, name));
+                    globalJndiManager.bindSmtpSession(name, p, loader);
                 } catch (Throwable err) {
                     logger.error("Error building JavaMail session " + name, err);
                 }
             } // If unknown type, try to instantiate with the string constructor
             else if (value != null) {
                 try {
-                    Class<?> objClass = Class.forName(className.trim(), true, loader);
-                    Constructor<?> objConstr = objClass.getConstructor(new Class[]{
-                                String.class
-                            });
-                    return objConstr.newInstance(new Object[]{
-                                value
-                            });
+                    globalJndiManager.bind(name, className, value, loader);
+//                    Class<?> objClass = Class.forName(className.trim(), true, loader);
+//                    Constructor<?> objConstr = objClass.getConstructor(new Class[]{
+//                                String.class
+//                            });
+//                    return objConstr.newInstance(new Object[]{
+//                                value
+//                            });
                 } catch (Throwable err) {
                     logger.error("Error building JNDI object " + name + " (class: " + className + ")", err);
                 }
             }
 
-            return null;
-
-        } finally { 
+        } finally {
         }
     }
-    
+
     /**
      * Rips the parameters relevant to a particular resource from the command args
      */
     private Map<String, String> extractRelevantArgs(final Map<String, String> input, final String name) {
         Map<String, String> relevantArgs = new HashMap<String, String>();
         for (Iterator<String> i = input.keySet().iterator(); i.hasNext();) {
-            String key = (String) i.next();
+            String key = i.next();
             if (key.startsWith("jndi.param." + name + ".")) {
                 relevantArgs.put(key.substring(12 + name.length()), input.get(key));
             }

@@ -6,7 +6,6 @@
  */
 package net.winstone.core;
 
-import net.winstone.boot.JNDIManager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,7 +64,6 @@ import net.winstone.servlet.ErrorServlet;
 import net.winstone.servlet.InvokerServlet;
 import net.winstone.servlet.StaticResourceServlet;
 import org.slf4j.LoggerFactory;
-import net.winstone.boot.WebAppJNDIManager;
 
 /**
  * Models the web.xml file's details ... basically just a bunch of configuration details, plus the actual instances of mounted servlets.
@@ -165,7 +163,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     private Map<String, String> localeEncodingMap;
     private String defaultServletName;
     private String errorServletName;
-    private JNDIManager jndiManager;
+    //private JNDIManager jndiManager;
     private AccessLogger accessLogger;
     private final Map<String, FilterConfiguration[]> filterMatchCache;
     private boolean useSavedSessions;
@@ -666,24 +664,29 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 
         // Instantiate the JNDI manager
         if (useJNDI) {
-            String jndiMgrClassName = StringUtils.stringArg(startupArgs, "webappJndiClassName", WebAppJNDIManager.class.getName()).trim();
-            try {
-                // Build the realm
-                Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, true, parentClassLoader);
-                Constructor<?> jndiMgrConstr = jndiMgrClass.getConstructor(new Class[]{
-                            Map.class, List.class, ClassLoader.class
-                        });
-                this.jndiManager = (JNDIManager) jndiMgrConstr.newInstance(new Object[]{
-                            null, envEntryNodes, this.loader
-                        });
-                if (this.jndiManager != null) {
-                    this.jndiManager.setup();
-                }
-            } catch (ClassNotFoundException err) {
-                logger.debug("JNDI disabled at webapp level - can't find JNDI Manager class");
-            } catch (Throwable err) {
-                logger.error("JNDI disabled at webapp level - couldn't load JNDI Manager: " + jndiMgrClassName, err);
-            }
+
+            // creation du context
+            WebAppJNDIManager waj = new WebAppJNDIManager(envEntryNodes, this.loader);
+
+//            String jndiMgrClassName = StringUtils.stringArg(startupArgs, "webappJndiClassName", WebAppJNDIManager.class.getName()).trim();
+//            try {
+//                // Build the realm
+//                Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, true, parentClassLoader);
+//                Constructor<?> jndiMgrConstr = jndiMgrClass.getConstructor(new Class[]{
+//                            Map.class, List.class, ClassLoader.class
+//                        });
+            //TODO implements adding jndi
+//                this.jndiManager = (JNDIManager) jndiMgrConstr.newInstance(new Object[]{
+//                            null, envEntryNodes, this.loader
+//                        });
+//                if (this.jndiManager != null) {
+//                    this.jndiManager.setup();
+//                }
+//            } catch (ClassNotFoundException err) {
+//                logger.debug("JNDI disabled at webapp level - can't find JNDI Manager class");
+//            } catch (Throwable err) {
+//                logger.error("JNDI disabled at webapp level - couldn't load JNDI Manager: " + jndiMgrClassName, err);
+//            }
         }
 
         String loggerClassName = StringUtils.stringArg(startupArgs, "accessLoggerClassName", "").trim();
@@ -1110,10 +1113,10 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         }
 
         // Kill JNDI manager if we have one
-        if (this.jndiManager != null) {
-            this.jndiManager.tearDown();
-            this.jndiManager = null;
-        }
+//        if (this.jndiManager != null) {
+//            this.jndiManager.tearDown();
+//            this.jndiManager = null;
+//        }
 
         // Kill JNDI manager if we have one
         if (this.accessLogger != null) {
