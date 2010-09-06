@@ -150,7 +150,7 @@ public class NamingContextTest extends AbstractJndiTestCase {
     }
     
     /**
-     * Attempts a simple bind
+     * Attempts a simple bindSmtpSession
      */
     public void testSimpleBind() throws NamingException {
         Context child = this.jndiManager.getInitialContext().createSubcontext("TestBindContext");
