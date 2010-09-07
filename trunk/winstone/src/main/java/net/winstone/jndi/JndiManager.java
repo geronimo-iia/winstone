@@ -119,6 +119,9 @@ public class JndiManager implements LifeCycle {
         if (jndiName.startsWith("jdbc/")) {
             jndiName = "java:/comp/env/" + jndiName;
         }
+        if (!jndiName.startsWith("java:/comp/env/")) {
+            jndiName = "java:/comp/env/" + jndiName;
+        }
         bind(jndiName, dataSource);
         if (dataSourceConfig.getKeepAlivePeriod() > 0) {
             scheduler.scheduleWithFixedDelay(new Runnable() {
@@ -141,7 +144,7 @@ public class JndiManager implements LifeCycle {
     }
 
     /**
-     * Create and bindSmtpSession a mail session.
+     * Create and bind a mail session under java:comp/env/mail.
      * 
      * @param name
      * @param properties
@@ -159,8 +162,12 @@ public class JndiManager implements LifeCycle {
             Object object = smtpMethod.invoke(null, new Object[]{
                         properties, null
                     });
-            // bindSmtpSession it
-            initialContext.bind(name, object);
+            String jndiName = name;
+            if (name.startsWith("mail/")) {
+                jndiName = "java:comp/env/" + name;
+            }
+            // bind it
+            bind(jndiName, object);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
         } catch (SecurityException e) {
@@ -177,7 +184,7 @@ public class JndiManager implements LifeCycle {
     }
 
     /**
-     * Create and bindSmtpSession an simple object.
+     * Create and bind an simple object under "java:/comp/env/"
      * 
      * @param name name of binding
      * @param className class name
@@ -199,8 +206,8 @@ public class JndiManager implements LifeCycle {
                 Object object = objConstr.newInstance(new Object[]{
                             value
                         });
-                // bindSmtpSession it
-                initialContext.bind(name, object);
+                // bind it
+                bind(name, object);
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e);
             } catch (IllegalArgumentException e) {
@@ -224,7 +231,7 @@ public class JndiManager implements LifeCycle {
     }
 
     /**
-     * Utility method to bindSmtpSession an object: we build all needed sub context.
+     * Utility method to bind an object under "java:/comp/env/": we build all needed sub context.
      * 
      * @param name the name
      * @param object object to bindSmtpSession
@@ -235,7 +242,11 @@ public class JndiManager implements LifeCycle {
         if (initialContext == null) {
             throw new IllegalStateException("Initial Context is closed");
         }
-        Name fullName = new CompositeName(name);
+        String jndiName = name;
+        if (!jndiName.startsWith("java:/comp/env/")) {
+            jndiName = "java:/comp/env/" + jndiName;
+        }
+        Name fullName = new CompositeName(jndiName);
         Context currentContext = initialContext;
         while (fullName.size() > 1) {
             // Make contexts that are not already present
