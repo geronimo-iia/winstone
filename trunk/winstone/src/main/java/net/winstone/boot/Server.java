@@ -89,16 +89,16 @@ public class Server implements LifeCycle {
         try {
             logger.debug("Winstone startup arguments: {}", args.toString());
             initializeJndi();
-            this.objectPool = new ObjectPool(args);
-            this.controlPort = (args.get("controlPort") == null ? DEFAULT_CONTROL_PORT : Integer.parseInt((String) args.get("controlPort")));
+            objectPool = new ObjectPool(args);
+            controlPort = (args.get("controlPort") == null ? DEFAULT_CONTROL_PORT : Integer.parseInt((String) args.get("controlPort")));
             initializeCluster();
             // Open the web apps
-            this.hostGroup = new HostGroup(this.cluster, this.objectPool, commonLibClassLoader, args);
+            hostGroup = new HostGroup(this.cluster, this.objectPool, globalJndiManager, commonLibClassLoader, args);
             initializeListener();
             if (!listeners.isEmpty()) {
-                this.controlThread = new Thread(new ServerControlThread(), "LauncherControlThread[ControlPort=" + Integer.toString(this.controlPort) + "]]");
-                this.controlThread.setDaemon(false);
-                this.controlThread.start();
+                controlThread = new Thread(new ServerControlThread(), "LauncherControlThread[ControlPort=" + Integer.toString(this.controlPort) + "]]");
+                controlThread.setDaemon(false);
+                controlThread.start();
 
                 Runtime.getRuntime().addShutdownHook(new ShutdownHook(this));
             }
@@ -247,54 +247,42 @@ public class Server implements LifeCycle {
     /**
      * Build an object to insert into the jndi space
      */
-    protected final void createObject(String name, String className, String value, Map<String, String> args, ClassLoader loader) {
+    protected final boolean createObject(String name, String className, String value, Map<String, String> args, ClassLoader loader) {
         // basic check
         if ((className == null) || (name == null)) {
-            return;
+            return false;
         }
-        try {
-            // If we are working with a datasource
-            if (className.equals("javax.sql.DataSource")) {
-                try {
-                    DataSourceConfig dataSourceConfig = MapConverter.apply(extractRelevantArgs(args, name), new DataSourceConfig());
-                    globalJndiManager.bind(dataSourceConfig, commonLibClassLoader);
-                    return;
-                } catch (Throwable err) {
-                    logger.error("Error building JDBC Datasource object " + name, err);
-                }
-            } // If we are working with a mail session
-            else if (className.equals("javax.mail.Session")) {
-                try {
-//                    Class<?> smtpClass = Class.forName(className, true, loader);
-//                    Method smtpMethod = smtpClass.getMethod("getInstance", new Class[]{
-//                                Properties.class, Class.forName("javax.mail.Authenticator")
-//                            });
-                    //smtpMethod.invoke(null, new Object[]{extractRelevantArgs(args, name), null});
-                    // AKA Session.getInstance(extractRelevantArgs(args, name), null);
-                    Properties p = new Properties();
-                    p.putAll(extractRelevantArgs(args, name));
-                    globalJndiManager.bindSmtpSession(name, p, loader);
-                } catch (Throwable err) {
-                    logger.error("Error building JavaMail session " + name, err);
-                }
-            } // If unknown type, try to instantiate with the string constructor
-            else if (value != null) {
-                try {
-                    globalJndiManager.bind(name, className, value, loader);
-//                    Class<?> objClass = Class.forName(className.trim(), true, loader);
-//                    Constructor<?> objConstr = objClass.getConstructor(new Class[]{
-//                                String.class
-//                            });
-//                    return objConstr.newInstance(new Object[]{
-//                                value
-//                            });
-                } catch (Throwable err) {
-                    logger.error("Error building JNDI object " + name + " (class: " + className + ")", err);
-                }
-            }
 
-        } finally {
+        // If we are working with a datasource
+        if (className.equals("javax.sql.DataSource")) {
+            try {
+                DataSourceConfig dataSourceConfig = MapConverter.apply(extractRelevantArgs(args, name), new DataSourceConfig());
+                globalJndiManager.bind(dataSourceConfig, loader);
+                return true;
+            } catch (Throwable err) {
+                logger.error("Error building JDBC Datasource object " + name, err);
+            }
+        } // If we are working with a mail session
+        else if (className.equals("javax.mail.Session")) {
+            try {
+                Properties p = new Properties();
+                p.putAll(extractRelevantArgs(args, name));
+                globalJndiManager.bindSmtpSession(name, p, loader);
+                return true;
+            } catch (Throwable err) {
+                logger.error("Error building JavaMail session " + name, err);
+            }
+        } // If unknown type, try to instantiate with the string constructor
+        else if (value != null) {
+            try {
+                globalJndiManager.bind(name, className, value, loader);
+                return true;
+            } catch (Throwable err) {
+                logger.error("Error building JNDI object " + name + " (class: " + className + ")", err);
+            }
         }
+
+        return false;
     }
 
     /**

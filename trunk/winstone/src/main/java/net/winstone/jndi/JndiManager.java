@@ -119,9 +119,6 @@ public class JndiManager implements LifeCycle {
         if (jndiName.startsWith("jdbc/")) {
             jndiName = "java:/comp/env/" + jndiName;
         }
-        if (!jndiName.startsWith("java:/comp/env/")) {
-            jndiName = "java:/comp/env/" + jndiName;
-        }
         bind(jndiName, dataSource);
         if (dataSourceConfig.getKeepAlivePeriod() > 0) {
             scheduler.scheduleWithFixedDelay(new Runnable() {
@@ -221,6 +218,28 @@ public class JndiManager implements LifeCycle {
             } catch (SecurityException e) {
                 throw new IllegalStateException(e);
             } catch (NoSuchMethodException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+    }
+
+    /**
+     * Unbind specifed name under "java:/comp/env/".
+     * @param name
+     * @throws IllegalStateException
+     * @throws NamingException
+     */
+    public void unbind(final String name) throws IllegalStateException, NamingException {
+        if (name != null) {
+            String jndiName = name;
+            if (!jndiName.startsWith("java:/comp/env/")) {
+                jndiName = "java:/comp/env/" + jndiName;
+            }
+            try {
+                initialContext.unbind(jndiName);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalStateException(e);
+            } catch (SecurityException e) {
                 throw new IllegalStateException(e);
             }
         }

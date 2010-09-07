@@ -6,14 +6,15 @@
  */
 package net.winstone.core;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import javax.naming.NamingException;
+import net.winstone.jndi.JndiManager;
 import org.slf4j.LoggerFactory;
 
 import org.w3c.dom.Node;
-
-import net.winstone.core.WebAppConfiguration;
 
 /**
  * Implements a simple web.xml + command line arguments style jndi manager
@@ -28,15 +29,17 @@ public class WebAppJNDIManager {
     private final static transient String ELEM_ENV_ENTRY_NAME = "env-entry-name";
     private final static transient String ELEM_ENV_ENTRY_TYPE = "env-entry-type";
     private final static transient String ELEM_ENV_ENTRY_VALUE = "env-entry-value";
+    private final Set<String> objectCreated;
+    private final JndiManager jndiManager;
 
     /**
      * Gets the relevant list of objects from the args, validating against the
      * web.xml nodes supplied. All node addresses are assumed to be relative to
      * the java:/comp/env context
      */
-    public WebAppJNDIManager(List<Node> webXMLNodes, ClassLoader loader) {
-
-
+    public WebAppJNDIManager(JndiManager jndiManager, List<Node> webXMLNodes, ClassLoader loader) {
+        objectCreated = new HashSet<String>();
+        this.jndiManager = jndiManager;
         // If the webXML nodes are not null, validate that all the entries we
         // wanted have been created
         if (webXMLNodes != null) {
@@ -48,7 +51,7 @@ public class WebAppJNDIManager {
                     continue;
                 } else if (node.getNodeName().equals(ELEM_ENV_ENTRY)) {
                     String name = null;
-                    String type = null;
+                    String className = null;
                     String value = null;
                     for (int m = 0; m < node.getChildNodes().getLength(); m++) {
                         Node envNode = node.getChildNodes().item(m);
@@ -57,22 +60,34 @@ public class WebAppJNDIManager {
                         } else if (envNode.getNodeName().equals(ELEM_ENV_ENTRY_NAME)) {
                             name = WebAppConfiguration.getTextFromNode(envNode);
                         } else if (envNode.getNodeName().equals(ELEM_ENV_ENTRY_TYPE)) {
-                            type = WebAppConfiguration.getTextFromNode(envNode);
+                            className = WebAppConfiguration.getTextFromNode(envNode);
                         } else if (envNode.getNodeName().equals(ELEM_ENV_ENTRY_VALUE)) {
                             value = WebAppConfiguration.getTextFromNode(envNode);
                         }
                     }
-                    if ((name != null) && (type != null) && (value != null)) {
+                    if ((name != null) && (className != null) && (value != null)) {
                         logger.debug("Creating object {} from web.xml env-entry description", name);
-                        createObject(name, type, value, loader);
-
+                        try {
+                            jndiManager.bind(name, className, value, loader);
+                            objectCreated.add(name);
+                        } catch (Throwable err) {
+                            logger.error("Error building JNDI object " + name + " (class: " + className + ")", err);
+                        }
                     }
                 }
             }
         }
+
     }
 
-    private void createObject(String name, String type, String value, ClassLoader loader) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public void destroy() {
+        for (String name : objectCreated) {
+            try {
+                jndiManager.unbind(name);
+            } catch (IllegalStateException ex) {
+            } catch (NamingException ex) {
+            }
+        }
+        objectCreated.clear();
     }
 }

@@ -17,6 +17,7 @@ import java.util.Set;
 import net.winstone.cluster.Cluster;
 
 import net.winstone.WinstoneException;
+import net.winstone.jndi.JndiManager;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -34,23 +35,13 @@ public class HostGroup {
     private final Map<String, HostConfiguration> hostConfigs;
     /** default host name if host mode is on */
     private String defaultHostName;
+    // jndi manager
+    private final JndiManager jndiManager;
 
-    /**
-     * Build a new instance of HostGroup.
-     * 
-     * @param commonLibCL
-     * @param commonLibCLPaths
-     * @param args
-     * @throws IOException
-     */
-    public HostGroup(final ClassLoader commonLibCL, final Map<String, String> args) throws IOException {
-        this(null, null, commonLibCL, args);
-    }
-
-    public HostGroup(final Cluster cluster, final ObjectPool objectPool, final ClassLoader commonLibCL, final Map<String, String> args) throws IOException {
+    public HostGroup(final Cluster cluster, final ObjectPool objectPool, final JndiManager jndiManager, final ClassLoader commonLibCL, final Map<String, String> args) throws IOException {
         super();
         this.hostConfigs = new HashMap<String, HostConfiguration>();
-
+        this.jndiManager = jndiManager;
         // Is this the single or multiple configuration ? Check args
         String hostDirName = (String) args.get("hostsDir");
         String webappsDirName = (String) args.get("webappsDir");
@@ -100,7 +91,7 @@ public class HostGroup {
     protected final void addHostConfiguration(String webappsDirName, String hostname, Cluster cluster, ObjectPool objectPool,
             ClassLoader commonLibCL, Map<String, String> args) throws IOException {
         logger.debug("Deploying host found at {}", hostname);
-        HostConfiguration config = new HostConfiguration(hostname, cluster, objectPool, commonLibCL, args, webappsDirName);
+        HostConfiguration config = new HostConfiguration(hostname, cluster,  objectPool,jndiManager, commonLibCL, args, webappsDirName);
         this.hostConfigs.put(hostname, config);
     }
 
@@ -151,6 +142,7 @@ public class HostGroup {
      * Finalize threads.
      */
     @Override
+    @SuppressWarnings("FinalizeDeclaration")
     protected void finalize() throws Throwable {
         try {
             destroy();
