@@ -58,6 +58,7 @@ import net.winstone.core.authentication.AuthenticationHandler;
 import net.winstone.core.authentication.AuthenticationRealm;
 import net.winstone.cluster.Cluster;
 import net.winstone.core.authentication.realm.ArgumentsRealm;
+import net.winstone.jndi.JndiManager;
 import net.winstone.loader.ReloadingClassLoader;
 import net.winstone.loader.WebappClassLoader;
 import net.winstone.servlet.ErrorServlet;
@@ -126,13 +127,14 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     private static final String WEB_INF = "WEB-INF";
     private static final String CLASSES = "classes/";
     private static final String LIB = "lib";
-    private HostConfiguration ownerHostConfig;
-    private Cluster cluster;
-    private String webRoot;
-    private String prefix;
-    private String contextName;
+    private final HostConfiguration ownerHostConfig;
+    private final Cluster cluster;
+    private final String webRoot;
+    private final String prefix;
+    private final String contextName;
     private ClassLoader loader;
     private String displayName;
+    private WebAppJNDIManager webAppJNDIManager;
     private Map<String, Object> attributes;
     private Map<String, String> initParameters;
     private Map<String, WinstoneSession> sessions;
@@ -189,25 +191,9 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     }
 
     /**
-     * Build a new instance of We
-     * 
-     * @param ownerHostConfig
-     * @param webRoot
-     * @param prefix
-     * @param startupArgs
-     * @param elm
-     * @param parentClassLoader
-     * @param parentClassPaths
-     * @param contextName
-     */
-    public WebAppConfiguration(final HostConfiguration ownerHostConfig, final String webRoot, final String prefix, final Map<String, String> startupArgs, final Node elm, final ClassLoader parentClassLoader, final String contextName) {
-        this(ownerHostConfig, null, webRoot, prefix, null, startupArgs, elm, parentClassLoader, contextName);
-    }
-
-    /**
      * Constructor. This parses the xml and sets up for basic routing
      */
-    public WebAppConfiguration(final HostConfiguration ownerHostConfig, final Cluster cluster, final String webRoot, final String prefix, final ObjectPool objectPool, final Map<String, String> startupArgs, final Node elm, final ClassLoader parentClassLoader,
+    public WebAppConfiguration(final HostConfiguration ownerHostConfig, final Cluster cluster, final JndiManager jndiManager, final String webRoot, final String prefix, final ObjectPool objectPool, final Map<String, String> startupArgs, final Node elm, final ClassLoader parentClassLoader,
             final String contextName) {
         this.ownerHostConfig = ownerHostConfig;
         this.webRoot = webRoot;
@@ -615,6 +601,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         // If not distributable, remove the cluster reference
         if (!distributable && (cluster != null)) {
             logger.info("Clustering disabled for webapp [#0] - the web application must be distributable", this.contextName);
+            this.cluster = null;
         } else {
             this.cluster = cluster;
         }
@@ -664,29 +651,10 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 
         // Instantiate the JNDI manager
         if (useJNDI) {
-
             // creation du context
-            WebAppJNDIManager waj = new WebAppJNDIManager(envEntryNodes, this.loader);
-
-//            String jndiMgrClassName = StringUtils.stringArg(startupArgs, "webappJndiClassName", WebAppJNDIManager.class.getName()).trim();
-//            try {
-//                // Build the realm
-//                Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, true, parentClassLoader);
-//                Constructor<?> jndiMgrConstr = jndiMgrClass.getConstructor(new Class[]{
-//                            Map.class, List.class, ClassLoader.class
-//                        });
-            //TODO implements adding jndi
-//                this.jndiManager = (JNDIManager) jndiMgrConstr.newInstance(new Object[]{
-//                            null, envEntryNodes, this.loader
-//                        });
-//                if (this.jndiManager != null) {
-//                    this.jndiManager.setup();
-//                }
-//            } catch (ClassNotFoundException err) {
-//                logger.debug("JNDI disabled at webapp level - can't find JNDI Manager class");
-//            } catch (Throwable err) {
-//                logger.error("JNDI disabled at webapp level - couldn't load JNDI Manager: " + jndiMgrClassName, err);
-//            }
+            webAppJNDIManager = new WebAppJNDIManager(jndiManager, envEntryNodes, this.loader);
+        } else {
+            webAppJNDIManager = null;
         }
 
         String loggerClassName = StringUtils.stringArg(startupArgs, "accessLoggerClassName", "").trim();
@@ -1113,10 +1081,10 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         }
 
         // Kill JNDI manager if we have one
-//        if (this.jndiManager != null) {
-//            this.jndiManager.tearDown();
-//            this.jndiManager = null;
-//        }
+        if (this.webAppJNDIManager != null) {
+            webAppJNDIManager.destroy();
+            this.webAppJNDIManager = null;
+        }
 
         // Kill JNDI manager if we have one
         if (this.accessLogger != null) {
