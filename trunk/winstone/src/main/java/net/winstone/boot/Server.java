@@ -205,7 +205,7 @@ public class Server implements LifeCycle {
         if (StringUtils.booleanArg(args, "useJNDI", false)) {
             // Set jndi resource handler if not set (workaround for JamVM bug)
             try {
-                Class<?> ctxFactoryClass = Class.forName("net.winstone.jndi.java.javaURLContextFactory");
+                Class<?> ctxFactoryClass = Class.forName("net.winstone.jndi.url.java.javaURLContextFactory");
                 if (System.getProperty("java.naming.factory.initial") == null) {
                     System.setProperty("java.naming.factory.initial", ctxFactoryClass.getName());
                 }
@@ -221,6 +221,7 @@ public class Server implements LifeCycle {
                 Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, true, commonLibClassLoader);
                 this.globalJndiManager = (JndiManager) jndiMgrClass.newInstance();
                 this.globalJndiManager.initialize();
+                logger.info("JNDI Started {}", jndiMgrClass.getName());
             } catch (ClassNotFoundException err) {
                 logger.debug("JNDI disabled at container level - can't find JNDI Manager class");
             } catch (Throwable err) {
@@ -296,6 +297,7 @@ public class Server implements LifeCycle {
                 relevantArgs.put(key.substring(12 + name.length()), input.get(key));
             }
         }
+        relevantArgs.put("name", name);
         return relevantArgs;
     }
 
