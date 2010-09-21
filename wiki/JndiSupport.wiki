@@ -1,0 +1,59 @@
+#labels Phase-Implementation,JNDI,Datasource,JDBC
+= JNDI support =
+
+Winstone not only going to support the core servlet APIs, but provide a Jndi Implementation. 
+By default it support Java Mail Session and JNDI DataSource to keep a reference to the connection pool. For the moment, it supports simple operations (such as bind, lookup, rebind, etc) and allows you to store references to environment variables (drawn from the env-entry elements in web.xml and/or command line arguments).
+
+
+
+==Configuration==
+
+JNDI support is disabled by default. It must be enabled using `--useJNDI=true`
+
+Configuration can be done in two ways:
+    * `<env-entry>` elements - This is the standard way to add simple objects, such as sql strings or configuration integers/strings. For example:
+{{{
+        <env-entry>
+          <env-entry-name>test/hello</env-entry-name>
+          <env-entry-type>java.lang.Integer</env-entry-type>
+          <env-entry-value>45</env-entry-value>
+        </env-entry>
+}}}
+    * Command line arguments - This is for more complex objects that require attributes to be created (JDBC DataSources for example). The syntax here involves adding a clause of the kind `--jndi.resource.<resName>=<className>` for each object to create, followed by `--jndi.param.<resName>.<attName>=<attValue>` for each attribute required. For example:
+{{{
+      java -jar winstone.jar ...< other options > ... 
+                              --useJNDI=true 
+                              --jndi.resource.test=java.lang.Float 
+                              --jndi.param.test.value=45.56
+}}}
+
+Additionally, it includes a JDBC DataSource object which can be used as a wrapper around normal JDBC drivers. This is fairly simple for now, but it meets the requirements I mentioned above.
+
+Options are as follows:
+
+  # url (REQUIRED) - JDBC URL (jdbc:mysql://db.widgets.com/db) Connection URL to be passed to our JDBC driver. (For backwards compatibility, the property driverName is also recognized.)
+  # driverClassName (REQUIRED) - JDBC Driver name (eg com.mysql.jdbc.Driver). Fully qualified Java class name of the JDBC driver to be used.
+  # username - Database username to be passed to our JDBC driver.
+  # password - Database password to be passed to our JDBC driver.
+  # maxActive - The maximum number of active instances that can be allocated from this pool at the same time (default is 20). Set to -1 for no limit.
+  # maxIdle - The maximum number of connections that can sit idle in this pool at the same time (default is 10).
+  # minIdle - The minimum number of connections that can remain idle in the pool (default is one).
+  # maxWait - The maximum number of milliseconds that the pool will wait (when there are no available connections) for a connection to be returned before throwing an exception (default is 10000). Set to -1 to wait indefinitely.
+  # validationQuery - SQL query that can be used by the pool to validate connections before they are returned to the application. If *isValid* is specified as value, then isValid() method of SQL connection is used (note that it is available only in Java 6 drivers). If <strong>isClosed</strong> is specified, then isClosed() method used for a connection validation. Default is none.
+  # validationTimeOut - The maximum number of milliseconds that system will wait when executing validation query (Default is 1000 ms).
+  # keepAliveSQL - The sql to execute on keep-alive operations. Default is empty (disabled).
+  # keepAliveTimeOut - The maximum number of milliseconds that system will wait when executing keep-alive query (Default is 1000 ms).
+  # keepAlivePeriod - Execute the keepAliveSQL on all unused connection every n minutes. Default is one minute
+  # killInactivePeriod - Kills excess unused connections every n minutes. Default is disabled (-1);
+
+For example to create a DataSource object at the JNDI location java:/comp/env/jdbc/connPool, use the following command line (or config file) options:
+{{{
+java -jar winstone.jar ...< other options > ... 
+                        --useJNDI=true 
+                        --jndi.resource.jdbc/connPool=javax.sql.DataSource 
+                        --jndi.param.jdbc/connPool.url=jdbc:mysql://db.widgets.com/db 
+                        --jndi.param.jdbc/connPool.driverClassName=com.mysql.jdbc.Driver 
+                        --jndi.param.jdbc/connPool.username=foo 
+                        --jndi.param.jdbc/connPool.password=bar
+
+}}}
