@@ -23,8 +23,6 @@ import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebImage;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
-import java.util.Arrays;
-import java.util.Collections;
 import net.winstone.Launcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

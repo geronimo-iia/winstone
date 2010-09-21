@@ -277,5 +277,6 @@ public class JndiManager implements LifeCycle {
             fullName = fullName.getSuffix(1);
         }
         initialContext.bind(name, object);
+        logger.info("bind " + jndiName + " to " + object);
     }
 }
