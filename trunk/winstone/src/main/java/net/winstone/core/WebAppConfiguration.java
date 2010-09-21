@@ -198,7 +198,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         this.ownerHostConfig = ownerHostConfig;
         this.webRoot = webRoot;
         if (!prefix.equals("") && !prefix.startsWith("/")) {
-            logger.warn("WARNING: Added missing leading slash to prefix: [#0]", prefix);
+            logger.warn("WARNING: Added missing leading slash to prefix: {}", prefix);
             this.prefix = "/" + prefix;
         } else {
             this.prefix = prefix;
@@ -367,7 +367,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                             Class<?> listener = Class.forName(listenerClass, true, this.loader);
                             Object listenerInstance = listener.newInstance();
                             addListenerInstance(listenerInstance, contextAttributeListeners, contextListeners, requestAttributeListeners, requestListeners, sessionActivationListeners, sessionAttributeListeners, sessionListeners);
-                            logger.debug("Adding web application listener: [#0]", listenerClass);
+                            logger.debug("Adding web application listener: {}", listenerClass);
                         } catch (Throwable err) {
                             logger.warn("Error instantiating listener class:  " + listenerClass, err);
                         }
@@ -458,7 +458,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                                 lfpError.add(mapping);
                             }
                         } catch (WinstoneException err) {
-                            logger.warn("Error processing URL mapping: [#0]", err.getMessage());
+                            logger.warn("Error processing URL mapping: {}", err.getMessage());
                         }
                     }
                 } // Process the list of welcome files
@@ -502,7 +502,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                             localErrorPagesByExceptionList.add(exceptionClass);
                             this.errorPagesByException.put(exceptionClass, location.trim());
                         } catch (ClassNotFoundException err) {
-                            logger.error("Exception [#0] not found in classpath", exception);
+                            logger.error("Exception {} not found in classpath", exception);
                         }
                     }
                 } // Process the list of welcome files
@@ -525,7 +525,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                         }
                         webApplicationMimeType.put(extension.toLowerCase(), mimeType);
                     } else {
-                        logger.warn("WebAppConfig: Ignoring invalid mime mapping: extension=[#0] mimeType=[#0]", extension, mimeType);
+                        logger.warn("WebAppConfig: Ignoring invalid mime mapping: extension={} mimeType={}", extension, mimeType);
                     }
                 } // Process the list of welcome files
                 else if (nodeName.equals(ELEM_CONTEXT_PARAM)) {
@@ -544,7 +544,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                     if ((name != null) && (value != null)) {
                         this.initParameters.put(name, value);
                     } else {
-                        logger.warn("WebAppConfig: Ignoring invalid init parameter: name=[#0] value=[#0]", name, value);
+                        logger.warn("WebAppConfig: Ignoring invalid init parameter: name={} value={}", name, value);
                     }
                 } // Process locale encoding mapping elements
                 else if (nodeName.equals(ELEM_LOCALE_ENC_MAP_LIST)) {
@@ -600,7 +600,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 
         // If not distributable, remove the cluster reference
         if (!distributable && (cluster != null)) {
-            logger.info("Clustering disabled for webapp [#0] - the web application must be distributable", this.contextName);
+            logger.info("Clustering disabled for webapp {} - the web application must be distributable", this.contextName);
             this.cluster = null;
         } else {
             this.cluster = cluster;
@@ -641,7 +641,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                             loginConfigNode, constraintNodes, rolesAllowed, authenticationRealm
                         });
             } catch (ClassNotFoundException err) {
-                logger.debug("Authentication disabled - can't load authentication handler for [#0] authentication", authMethod);
+                logger.debug("Authentication disabled - can't load authentication handler for {} authentication", authMethod);
             } catch (Throwable err) {
                 logger.error("Authentication disabled - couldn't load authentication handler: " + authClassName + " or realm: " + realmClassName, err);
             }
@@ -832,7 +832,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 urlList.add(new URL(classesFolderURL.endsWith("/") ? classesFolderURL : classesFolderURL + "/"));
                 classPathFileList.add(classesFolder);
             } else {
-                logger.warn("No webapp classes folder found - [#0]", classesFolder.toString());
+                logger.warn("No webapp classes folder found - {}", classesFolder.toString());
             }
 
             // Lib folder's jar files
@@ -842,13 +842,13 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 for (int n = 0; n < jars.length; n++) {
                     String jarName = jars[n].getName().toLowerCase();
                     if (jarName.endsWith(".jar") || jarName.endsWith(".zip")) {
-                        logger.debug("Adding webapp lib [#0] to classpath", jars[n].getName());
+                        logger.debug("Adding webapp lib {} to classpath", jars[n].getName());
                         urlList.add(jars[n].toURI().toURL());
                         classPathFileList.add(jars[n]);
                     }
                 }
             } else {
-                logger.warn("No webapp lib folder found - [#0]", libFolder.toString());
+                logger.warn("No webapp lib folder found - {}", libFolder.toString());
             }
         } catch (MalformedURLException err) {
             throw new WinstoneException("Bad URL in WinstoneClassLoader", err);
@@ -884,7 +884,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         if (outputCL == null) {
             outputCL = new URLClassLoader(jarURLs, parentClassLoader);
         }
-        logger.debug("Using Webapp classloader: [#0]", outputCL.toString());
+        logger.debug("Using Webapp classloader: {}", outputCL.toString());
         return outputCL;
     }
 
@@ -1124,7 +1124,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         } else if (urlPattern.getPatternType() == Mapping.DEFAULT_SERVLET) {
             this.defaultServletName = name;
         } else {
-            logger.warn("WebAppConfig: Invalid pattern mount for [#0] pattern [#0] - ignoring", name, pattern);
+            logger.warn("WebAppConfig: Invalid pattern mount for {} pattern {} - ignoring", name, pattern);
         }
     }
 
@@ -1132,7 +1132,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
      * Execute the pattern match, and try to return a servlet that matches this URL
      */
     public ServletConfiguration urlMatch(String path, StringBuffer servletPath, StringBuffer pathInfo) {
-        logger.debug("URL Match - path: [#0]", path);
+        logger.debug("URL Match - path: {}", path);
 
         // Check exact matches first
         String exact = (String) this.exactServletMatchMounts.get(path);
@@ -1233,7 +1233,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
             }
         }
         if (expiredCount > 0) {
-            logger.debug("Invalidating [#0] sessions due to excessive inactivity", expiredCount + "");
+            logger.debug("Invalidating {} sessions due to excessive inactivity", expiredCount + "");
         }
     }
 
@@ -1460,13 +1460,13 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 if (res.exists() && res.isDirectory() && (request.getMethod().equals("GET") || request.getMethod().equals("HEAD"))) {
                     // Check for the send back with slash case
                     if (!servletPath.toString().endsWith("/")) {
-                        logger.debug("Detected directory with no trailing slash (path=[#0]) - redirecting", servletPath.toString());
+                        logger.debug("Detected directory with no trailing slash (path={}) - redirecting", servletPath.toString());
                         response.sendRedirect(this.prefix + servletPath.toString() + pathInfo.toString() + "/" + (queryString.equals("") ? "" : "?" + queryString));
                         return null;
                     }
 
                     // Check for welcome files
-                    logger.debug("Beginning welcome file match for path: [#0]", servletPath.toString() + pathInfo.toString());
+                    logger.debug("Beginning welcome file match for path: {}", servletPath.toString() + pathInfo.toString());
                     String welcomeFile = matchWelcomeFiles(servletPath.toString() + pathInfo.toString(), request, queryString);
                     if (welcomeFile != null) {
                         response.sendRedirect(this.prefix + welcomeFile);
@@ -1503,7 +1503,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                 break;
             }
             for (int n = 0; n < exceptionClasses.length; n++) {
-                logger.debug("Testing error page exception [#0] against thrown exception [#0]", this.errorPagesByExceptionKeysSorted[n].getName(), errWrapper.getClass().getName());
+                logger.debug("Testing error page exception {} against thrown exception {}", this.errorPagesByExceptionKeysSorted[n].getName(), errWrapper.getClass().getName());
                 if (exceptionClasses[n].isInstance(errWrapper)) {
                     String errorURI = (String) this.errorPagesByException.get(exceptionClasses[n]);
                     if (errorURI != null) {
@@ -1512,10 +1512,10 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
                             return rd;
                         }
                     } else {
-                        logger.warn("Error-page [#0] not found for exception [#0]", exceptionClasses[n].getName(), (String) this.errorPagesByException.get(exceptionClasses[n]));
+                        logger.warn("Error-page {} not found for exception {}", exceptionClasses[n].getName(), (String) this.errorPagesByException.get(exceptionClasses[n]));
                     }
                 } else {
-                    logger.warn("Exception [#0] not matched", exceptionClasses[n].getName());
+                    logger.warn("Exception {} not matched", exceptionClasses[n].getName());
                 }
             }
         }
