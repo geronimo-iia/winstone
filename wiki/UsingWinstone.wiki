@@ -1,0 +1,49 @@
+#labels Phase-Deploy
+=Using Winstone=
+
+
+==Run it==
+
+{{{
+  java -jar target/winstone-X.X.X.jar --webroot=<location of webroot> (+ other options)
+}}}
+- OR -
+{{{
+  java -jar target/winstone-X.X.X.jar --warfile=<location of warfile> (+ other options)
+}}}
+- OR -
+{{{
+  java -jar target/winstone-X.X.X.jar --webappsDir=<location of webapps directory> (+ other options)
+}}}
+- OR -
+{{{
+  java -jar target/winstone-X.X.X.jar --hostsDir=<location of hosts directory> (+ other options)
+}}}
+
+
+==Build from source==
+
+If you want to build from source code, you will need to download and install Apache Maven (v2.x).
+The following instructions assume you have already installed Maven and have the maven shell script in your path (to get Maven, see http://maven.apache.org/).
+
+To build Winstone, unpack the tree:
+{{{
+tar zxf winstone-src-0.9.10.tar.gz
+}}}
+Then build it:
+{{{
+cd winstone
+maven clean jar
+}}}
+
+The winstone-X.X.X.jar file will be in the target directory after the build is complete.
+
+
+By default maven build add dependencies into folder `META-INF/lib` in target jar file.
+You can add maven command line option:
+  * To skip mandatoty source just call `mvn -Dwinstone.resources.skip=true` :
+    * javax.servlet:servlet-api
+    * org.slf4j:slf4j-api
+  * To skip SLF4J log4j Ressource, just `call mvn -Dwinstone.slf4j-log4j12.skip=true`:
+    * org.slf4j:slf4j-log4j12
+    * log4j:log4j
