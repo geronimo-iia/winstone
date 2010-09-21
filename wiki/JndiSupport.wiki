@@ -27,6 +27,7 @@ Configuration can be done in two ways:
                               --jndi.param.test.value=45.56
 }}}
 
+==Datasource==
 Additionally, it includes a JDBC DataSource object which can be used as a wrapper around normal JDBC drivers. This is fairly simple for now, but it meets the requirements I mentioned above.
 
 Options are as follows:
