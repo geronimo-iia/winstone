@@ -33,7 +33,7 @@ svn checkout http://winstone.googlecode.com/svn/trunk/ winstone
 Then build it:
 {{{
 cd winstone
-maven clean package
+mvn clean package
 }}}
 
 The winstone-X.X.X.jar file will be in the winstone/target directory after the build is complete.
