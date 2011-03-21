@@ -36,7 +36,7 @@ cd winstone
 maven clean package
 }}}
 
-The winstone-X.X.X.jar file will be in the target directory after the build is complete.
+The winstone-X.X.X.jar file will be in the winstone/target directory after the build is complete.
 
 
 By default maven build add dependencies into folder `META-INF/lib` in target jar file.
