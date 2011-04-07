@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import junit.framework.TestCase;
-import net.winstone.Launcher;
+import net.winstone.testCase.load.Launcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException; 

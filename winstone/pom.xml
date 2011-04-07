@@ -62,7 +62,7 @@
                         <manifest>
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            <mainClass>net.winstone.Launcher</mainClass>
+                            <mainClass>net.winstone.Winstone</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
