@@ -56,7 +56,12 @@
             </snapshots>
         </repository>
     </repositories>
-
+    <distributionManagement>
+        <repository>
+            <id>intelligents-ia</id>
+            <url>ftp://ftp.lost-oasis.net/web-intelligents-ia.com/htdocs/maven2</url>
+        </repository>
+    </distributionManagement>
     <build>
         <pluginManagement>
             <plugins>
