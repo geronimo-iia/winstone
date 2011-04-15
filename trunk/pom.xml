@@ -4,7 +4,7 @@
     <packaging>pom</packaging>
     <groupId>net.winstone</groupId>
     <artifactId>winstone-project</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>Winstone Project</name>
 
     <url>http://code.google.com/p/winstone/</url>
@@ -18,8 +18,8 @@
     </licenses>
     
     <scm>
-        <connection>scm:svn:https://winstone.googlecode.com/svn/tags/winstone-project-1.0.0</connection>
-        <url>https://winstone.googlecode.com/svn/tags/winstone-project-1.0.0</url>
+        <connection>scm:svn:https://winstone.googlecode.com/svn/trunk/</connection>
+        <url>https://winstone.googlecode.com/svn/trunk/</url>
     </scm>
 
     <repositories>
