@@ -100,24 +100,19 @@ public class BootStrap {
             return server;
         }
         /** compute lib path */
-        logger.info("stage 3/3: compute classpath...");
-        ClassLoader commonClassLoader = computeClassPath(args);
-        if (commonClassLoader != null) {
-            server = new Server(args, commonClassLoader);
-        }
+        logger.info("stage 3/3: compute JSP classpath...");
+        computeJSPClassPath(args);
+        server = new Server(args, getClass().getClassLoader());
         return server;
     }
 
     /**
-     * Compute common class loader and jsp class path value.
+     * Compute jsp class path value.
      * @param args
-     * @return
      * @throws IOException
      */
-    protected ClassLoader computeClassPath(final Map<String, String> args) {
-        ClassLoader commonLibClassLoader = null;
+    protected void computeJSPClassPath(final Map<String, String> args) {
         try {
-            List<URL> jars = new ArrayList<URL>();
             List<File> jspClasspaths = new ArrayList<File>();
 
             // Check for java home
@@ -143,8 +138,7 @@ public class BootStrap {
             }
 
             // Add tools jar to classloader path
-            if (toolsJar.exists()) {
-                jars.add(toolsJar.toURI().toURL());
+            if (toolsJar.exists()) { 
                 jspClasspaths.add(toolsJar);
                 logger.debug("Adding {} to common classpath", toolsJar.getName());
             } else if (StringUtils.booleanArg(args, "useJasper", false)) {
@@ -159,8 +153,6 @@ public class BootStrap {
                 File children[] = libFolder.listFiles();
                 for (int n = 0; n < children.length; n++) {
                     if (children[n].getName().endsWith(".jar") || children[n].getName().endsWith(".zip")) {
-                        jars.add(children[n].toURI().toURL());
-                        //jars.add(children[n].toURL());
                         jspClasspaths.add(children[n]);
                         logger.debug("Adding {} to common classpath", children[n].getName());
                     }
@@ -168,28 +160,9 @@ public class BootStrap {
             } else {
                 logger.debug("No common lib folder found");
             }
-            try {
-                // try to find in META-INF/lib
-                //TODO explode them in a temp folder?
-                String[] childrenName = FileUtils.getResourceListing(getClass(), "META-INF/lib");
-                for (int n = 0; n < childrenName.length; n++) {
-                    if (childrenName[n].endsWith(".jar") || childrenName[n].endsWith(".zip")) {
-                        URL url = getClass().getClassLoader().getResource("META-INF/lib/" + childrenName[n]);
-                        jars.add(url);
-                        // add for jsp classpath in webapp!
-                        //commonLibCLPaths.add(children[n]);
-                        logger.debug("Adding {} to common classpath", childrenName[n]);
-                    }
-                }
-            } catch (URISyntaxException ex) {
-                logger.error("Reading META-INF/lib", ex);
-            }
 
-            commonLibClassLoader = new URLClassLoader((URL[]) jars.toArray(new URL[jars.size()]), getClass().getClassLoader());
 
-            logger.debug("Initializing Common Lib classloader: {}", commonLibClassLoader.toString());
             logger.debug("Initializing JSP Common Lib classloader: {}", jspClasspaths.toString());
-
             /** calcule de m'attribut pour les jsp */
             StringBuilder cp = new StringBuilder();
             File[] fa = (File[]) jspClasspaths.toArray(new File[0]);
@@ -203,8 +176,7 @@ public class BootStrap {
 
         } catch (IOException ex) {
             logger.error("computeClassPath", ex);
-        }
-        return commonLibClassLoader;
+        } 
     }
 
     /**
