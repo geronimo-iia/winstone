@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"  >
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>net.winstone</groupId>
         <artifactId>winstone-project</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
 
     <groupId>net.winstone</groupId>
     <artifactId>winstone</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>Winstone Server</name>
@@ -98,13 +98,13 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks  unless="winstone.resources.skip">
-                                <echo message="Installing Mandatory Ressource. To skip me, just call mvn -Dwinstone.resources.skip=true"/>
-                                <dependencyfilesets prefix="mydeps."/>
-                                <mkdir dir="target/classes/META-INF/lib"/>
+                            <tasks unless="winstone.resources.skip">
+                                <echo message="Installing Mandatory Ressource. To skip me, just call mvn -Dwinstone.resources.skip=true" />
+                                <dependencyfilesets prefix="mydeps." />
+                                <mkdir dir="target/classes/META-INF/lib" />
                                 <copy todir="target/classes/META-INF/lib">
-                                    <fileset refid="mydeps.javax.servlet:servlet-api:jar"/>
-                                    <fileset refid="mydeps.org.slf4j:slf4j-api:jar"/>
+                                    <fileset refid="mydeps.javax.servlet:servlet-api:jar" />
+                                    <fileset refid="mydeps.org.slf4j:slf4j-api:jar" />
                                 </copy>
                             </tasks>
                         </configuration>
@@ -117,12 +117,12 @@
                         </goals>
                         <configuration>
                             <tasks unless="winstone.slf4j-log4j12.skip">
-                                <echo message="Installing  SLF4J log4j Ressource. To skip me, just call mvn -Dwinstone.slf4j-log4j12.skip=true"/>
-                                <dependencyfilesets prefix="mydeps."/>
-                                <mkdir dir="target/classes/META-INF/lib"/>
+                                <echo message="Installing SLF4J log4j Ressource. To skip me, just call mvn -Dwinstone.slf4j-log4j12.skip=true" />
+                                <dependencyfilesets prefix="mydeps." />
+                                <mkdir dir="target/classes/META-INF/lib" />
                                 <copy todir="target/classes/META-INF/lib">
-                                    <fileset refid="mydeps.org.slf4j:slf4j-log4j12:jar"/>
-                                    <fileset refid="mydeps.log4j:log4j:jar"/>
+                                    <fileset refid="mydeps.org.slf4j:slf4j-log4j12:jar" />
+                                    <fileset refid="mydeps.log4j:log4j:jar" />
                                 </copy>
                             </tasks>
                         </configuration>
