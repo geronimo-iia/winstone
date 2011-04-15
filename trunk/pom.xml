@@ -25,6 +25,11 @@
 
     <repositories>
         <repository>
+            <id>intelligents-ia</id>
+            <name>Intelligents-ia Repository</name>
+            <url>http://intelligents-ia.com/maven2</url>
+        </repository>
+        <repository>
             <id>google-maven-repository</id>
             <url>http://google-maven-repository.googlecode.com/svn/repository/</url>
         </repository>

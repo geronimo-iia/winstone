@@ -68,9 +68,26 @@
                 </configuration>
             </plugin>
             <plugin>
-                <!--
+                <groupId>org.intelligentsia.keystone</groupId>
+                <artifactId>plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <main-class>net.winstone.Winstone</main-class>
+                        </configuration>
+                        <goals>
+                            <goal>custom</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+<!--            <plugin>
+                
                 This plugin is for copy some dependencies to final jar.
-                -->
+                
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
@@ -111,7 +128,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
    
@@ -143,6 +160,11 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
 </project>
