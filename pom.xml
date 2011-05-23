@@ -22,6 +22,14 @@
         <url>https://winstone.googlecode.com/svn/trunk/</url>
     </scm>
 
+<pluginRepositories>
+       <pluginRepository>
+            <id>intelligents-ia</id>
+            <name>Intelligents-ia Repository</name>
+            <url>http://intelligents-ia.com/maven2</url>
+        </pluginRepository>
+</pluginRepositories>
+
     <repositories>
         <repository>
             <id>intelligents-ia</id>
