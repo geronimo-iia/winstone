@@ -9,26 +9,27 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 import net.winstone.jndi.AbstractJndiTestCase;
 
-
 public class SimpleDatasourceTest extends AbstractJndiTestCase {
+
     private static String jndiName = "jdbc/test";
-    
+
     @Override
     public void setUp() throws NamingException {
         super.setUp();
-        
+
         DataSourceConfig config = new DataSourceConfig();
         config.setName(jndiName);
         config.setUrl("jdbc:h2:~/test");
         config.setDriverClassName("org.h2.Driver");
+        config.setUsername("sa");
         config.setMaxActive(2);
         config.setMaxWait(100);
-        jndiManager.bind(config, Thread.currentThread().getContextClassLoader());       
+        jndiManager.bind(config, Thread.currentThread().getContextClassLoader());
     }
-    
+
     @SuppressWarnings("CallToThreadDumpStack")
     public void testConnection() throws NamingException, SQLException {
-        DataSource source = (DataSource)jndiManager.getInitialContext().lookup(jndiName);
+        DataSource source = (DataSource) jndiManager.getInitialContext().lookup(jndiName);
         assertNotNull(source);
         Connection connection = null;
         try {
@@ -44,9 +45,9 @@ public class SimpleDatasourceTest extends AbstractJndiTestCase {
             }
         }
     }
-    
+
     public void testLimitConnectionPool() throws NamingException {
-        DataSource source = (DataSource)jndiManager.getInitialContext().lookup(jndiName);
+        DataSource source = (DataSource) jndiManager.getInitialContext().lookup(jndiName);
         assertNotNull(source);
         List<Connection> connections = new ArrayList<Connection>();
         for (int i = 0; i < 4; i++) {
@@ -65,5 +66,4 @@ public class SimpleDatasourceTest extends AbstractJndiTestCase {
             }
         }
     }
-    
 }
