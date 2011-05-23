@@ -22,6 +22,7 @@ public class SimpleDatasourceTest extends AbstractJndiTestCase {
         config.setUrl("jdbc:h2:~/test");
         config.setDriverClassName("org.h2.Driver");
         config.setUsername("sa");
+        config.setPassword("");
         config.setMaxActive(2);
         config.setMaxWait(100);
         jndiManager.bind(config, Thread.currentThread().getContextClassLoader());

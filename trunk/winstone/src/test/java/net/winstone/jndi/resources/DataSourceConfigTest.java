@@ -14,6 +14,7 @@ public class DataSourceConfigTest extends AbstractJndiTestCase {
         config.setName(jndiName);
         config.setUrl("jdbc:h2:~/test");
         config.setUsername("sa");
+        config.setPassword("");
         config.setDriverClassName("org.h2.Driver");
         config.setMaxWait(500);
         jndiManager.bind(config, Thread.currentThread().getContextClassLoader());
