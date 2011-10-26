@@ -70,13 +70,13 @@
             <plugin>
                 <groupId>org.intelligentsia.keystone</groupId>
                 <artifactId>plugin</artifactId>
-                <version>1.0</version>
+                <version>1.3</version>
                 <executions>
                     <execution>
                         <id>make-assembly</id>
                         <phase>package</phase>
                         <configuration>
-                            <main-class>net.winstone.Winstone</main-class>
+                            <mainClass>net.winstone.Winstone</mainClass>
                         </configuration>
                         <goals>
                             <goal>custom</goal>
