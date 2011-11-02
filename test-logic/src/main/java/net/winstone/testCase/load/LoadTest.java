@@ -54,7 +54,6 @@ public class LoadTest {
                 });
     }
 
-    @SuppressWarnings("SleepWhileHoldingLock")
     public void test() throws InterruptedException {
         WebConversation wc = null;
 
