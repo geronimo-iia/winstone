@@ -6,8 +6,8 @@ package net.winstone.util;
  * @author Jerome Guibert
  */
 public interface LifeCycle {
-    
-    public void initialize();
-    
-    public void destroy();
+
+	public void initialize();
+
+	public void destroy();
 }
