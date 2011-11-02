@@ -1,23 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>net.winstone</groupId>
         <artifactId>winstone-project</artifactId>
         <version>1.0.1-SNAPSHOT</version>
     </parent>
-
-    <groupId>net.winstone</groupId>
     <artifactId>test-logic</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-
     <name>Winstone Test Logic</name>
     <description>
         Here we put all logical test of winstone server, using winstone test webapplication.
     </description>
-
     <dependencies>
         <dependency>
             <groupId>net.winstone</groupId>
@@ -38,18 +32,8 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
-    
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -58,35 +42,11 @@
                     </includes>
                     <excludes>
                         <exclude>net/winstone/testCase/load/LoadTest.java</exclude>
-<!--                        <exclude>net/winstone/testCase/HttpConnectorTest.java</exclude>-->
                     </excludes>
                 </configuration>
             </plugin>
-<!--            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>prepare-testwebapp</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <tasks>
-                                <copy overwrite="true" todir="${project.build.directory}/testwebapp">
-                                    <fileset dir="${basedir}/src/main/webapp" includes="**" />
-                                </copy>
-                                <copy overwrite="true" todir="${project.build.directory}/testwebapp/WEB-INF/lib">
-                                    <fileset dir="${project.build.testOutputDirectory}" includes="**" />
-                                </copy>
-                            </tasks>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin> -->
         </plugins>
-    </build>
-   
+    </build>  
     <reporting>
         <plugins>
             <plugin>
@@ -96,6 +56,5 @@
             </plugin>
         </plugins>
     </reporting>
-
 </project>
 
