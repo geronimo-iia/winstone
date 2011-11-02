@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import net.winstone.WinstoneException;
 import net.winstone.WinstoneResourceBundle;
 import net.winstone.cluster.Cluster;
@@ -32,6 +33,7 @@ import net.winstone.jndi.resources.DataSourceConfig;
 import net.winstone.util.LifeCycle;
 import net.winstone.util.MapConverter;
 import net.winstone.util.StringUtils;
+
 import org.slf4j.LoggerFactory;
 
 /**
@@ -140,7 +142,6 @@ public class Server implements LifeCycle {
         }
     }
 
-    @SuppressWarnings("CallToThreadYield")
     public void shutdown() {
         destroy();
         Thread.yield();
@@ -336,8 +337,7 @@ public class Server implements LifeCycle {
         /**
          * The main run method. This handles the normal thread processing.
          */
-        @Override
-        @SuppressWarnings("SleepWhileHoldingLock")
+        @Override 
         public void run() {
             boolean interrupted = false;
             try {

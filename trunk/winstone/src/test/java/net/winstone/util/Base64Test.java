@@ -1,7 +1,6 @@
 package net.winstone.util;
 
 import junit.framework.TestCase;
-import net.winstone.util.Base64;
 
 public class Base64Test extends TestCase {
     

@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+
 import net.winstone.jndi.AbstractJndiTestCase;
 
 public class SimpleDatasourceTest extends AbstractJndiTestCase {
@@ -28,7 +29,6 @@ public class SimpleDatasourceTest extends AbstractJndiTestCase {
         jndiManager.bind(config, Thread.currentThread().getContextClassLoader());
     }
 
-    @SuppressWarnings("CallToThreadDumpStack")
     public void testConnection() throws NamingException, SQLException {
         DataSource source = (DataSource) jndiManager.getInitialContext().lookup(jndiName);
         assertNotNull(source);

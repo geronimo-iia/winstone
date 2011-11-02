@@ -9,8 +9,6 @@ package net.winstone.servlet;
 import java.io.File;
 import java.io.IOException;
 
-import net.winstone.servlet.StaticResourceServlet;
-
 import junit.framework.TestCase;
 
 /**

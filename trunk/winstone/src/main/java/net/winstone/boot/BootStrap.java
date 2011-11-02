@@ -6,18 +6,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import net.winstone.WinstoneResourceBundle;
-import net.winstone.util.FileUtils;
 import net.winstone.util.StringUtils;
+
 import org.slf4j.LoggerFactory;
 
 /**

@@ -142,7 +142,6 @@ public class HostGroup {
      * Finalize threads.
      */
     @Override
-    @SuppressWarnings("FinalizeDeclaration")
     protected void finalize() throws Throwable {
         try {
             destroy();

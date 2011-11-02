@@ -3,7 +3,6 @@ package net.winstone;
 import java.util.Set;
 
 import junit.framework.TestCase;
-import net.winstone.core.WebAppConfiguration;
 
 public class WebApplicationContextTestCase extends TestCase {
 

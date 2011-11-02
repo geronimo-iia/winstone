@@ -1,7 +1,6 @@
 package net.winstone.util;
 
 import junit.framework.TestCase;
-import net.winstone.util.StringUtils;
 
 /**
  * Simple tests for the string utility.
