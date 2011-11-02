@@ -2,6 +2,7 @@ package net.winstone.util;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import junit.framework.TestCase;
 import net.winstone.jndi.resources.DataSourceConfig;
 
@@ -17,10 +18,9 @@ public class MapConverterTest extends TestCase {
         args.put("driverClassName", "com.nosql.is.comming");
         args.put("maxActive", "25");
         args.put("didnotexixts", "novalue");
-
-        MapConverter converter = new MapConverter();
+ 
         DataSourceConfig dataSourceConfig = new DataSourceConfig();
-        converter.apply(args, dataSourceConfig);
+        MapConverter.apply(args, dataSourceConfig);
 
         assertEquals(args.get("name"), dataSourceConfig.getName());
         assertEquals(args.get("driverClassName"), dataSourceConfig.getDriverClassName());

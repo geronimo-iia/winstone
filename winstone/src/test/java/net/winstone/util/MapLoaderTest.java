@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import junit.framework.TestCase;
-import net.winstone.util.MapLoader;
 
 /**
  * MapLoaderTest test unit for MapLoader class.

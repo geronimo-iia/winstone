@@ -989,8 +989,10 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         if (!(one instanceof Class) || !(two instanceof Class)) {
             throw new IllegalArgumentException("This comparator is only for sorting classes");
         }
-        Class classOne = (Class) one;
-        Class classTwo = (Class) two;
+        @SuppressWarnings("rawtypes")
+		Class classOne = (Class) one;
+        @SuppressWarnings("rawtypes")
+		Class classTwo = (Class) two;
         if (classOne.isAssignableFrom(classTwo)) {
             return 1;
         } else if (classTwo.isAssignableFrom(classOne)) {
@@ -1724,7 +1726,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     /**
      * @deprecated
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Enumeration getServletNames() {
         return Collections.enumeration(new ArrayList());
@@ -1733,7 +1735,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
     /**
      * @deprecated
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Enumeration getServlets() {
         return Collections.enumeration(new ArrayList());

@@ -63,7 +63,7 @@ public final class SimpleAccessLogger implements AccessLogger {
         }
         String uriLine = request.getMethod() + " " + originalURL + " " + request.getProtocol();
         int status = response.getErrorStatusCode() == null ? response.getStatus() : response.getErrorStatusCode().intValue();
-        int size = response.getWinstoneOutputStream().getBytesCommitted();
+        long size = response.getWinstoneOutputStream().getBytesCommitted();
         String date = dateCache.now();
         String logLine = StringUtils.replace(this.pattern, new String[][] {
             {
