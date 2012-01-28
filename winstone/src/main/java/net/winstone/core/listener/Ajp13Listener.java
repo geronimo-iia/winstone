@@ -24,19 +24,17 @@ import java.util.Iterator;
 import java.util.Map;
 
 import net.winstone.WinstoneException;
-
 import net.winstone.core.HostGroup;
 import net.winstone.core.ObjectPool;
-import net.winstone.core.WebAppConfiguration;
 import net.winstone.core.WinstoneInputStream;
 import net.winstone.core.WinstoneOutputStream;
 import net.winstone.core.WinstoneRequest;
 import net.winstone.core.WinstoneResponse;
+import net.winstone.core.authentication.AuthenticationPrincipal;
+import net.winstone.util.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import net.winstone.util.StringUtils;
-import net.winstone.core.authentication.AuthenticationPrincipal;
 
 /**
  * Implements the main listener daemon thread. This is the class that gets launched by the command line, and owns the server socket, etc.
@@ -51,7 +49,7 @@ public class Ajp13Listener implements Listener, Runnable {
     private final static int DEFAULT_PORT = 8009;
     private final static int CONNECTION_TIMEOUT = 60000;
     private final static int BACKLOG_COUNT = 1000;
-    private final static int KEEP_ALIVE_TIMEOUT = -1;
+    // private final static int KEEP_ALIVE_TIMEOUT = -1;
     // private final static int KEEP_ALIVE_SLEEP = 50;
     // private final static int KEEP_ALIVE_SLEEP_MAX = 500;
     private final static String TEMPORARY_URL_STASH = "winstone.ajp13.TemporaryURLAttribute";
@@ -145,7 +143,7 @@ public class Ajp13Listener implements Listener, Runnable {
         handler.setRequest(request);
         handler.setResponse(response);
 
-        if (iAmFirst || (KEEP_ALIVE_TIMEOUT == -1)) {
+        if (iAmFirst) {
             socket.setSoTimeout(CONNECTION_TIMEOUT);
         }
         // Dead Code
