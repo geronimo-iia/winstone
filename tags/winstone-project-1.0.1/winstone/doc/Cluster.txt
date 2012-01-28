@@ -1,0 +1,39 @@
+
+Cluster support
+
+It should be pointed out in the beginning that the Cluster support currently implemented in Winstone is actually just session sharing. If a request comes to a node in the cluster that doesn't recognise the session ID supplied, that node simply asks the others "Do you know this session ?". If one does know it, it transfers the session to the requesting node, and the requesting node carries on as if it had always had the session in the first place.
+
+If a specific node in the cluster goes offline, so do all the sessions that it was holding. There is no active "push" of sessions to other nodes, so as far as resilience to failure goes, this cluster is fairly weak. The clustering provided here is meant to allow a dumb load balancer to redirect requests randomly across a cluster of Winstone instances without requiring it to be "session sticky".
+
+That said, the configuration is fairly simple. The only information you need is the IP address and control port of at least one other active node in the cluster. Once you have that, add the following options to the command line startup:
+
+java -jar winstone.jar ...< other options > ... \
+                       --controlPort=<myControlPort> \
+                       --useCluster \
+                       --clusterNodes=<IP1:controlPort1>
+
+where IP1 is the IP address of the other node in the cluster, and myControlPort and controlPort1 are the port numbers to use for the control ports of this instance and the other node respectively. Note that it is necessary to actively set the controlPort on this instance, since it is disabled by default.
+
+You would likewise set up the other instance with reciprocal options (ie changing the IPs and controlPort values appropriately.
+
+NOTE: There are some additional requirements on your web application for Clustering of sessions to be successful.
+
+   1. You need to include the <distributable/> element in your web.xml file. This tells Winstone that your webapp is programmed correctly to support clustering. If this is missing, clustering will be disabled.
+   2. Any objects you add to the session must implement java.io.Serializable. This is required because Winstone serializes the objects in the session over the controlPort to other nodes, and reconstructs the serialized session at the destination. If you try to put a non-serializable object into the session, Winstone will throw an exception reminding you to make all session objects serializable.
+
+Control port functions/protocol
+
+From v0.5, the behaviour of the control port changes slightly. Due to increased usage of the control port by the clustering function, a rudimentary protocol has been added.
+
+The protocol is very simple. The first byte sent to the server is a flag indicating what type of request is being issued. Beyond that the protocol varies for each request type, but the request type flag options are listed below:
+
+    * 0 (ASCII 48) = shutdown
+    * 1 (ASCII 49) = request search for a session
+    * 2 (ASCII 50) = request list of currently connected cluster nodes
+    * 3 (ASCII 51) = cluster node heartbeat
+    * 4 (ASCII 52) = request reload of web application context
+
+Obviously, unless you're planning to write your own cluster extensions, the only two you will be interested in are the shutdown and reload options. Luckily there is a wrapper class for accessing these functions, named winstone.tools.WinstoneControl. Try the following to get a usage statement:
+
+  java -cp winstone.jar winstone.tools.WinstoneControl
+
