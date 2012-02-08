@@ -48,8 +48,7 @@ public class JndiManager implements LifeCycle {
     public void initialize() {
         // Instantiate scheduler with a initial pool size of one thread.
         scheduler = Executors.newScheduledThreadPool(1);
-        // initiate context factory
-        @SuppressWarnings("UseOfObsoleteCollectionType")
+        // initiate context factory 
         Hashtable<Object, Object> env = new Hashtable<Object, Object>();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "net.winstone.jndi.url.java.javaURLContextFactory");
         env.put(Context.URL_PKG_PREFIXES, "net.winstone.jndi.url");
