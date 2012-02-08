@@ -39,9 +39,9 @@ public final class RetryRequestParams implements java.io.Serializable {
     private final String protocol;
     private final int contentLength;
     private final String contentType;
-    private final String encoding;
-    @SuppressWarnings("unchecked")
-    private final Map<String, Enumeration> headers;
+    private final String encoding; 
+    @SuppressWarnings("rawtypes")
+	private final Map<String, Enumeration> headers;
     private final List<Locale> locales;
     private final Locale locale;
     private final byte[] bodyContent;
@@ -49,7 +49,7 @@ public final class RetryRequestParams implements java.io.Serializable {
     /**
      * Constructor - this populates the wrapper from the object in session
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public RetryRequestParams(final ServletRequest request) throws IOException {
         this.protocol = request.getProtocol();
         this.locales = new ArrayList<Locale>(Collections.list(request.getLocales()));
@@ -110,7 +110,8 @@ public final class RetryRequestParams implements java.io.Serializable {
         return encoding;
     }
 
-    public Map<String, Enumeration> getHeaders() {
+    @SuppressWarnings("rawtypes")
+	public Map<String, Enumeration> getHeaders() {
         return headers;
     }
 

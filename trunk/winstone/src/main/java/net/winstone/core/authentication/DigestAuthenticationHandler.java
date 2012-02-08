@@ -38,7 +38,7 @@ public final class DigestAuthenticationHandler extends BaseAuthenticationHandler
 
     protected static Logger logger = LoggerFactory.getLogger(DigestAuthenticationHandler.class);
     private MessageDigest md5Digester;
-
+    @SuppressWarnings("rawtypes")
     public DigestAuthenticationHandler(Node loginConfigNode, List constraintNodes, Set rolesAllowed, AuthenticationRealm realm) throws NoSuchAlgorithmException {
         super(loginConfigNode, constraintNodes, rolesAllowed, realm);
         this.md5Digester = MessageDigest.getInstance("MD5");

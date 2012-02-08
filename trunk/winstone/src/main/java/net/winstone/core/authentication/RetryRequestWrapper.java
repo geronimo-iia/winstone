@@ -53,7 +53,8 @@ public final class RetryRequestWrapper extends HttpServletRequestWrapper {
     private final RetryRequestParams oldRequest;
     // PARAMETER/BODY RELATED FUNCTIONS
     private  String encoding;
-    private Map parsedParams;
+    @SuppressWarnings("rawtypes")
+	private Map parsedParams;
     private ServletInputStream inData;
 
     /**
@@ -182,7 +183,8 @@ public final class RetryRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
-    @Override
+    @SuppressWarnings("rawtypes")
+	@Override
     public Enumeration getLocales() {
         if (hasBeenForwarded()) {
             return super.getLocales();
@@ -224,6 +226,7 @@ public final class RetryRequestWrapper extends HttpServletRequestWrapper {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public String getHeader(String name) {
         if (hasBeenForwarded()) {
             return super.getHeader(name);
@@ -234,6 +237,7 @@ public final class RetryRequestWrapper extends HttpServletRequestWrapper {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public Enumeration getHeaderNames() {
         if (hasBeenForwarded()) {
             return super.getHeaderNames();
@@ -243,6 +247,7 @@ public final class RetryRequestWrapper extends HttpServletRequestWrapper {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public Enumeration getHeaders(String name) {
         if (hasBeenForwarded()) {
             return super.getHeaders(name);
@@ -271,6 +276,7 @@ public final class RetryRequestWrapper extends HttpServletRequestWrapper {
     }
 
     @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Enumeration getParameterNames() {
         if (hasBeenForwarded()) {
             return super.getParameterNames();
@@ -300,6 +306,7 @@ public final class RetryRequestWrapper extends HttpServletRequestWrapper {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public Map getParameterMap() {
         if (hasBeenForwarded()) {
             return super.getParameterMap();
@@ -343,6 +350,7 @@ public final class RetryRequestWrapper extends HttpServletRequestWrapper {
      * This takes the parameters in the body of the request and puts them into
      * the parameters map.
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private void parseRequestParameters() {
         if (inData != null) {
             logger.warn("Called getInputStream after getParameter ... error");

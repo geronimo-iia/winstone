@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 public final class ClientcertAuthenticationHandler extends BaseAuthenticationHandler {
 
     protected static Logger logger = LoggerFactory.getLogger(ClientcertAuthenticationHandler.class);
-
+    @SuppressWarnings("rawtypes")
     public ClientcertAuthenticationHandler(Node loginConfigNode, List constraintNodes, Set rolesAllowed, AuthenticationRealm realm) {
         super(loginConfigNode, constraintNodes, rolesAllowed, realm);
         logger.debug("ClientcertAuthenticationHandler initialised for realm: {}", realmName);

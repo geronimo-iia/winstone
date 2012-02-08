@@ -32,7 +32,8 @@ public final class BasicAuthenticationHandler extends BaseAuthenticationHandler 
 
     protected static Logger logger = LoggerFactory.getLogger(BasicAuthenticationHandler.class);
 
-    public BasicAuthenticationHandler(Node loginConfigNode, List constraintNodes, Set rolesAllowed, AuthenticationRealm realm) {
+    @SuppressWarnings("rawtypes")
+	public BasicAuthenticationHandler(Node loginConfigNode, List constraintNodes, Set rolesAllowed, AuthenticationRealm realm) {
         super(loginConfigNode, constraintNodes, rolesAllowed, realm);
         logger.debug("BasicAuthenticationHandler initialised for realm: {}", realmName);
     }
