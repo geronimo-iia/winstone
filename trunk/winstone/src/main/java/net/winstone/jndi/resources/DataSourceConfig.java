@@ -32,8 +32,13 @@ import java.io.Serializable;
  * @author Jerome Guibert
  */
 public class DataSourceConfig implements Serializable{
-    
-    private String name = null;
+ 
+	/**
+	 * serialVersionUID:long
+	 */
+	private static final long serialVersionUID = -4762104837042371012L;
+
+	private String name = null;
     
     private String url = null;
     private String driverClassName = null;
