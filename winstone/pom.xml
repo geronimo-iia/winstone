@@ -47,13 +47,16 @@
 			<plugin>
 				<groupId>org.intelligents-ia.keystone</groupId>
 				<artifactId>keystone-plugin</artifactId>
-				<version>2.0</version>
+				<version>2.2-SNAPSHOT</version>
 				<executions>
 					<execution>
 						<id>make-assembly</id>
 						<phase>package</phase>
 						<configuration>
 							<mainClass>net.winstone.Winstone</mainClass>
+							<info>false</info>
+							<verbose>false</verbose>
+							<cleanUpLib>true</cleanUpLib>
 						</configuration>
 						<goals>
 							<goal>custom</goal>

@@ -59,6 +59,10 @@ public class BootStrap {
         this.arguments = arguments;
     }
 
+    /**
+     * First method call to boot.
+     * @return a Server instance.
+     */
     public Server boot() {
         Server server = null;
         /**  Load argument for server initialization.*/
