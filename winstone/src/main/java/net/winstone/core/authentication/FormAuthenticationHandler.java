@@ -59,6 +59,7 @@ public class FormAuthenticationHandler extends BaseAuthenticationHandler {
      * @param realmName
      *            The name of the realm this handler claims
      */
+    @SuppressWarnings("rawtypes")
     public FormAuthenticationHandler(Node loginConfigNode, List constraintNodes, Set rolesAllowed, AuthenticationRealm realm) {
         super(loginConfigNode, constraintNodes, rolesAllowed, realm);
 

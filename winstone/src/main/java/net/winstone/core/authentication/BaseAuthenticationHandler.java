@@ -40,7 +40,8 @@ public abstract class BaseAuthenticationHandler implements AuthenticationHandler
     /**
      * Factory method - this parses the web.xml nodes and builds the correct subclass for handling that auth type.
      */
-    protected BaseAuthenticationHandler(final Node loginConfigNode, List constraintNodes, final Set rolesAllowed, final AuthenticationRealm realm) {
+    @SuppressWarnings("rawtypes")
+	protected BaseAuthenticationHandler(final Node loginConfigNode, List constraintNodes, final Set rolesAllowed, final AuthenticationRealm realm) {
         this.realm = realm;
 
         for (int m = 0; m < loginConfigNode.getChildNodes().getLength(); m++) {

@@ -46,7 +46,8 @@ public final class SecurityConstraint {
     /**
      * Constructor
      */
-    public SecurityConstraint(final Node elm, final Set rolesAllowed, final int counter) {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public SecurityConstraint(final Node elm, final Set rolesAllowed, final int counter) {
         super();
         this.needsSSL = false;
         Set localUrlPatternList = new HashSet();
