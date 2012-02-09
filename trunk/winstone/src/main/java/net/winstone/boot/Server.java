@@ -100,11 +100,9 @@ public class Server implements LifeCycle {
             if (!listeners.isEmpty()) {
                 controlThread = new Thread(new ServerControlThread(), "LauncherControlThread[ControlPort=" + Integer.toString(this.controlPort) + "]]");
                 controlThread.setDaemon(false);
-                controlThread.start();
-
-                Runtime.getRuntime().addShutdownHook(new ShutdownHook(this));
+                controlThread.start(); 
             }
-
+            Runtime.getRuntime().addShutdownHook(new ShutdownHook(this));
         } catch (IOException iOException) {
             throw new WinstoneException("Server.initialize", iOException);
         }
@@ -143,8 +141,10 @@ public class Server implements LifeCycle {
     }
 
     public void shutdown() {
+    	logger.info("Winstone shutdown...");
         destroy();
         Thread.yield();
+        logger.info("Exiting");
     }
 
     /**
@@ -158,7 +158,7 @@ public class Server implements LifeCycle {
      * Instanciate listener.
      */
     private void initializeListener() {
-        //TODO create a parameters for list this
+        //TODO create a parameters for this list 
         // Create connectors (http, https and ajp)
         this.listeners = new ArrayList<Listener>();
         spawnListener(HttpListener.class.getName());
