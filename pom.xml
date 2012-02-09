@@ -1,11 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.winstone</groupId>
 	<artifactId>winstone-project</artifactId>
 	<packaging>pom</packaging>
 	<name>Winstone Project</name>
-	<version>1.0.2-SNAPSHOT</version>
+	<version>1.0.2</version>
 	<description>Winstone is a servlet container that was written out of a desire to provide servlet functionality without the bloat that full J2EE compliance introduces.</description>
 	<url>http://code.google.com/p/winstone/</url>
 	<inceptionYear>2010</inceptionYear>
@@ -24,8 +23,8 @@
 		</license>
 	</licenses>
 	<scm>
-		<connection>scm:svn:https://winstone.googlecode.com/svn/trunk/</connection>
-		<url>https://winstone.googlecode.com/svn/trunk/</url>
+		<connection>scm:svn:https://winstone.googlecode.com/svn/tags/winstone-project-1.0.2</connection>
+		<url>https://winstone.googlecode.com/svn/tags/winstone-project-1.0.2</url>
 	</scm>
 	<organization>
 		<name>Intelligents-ia</name>
