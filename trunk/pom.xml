@@ -246,7 +246,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<javax.servlet.version>2.5</javax.servlet.version>
 		<google-collections.version>1.0</google-collections.version>
-		<org.slf4j.version>1.5.10</org.slf4j.version>
+		<org.slf4j.version>1.6.4</org.slf4j.version>
 	</properties>
 	<modules>
 		<module>winstone</module>
