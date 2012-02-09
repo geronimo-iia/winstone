@@ -158,7 +158,7 @@ public class Server implements LifeCycle {
      * Instanciate listener.
      */
     private void initializeListener() {
-        //TODO create a paramater for list this
+        //TODO create a parameters for list this
         // Create connectors (http, https and ajp)
         this.listeners = new ArrayList<Listener>();
         spawnListener(HttpListener.class.getName());
