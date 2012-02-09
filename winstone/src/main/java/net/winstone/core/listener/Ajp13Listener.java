@@ -77,7 +77,7 @@ public class Ajp13Listener implements Listener, Runnable {
             return false;
         } else {
             this.interrupted = false;
-            Thread thread = new Thread(this, StringUtils.replaceToken("ConnectorThread:[{}-[#1]]", "ajp13", Integer.toString(this.listenPort)));
+            Thread thread = new Thread(this, StringUtils.replaceToken("ConnectorThread:ajp13-[#0]", Integer.toString(this.listenPort)));
             thread.setDaemon(true);
             thread.start();
             return true;
