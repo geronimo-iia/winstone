@@ -1,0 +1,5 @@
+
+Utility in order to build and test quickly
+
+mvn clean install && java -jar target\winstone-1.0.2-SNAPSHOT-boot.jar --warfile=..\test-webapp\target\test-webapp.war
+
