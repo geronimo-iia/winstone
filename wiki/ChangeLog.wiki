@@ -3,7 +3,7 @@
 
 =Change Log=
 
-==v1.0.2 (in progress) ==
+==v1.0.2 ==
  * Add log4jConfiguration
  * Fix startup problem
  * Update to bootloader Keystone 2.2
