@@ -1,23 +1,23 @@
-#labels Phase-Deploy
+#labels Phase-Deploy,Featured,Phase-Implementation
 =Using Winstone=
 
 
 ==Run it==
 
 {{{
-  java -jar target/winstone-X.X.X.jar --webroot=<location of webroot> (+ other options)
+  java -jar target/winstone-X.X.X-boot.jar --webroot=<location of webroot> (+ other options)
 }}}
 - OR -
 {{{
-  java -jar target/winstone-X.X.X.jar --warfile=<location of warfile> (+ other options)
+  java -jar target/winstone-X.X.X-boot.jar --warfile=<location of warfile> (+ other options)
 }}}
 - OR -
 {{{
-  java -jar target/winstone-X.X.X.jar --webappsDir=<location of webapps directory> (+ other options)
+  java -jar target/winstone-X.X.X-boot.jar --webappsDir=<location of webapps directory> (+ other options)
 }}}
 - OR -
 {{{
-  java -jar target/winstone-X.X.X.jar --hostsDir=<location of hosts directory> (+ other options)
+  java -jar target/winstone-X.X.X-boot.jar --hostsDir=<location of hosts directory> (+ other options)
 }}}
 
 
@@ -33,17 +33,10 @@ svn checkout http://winstone.googlecode.com/svn/trunk/ winstone
 Then build it:
 {{{
 cd winstone
-mvn clean package
+mvn clean install
 }}}
 
-The winstone-X.X.X.jar file will be in the winstone/target directory after the build is complete.
+The winstone-X.X.X-boot.jar file will be in the winstone/target directory after the build is complete.
 
 
-By default maven build add dependencies into folder `META-INF/lib` in target jar file.
-You can add maven command line option:
-  * To skip mandatoty source just call `mvn -Dwinstone.resources.skip=true` :
-    * javax.servlet:servlet-api
-    * org.slf4j:slf4j-api
-  * To skip SLF4J log4j Ressource, just `call mvn -Dwinstone.slf4j-log4j12.skip=true`:
-    * org.slf4j:slf4j-log4j12
-    * log4j:log4j
+By default maven build add dependencies into archive folder `/lib` in target jar file. If you need more information read more about [http://code.google.com/p/intelligents-ia/wiki/KeystoneHowToEN Keystone]
