@@ -1,3 +1,4 @@
+#labels Deprecated
 #List of other things to do
 
   * Winstone (v0.9.9) fails to get request parameters: Try this inside some Web app on a GET request with a query string :
