@@ -1,16 +1,10 @@
-#labels Phase-Implementation,Phase-Deploy
+#labels Phase-Implementation,Phase-Deploy,Featured
 Command-line options
 
 
 ==Syntax==
 {{{
-  java -jar winstone.jar [--option=value] [--option=value] etc
-}}}
-
-
-==Usage==
-{{{
-java winstone.Launcher [--option=value] [--option=value] [etc]
+  java -jar winstone.x.x.x-boot.jar [--option=value] [--option=value] etc
 }}}
 
 ==Required options==
