@@ -1,4 +1,4 @@
-#labels Phase-Implementation,JNDI,Datasource,JDBC
+#labels Phase-Implementation,JNDI,Datasource,JDBC,Featured
 = JNDI support =
 
 Winstone not only going to support the core servlet APIs, but provide a Jndi Implementation. 
