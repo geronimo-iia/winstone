@@ -132,13 +132,13 @@ public class Mapping implements java.util.Comparator<Mapping> {
 	 * @param inputPattern
 	 *            The URL we want to check for a match
 	 * @param servletPath
-	 *            An empty stringbuffer for the servletPath of a successful
+	 *            An empty StringBuilder for the servletPath of a successful
 	 *            match
 	 * @param pathInfo
-	 *            An empty stringbuffer for the pathInfo of a successful match
+	 *            An empty StringBuilder for the pathInfo of a successful match
 	 * @return true if the match is successful
 	 */
-	public boolean match(final String inputPattern, final StringBuffer servletPath, final StringBuffer pathInfo) {
+	public boolean match(final String inputPattern, final StringBuilder servletPath, final StringBuilder pathInfo) {
 		switch (patternType) {
 		case FOLDER_PATTERN:
 			if (inputPattern.startsWith(urlPattern + '/') || inputPattern.equals(urlPattern)) {

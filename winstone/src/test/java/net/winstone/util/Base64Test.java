@@ -30,7 +30,7 @@ public class Base64Test extends TestCase {
 
 	public static String hexEncode(final byte input[]) {
 
-		final StringBuffer out = new StringBuffer();
+		final StringBuilder out = new StringBuilder();
 
 		for (int i = 0; i < input.length; i++) {
 			out.append(Integer.toString((input[i] & 0xf0) >> 4, 16)).append(Integer.toString(input[i] & 0x0f, 16));

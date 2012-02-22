@@ -180,7 +180,7 @@ public class WinstoneResponse implements HttpServletResponse {
 		outputStream.clearIncludeStackForForward();
 	}
 
-	protected static String getCharsetFromContentTypeHeader(final String type, final StringBuffer remainder) {
+	protected static String getCharsetFromContentTypeHeader(final String type, final StringBuilder remainder) {
 		if (type == null) {
 			return null;
 		}
@@ -229,7 +229,7 @@ public class WinstoneResponse implements HttpServletResponse {
 				forceHeader(WinstoneConstant.CONTENT_TYPE_HEADER, "text/html;charset=" + getCharacterEncoding());
 			} else if (contentType.startsWith("text/")) {
 				// replace charset in content
-				final StringBuffer remainder = new StringBuffer();
+				final StringBuilder remainder = new StringBuilder();
 				WinstoneResponse.getCharsetFromContentTypeHeader(contentType, remainder);
 				forceHeader(WinstoneConstant.CONTENT_TYPE_HEADER, remainder.toString() + ";charset=" + getCharacterEncoding());
 			}
@@ -461,7 +461,7 @@ public class WinstoneResponse implements HttpServletResponse {
 	private void correctContentTypeHeaderEncoding(final String encoding) {
 		final String contentType = getContentType();
 		if (contentType != null) {
-			final StringBuffer remainderHeader = new StringBuffer();
+			final StringBuilder remainderHeader = new StringBuilder();
 			WinstoneResponse.getCharsetFromContentTypeHeader(contentType, remainderHeader);
 			if (remainderHeader.length() != 0) {
 				forceHeader(WinstoneConstant.CONTENT_TYPE_HEADER, remainderHeader + ";charset=" + encoding);
@@ -602,7 +602,7 @@ public class WinstoneResponse implements HttpServletResponse {
 			WinstoneResponse.logger.debug("Header ignored after response committed - {}: {} ", name, value);
 		} else if (value != null) {
 			if (name.equals(WinstoneConstant.CONTENT_TYPE_HEADER)) {
-				final StringBuffer remainderHeader = new StringBuffer();
+				final StringBuilder remainderHeader = new StringBuilder();
 				final String headerEncoding = WinstoneResponse.getCharsetFromContentTypeHeader(value, remainderHeader);
 				if (outputWriter != null) {
 					value = remainderHeader + ";charset=" + getCharacterEncoding();
@@ -641,7 +641,7 @@ public class WinstoneResponse implements HttpServletResponse {
 					}
 					if (name.equals(WinstoneConstant.CONTENT_TYPE_HEADER)) {
 						if (value != null) {
-							final StringBuffer remainderHeader = new StringBuffer();
+							final StringBuilder remainderHeader = new StringBuilder();
 							final String headerEncoding = WinstoneResponse.getCharsetFromContentTypeHeader(value, remainderHeader);
 							if (outputWriter != null) {
 								value = remainderHeader + ";charset=" + getCharacterEncoding();

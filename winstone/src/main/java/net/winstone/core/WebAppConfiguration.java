@@ -1135,7 +1135,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 	 * Execute the pattern match, and try to return a servlet that matches this
 	 * URL
 	 */
-	public ServletConfiguration urlMatch(final String path, final StringBuffer servletPath, final StringBuffer pathInfo) {
+	public ServletConfiguration urlMatch(final String path, final StringBuilder servletPath, final StringBuilder pathInfo) {
 		WebAppConfiguration.logger.debug("URL Match - path: {}", path);
 
 		// Check exact matches first
@@ -1414,8 +1414,8 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 		}
 
 		// Return the dispatcher
-		final StringBuffer servletPath = new StringBuffer();
-		final StringBuffer pathInfo = new StringBuffer();
+		final StringBuilder servletPath = new StringBuilder();
+		final StringBuilder pathInfo = new StringBuilder();
 		final ServletConfiguration servlet = urlMatch(uriInsideWebapp, servletPath, pathInfo);
 		if (servlet != null) {
 			final SimpleRequestDispatcher rd = new SimpleRequestDispatcher(this, servlet);
@@ -1459,8 +1459,8 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 		}
 
 		// Return the dispatcher
-		final StringBuffer servletPath = new StringBuffer();
-		final StringBuffer pathInfo = new StringBuffer();
+		final StringBuilder servletPath = new StringBuilder();
+		final StringBuilder pathInfo = new StringBuilder();
 		final ServletConfiguration servlet = urlMatch(uriInsideWebapp, servletPath, pathInfo);
 		if (servlet != null) {
 			// If the default servlet was returned, we should check for welcome
@@ -1603,8 +1603,8 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 		}
 
 		// Return the dispatcher
-		final StringBuffer servletPath = new StringBuffer();
-		final StringBuffer pathInfo = new StringBuffer();
+		final StringBuilder servletPath = new StringBuilder();
+		final StringBuilder pathInfo = new StringBuilder();
 		final ServletConfiguration servlet = urlMatch(errorURI, servletPath, pathInfo);
 		if (servlet != null) {
 			final SimpleRequestDispatcher rd = new SimpleRequestDispatcher(this, servlet);
