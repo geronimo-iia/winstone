@@ -53,32 +53,19 @@ public class Ajp13IncomingPacket {
 	 * Constructor
 	 */
 	public Ajp13IncomingPacket(final InputStream in, final RequestHandlerThread handler) throws IOException {
+		DataInputStream din = new DataInputStream(in);
 		// Get the incoming packet flag
 		final byte headerBuffer[] = new byte[4];
-		int headerBytesRead = 0;
-		int thisReadCount = 0;
-		while ((headerBytesRead < 4) && ((thisReadCount = in.read(headerBuffer, headerBytesRead, 4 - headerBytesRead)) >= 0)) {
-			headerBytesRead += thisReadCount;
-		}
-
+		din.readFully(headerBuffer);
 		handler.setRequestStartTime();
-		if (headerBytesRead != 4) {
-			throw new WinstoneException("Invalid AJP header");
-		} else if ((headerBuffer[0] != 0x12) || (headerBuffer[1] != 0x34)) {
+		if ((headerBuffer[0] != 0x12) || (headerBuffer[1] != 0x34)) {
 			throw new WinstoneException("Invalid AJP header");
 		}
 
 		// Read in the whole packet
 		packetLength = ((headerBuffer[2] & 0xFF) << 8) + (headerBuffer[3] & 0xFF);
 		packetBytes = new byte[packetLength];
-		int packetBytesRead = 0;
-		while ((packetBytesRead < packetLength) && ((thisReadCount = in.read(packetBytes, packetBytesRead, packetLength - packetBytesRead)) >= 0)) {
-			packetBytesRead += thisReadCount;
-		}
-
-		if (packetBytesRead < packetLength) {
-			throw new WinstoneException("Short AJP packet");
-		}
+		din.readFully(packetBytes);
 		// Ajp13Listener.packetDump(packetBytes, packetBytesRead);
 	}
 
