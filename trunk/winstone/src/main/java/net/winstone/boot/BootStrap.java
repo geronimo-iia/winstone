@@ -310,6 +310,11 @@ public class BootStrap {
 
 	/** print usage */
 	protected static void printUsage() {
-		System.out.println(WinstoneResourceBundle.getInstance().getString("UsageInstructions", WinstoneResourceBundle.getInstance().getString("ServerVersion")));
+		// if the caller overrides the usage, use that instead.
+		String usage = System.getProperty("winstone.usage");
+		if (usage == null) {
+			usage = WinstoneResourceBundle.getInstance().getString("UsageInstructions", WinstoneResourceBundle.getInstance().getString("ServerVersion"));
+		}
+		System.out.println(usage);
 	}
 }
