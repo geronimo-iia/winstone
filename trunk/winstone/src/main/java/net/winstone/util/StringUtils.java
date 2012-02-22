@@ -38,6 +38,13 @@ public class StringUtils {
 		return Integer.parseInt(StringUtils.stringArg(args, name, Integer.toString(defaultValue)));
 	}
 
+	public static String get(final String value, final String defaultValue) {
+		if ((value == null) || "".equals(value)) {
+			return defaultValue;
+		}
+		return value;
+	}
+
 	/**
 	 * This function extract meaningful path or query
 	 * 
@@ -152,10 +159,30 @@ public class StringUtils {
 		return input;
 	}
 
-	public static String get(final String value, final String defaultValue) {
-		if ((value == null) || "".equals(value)) {
-			return defaultValue;
+	/**
+	 * Performs necessary escaping to render arbitrary plain text as plain text
+	 * without any markup.
+	 */
+	public static String htmlEscapeBasicMarkup(String text) {
+		StringBuilder buf = new StringBuilder(text.length() + 64);
+		for (int i = 0; i < text.length(); i++) {
+			char ch = text.charAt(i);
+			switch (ch) {
+			case '<':
+				buf.append("&lt;");
+				break;
+			case '&':
+				buf.append("&amp;");
+				break;
+			case '>':
+				buf.append("&gt;");
+				break;
+			default:
+				buf.append(ch);
+				break;
+			}
 		}
-		return value;
+		return buf.toString();
 	}
+
 }
