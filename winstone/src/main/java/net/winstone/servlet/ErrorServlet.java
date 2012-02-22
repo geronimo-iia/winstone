@@ -58,7 +58,7 @@ public class ErrorServlet extends HttpServlet {
 		pw.flush();
 		// If we are here there was no error servlet, so show the default error
 		// page
-		final String output = StringUtils.replaceToken(template, sc != null ? sc.toString() : "", (msg == null ? "" : msg), sw.toString(), serverVersion, new Date().toString());
+		final String output = StringUtils.replaceToken(template, sc != null ? sc.toString() : "", (msg == null ? "" : StringUtils.htmlEscapeBasicMarkup(msg)), StringUtils.htmlEscapeBasicMarkup(sw.toString()), serverVersion, new Date().toString());
 
 		response.setContentLength(output.getBytes(response.getCharacterEncoding()).length);
 		final Writer out = response.getWriter();

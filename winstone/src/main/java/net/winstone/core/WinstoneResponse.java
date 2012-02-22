@@ -26,6 +26,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import net.winstone.WinstoneResourceBundle;
+import net.winstone.util.StringUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -811,7 +812,7 @@ public class WinstoneResponse implements HttpServletResponse {
 		if (errorStatusCode == null) {
 			statusCode = sc;
 		}
-		final String output = WinstoneResourceBundle.getInstance().getString("WinstoneResponse.ErrorPage", sc + "", (msg == null ? "" : msg), "", WinstoneResourceBundle.getInstance().getString("ServerVersion"), "" + new Date());
+		final String output = WinstoneResourceBundle.getInstance().getString("WinstoneResponse.ErrorPage", sc + "", (msg == null ? "" : StringUtils.htmlEscapeBasicMarkup(msg)), "", WinstoneResourceBundle.getInstance().getString("ServerVersion"), "" + new Date());
 		setContentLength(output.getBytes(getCharacterEncoding()).length);
 		final Writer out = getWriter();
 		out.write(output);
