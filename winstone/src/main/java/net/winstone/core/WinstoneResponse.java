@@ -794,7 +794,7 @@ public class WinstoneResponse implements HttpServletResponse {
 		WinstoneResponse.logger.debug("Sending error message to browser: code {}, message: {}", "" + sc, msg);
 		if ((webAppConfig != null) && (req != null)) {
 
-			final SimpleRequestDispatcher rd = webAppConfig.getErrorDispatcherByCode(sc, msg, null);
+			final SimpleRequestDispatcher rd = webAppConfig.getErrorDispatcherByCode(req.getRequestURI(), sc, msg, null);
 			if (rd != null) {
 				try {
 					rd.forward(req, this);
