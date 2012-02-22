@@ -77,8 +77,7 @@ public class RequestHandlerThread implements Runnable {
 	@Override
 	public void run() {
 
-		boolean interrupted = false;
-		while (!interrupted) {
+		while (true) {
 			// Start request processing
 			InputStream inSocket = null;
 			OutputStream outSocket = null;
@@ -91,7 +90,7 @@ public class RequestHandlerThread implements Runnable {
 				// The keep alive loop - exiting from here means the connection
 				// has closed
 				boolean continueFlag = true;
-				while (continueFlag && !interrupted) {
+				while (continueFlag) {
 					try {
 						final long requestId = System.currentTimeMillis();
 						listener.allocateRequestResponse(socket, inSocket, outSocket, this, iAmFirst);
@@ -211,20 +210,22 @@ public class RequestHandlerThread implements Runnable {
 
 			objectPool.releaseRequestHandler(this);
 
-			if (!interrupted) {
-				// Suspend this thread until we get assigned and woken up
-				RequestHandlerThread.logger.debug("Thread entering wait state");
-				try {
-					synchronized (this) {
+			// Suspend this thread until we get assigned and woken up
+			RequestHandlerThread.logger.debug("Thread entering wait state");
+			try {
+				// wait for another request to come
+				synchronized (this) {
+					while (socket == null) {
 						this.wait();
 					}
-				} catch (final InterruptedException err) {
-					interrupted = true;
 				}
 				RequestHandlerThread.logger.debug("Thread leaving wait state");
+
+			} catch (final InterruptedException err) {
+				RequestHandlerThread.logger.debug("Exiting thread");
+				return;
 			}
 		}
-		RequestHandlerThread.logger.debug("Exiting thread");
 	}
 
 	/**
@@ -245,10 +246,10 @@ public class RequestHandlerThread implements Runnable {
 				rd.forward(req, rsp);
 			}
 			// if null returned, assume we were redirected
-		} catch (ClientSocketException err) {
+		} catch (final ClientSocketException err) {
 			// ignore this error. caused by a browser shutting down the
 			// connection
-		} catch (Throwable err) {
+		} catch (final Throwable err) {
 			boolean ignore = false;
 			for (Throwable t = err; t != null; t = t.getCause()) {
 				if (t instanceof ClientSocketException) {
