@@ -38,6 +38,8 @@ public class BootStrap {
 	private final String[] argv;
 	// arguments from other java code
 	private final Map<String, String> arguments;
+	// usage string
+	private String usage;
 
 	/**
 	 * Build a new instance of BootStrap with command line argument.
@@ -94,7 +96,7 @@ public class BootStrap {
 		}
 		/** is usage request ? */
 		if (args.containsKey("usage") || args.containsKey("help")) {
-			BootStrap.printUsage();
+			printUsage();
 			return server;
 		}
 		/** check embeded */
@@ -104,7 +106,7 @@ public class BootStrap {
 		}
 		/** check parameter validity */
 		if (!args.containsKey("webroot") && !args.containsKey("warfile") && !args.containsKey("webappsDir") && !args.containsKey("hostsDir")) {
-			BootStrap.printUsage();
+			printUsage();
 			return server;
 		}
 		/** compute lib path */
@@ -309,12 +311,27 @@ public class BootStrap {
 	}
 
 	/** print usage */
-	protected static void printUsage() {
+	protected void printUsage() {
 		// if the caller overrides the usage, use that instead.
-		String usage = System.getProperty("winstone.usage");
 		if (usage == null) {
 			usage = WinstoneResourceBundle.getInstance().getString("UsageInstructions", WinstoneResourceBundle.getInstance().getString("ServerVersion"));
 		}
 		System.out.println(usage);
 	}
+
+	/**
+	 * @return the usage
+	 */
+	public final String getUsage() {
+		return usage;
+	}
+
+	/**
+	 * @param usage
+	 *            the usage to set
+	 */
+	public final void setUsage(String usage) {
+		this.usage = usage;
+	}
+
 }
