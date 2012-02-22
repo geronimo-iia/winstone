@@ -203,7 +203,10 @@ public class RequestHandlerThread implements Runnable {
 																			// sockets
 				} catch (final Throwable errClose) {
 				}
-				RequestHandlerThread.logger.error("Error within request handler thread", err);
+				if (!(err instanceof ClientSocketException)) {
+					RequestHandlerThread.logger.error("Error within request handler thread", err);
+				}
+
 			}
 
 			objectPool.releaseRequestHandler(this);
