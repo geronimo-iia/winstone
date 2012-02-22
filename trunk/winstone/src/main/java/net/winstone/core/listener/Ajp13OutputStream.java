@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.http.Cookie;
@@ -59,6 +58,12 @@ public class Ajp13OutputStream extends WinstoneOutputStream {
 	}
 	private final String headerEncoding;
 
+	/**
+	 * Build a new instance of Ajp13OutputStream.
+	 * 
+	 * @param outStream
+	 * @param headerEncoding
+	 */
 	public Ajp13OutputStream(final OutputStream outStream, final String headerEncoding) {
 		super(outStream, false);
 		this.headerEncoding = headerEncoding;
@@ -67,17 +72,14 @@ public class Ajp13OutputStream extends WinstoneOutputStream {
 	@Override
 	public void commit() throws IOException {
 		Ajp13OutputStream.logger.trace("Written {} bytes to response body", "" + bytesCommitted);
-
 		buffer.flush();
-
 		// If we haven't written the headers yet, write them out
 		if (!committed) {
 			owner.validateHeaders();
 			committed = true;
-
 			final ByteArrayOutputStream headerArrayStream = new ByteArrayOutputStream();
-			for (final Iterator<String> i = owner.getHeaders().iterator(); i.hasNext();) {
-				final String header = i.next();
+
+			for (final String header : owner.getHeaders()) {
 				final int colonPos = header.indexOf(':');
 				if (colonPos == -1) {
 					throw new WinstoneException("No colon header: " + header);
@@ -93,8 +95,7 @@ public class Ajp13OutputStream extends WinstoneOutputStream {
 				headerArrayStream.write(getStringBlock(headerValue));
 			}
 
-			for (final Iterator<Cookie> i = owner.getCookies().iterator(); i.hasNext();) {
-				final Cookie cookie = i.next();
+			for (final Cookie cookie : owner.getCookies()) {
 				final String cookieText = owner.writeCookie(cookie);
 				final int colonPos = cookieText.indexOf(':');
 				if (colonPos == -1) {
