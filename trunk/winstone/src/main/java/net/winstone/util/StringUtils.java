@@ -82,7 +82,7 @@ public class StringUtils {
 	 */
 	@Deprecated
 	public static String globalReplace(final String input, final String fromMarker, final String toValue) {
-		final StringBuffer out = new StringBuffer(input);
+		final StringBuilder out = new StringBuilder(input);
 		StringUtils.globalReplace(out, fromMarker, toValue);
 		return out.toString();
 	}
@@ -90,7 +90,7 @@ public class StringUtils {
 	@Deprecated
 	public static String globalReplace(final String input, final String parameters[][]) {
 		if (parameters != null) {
-			final StringBuffer out = new StringBuffer(input);
+			final StringBuilder out = new StringBuilder(input);
 			for (int n = 0; n < parameters.length; n++) {
 				StringUtils.globalReplace(out, parameters[n][0], parameters[n][1]);
 			}
@@ -101,7 +101,7 @@ public class StringUtils {
 	}
 
 	@Deprecated
-	public static void globalReplace(final StringBuffer input, final String fromMarker, final String toValue) {
+	public static void globalReplace(final StringBuilder input, final String fromMarker, final String toValue) {
 		if (input == null) {
 			return;
 		} else if (fromMarker == null) {

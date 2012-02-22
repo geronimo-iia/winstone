@@ -53,8 +53,7 @@ public class RequestHandlerThread implements Runnable {
 	private long requestStartTime;
 	private final boolean simulateModUniqueId;
 	private final boolean saveSessions;
-
-	// private Object processingMonitor = new Boolean(true);
+ 
 
 	/**
 	 * Constructor - this is called by the handler pool, and just sets up for
