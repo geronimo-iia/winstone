@@ -1439,12 +1439,13 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 	 */
 	public SimpleRequestDispatcher getInitialDispatcher(String uriInsideWebapp, final WinstoneRequest request, final WinstoneResponse response) throws IOException {
 		if (!uriInsideWebapp.equals("") && !uriInsideWebapp.startsWith("/")) {
-			return getErrorDispatcherByCode(uriInsideWebapp, HttpServletResponse.SC_BAD_REQUEST, "URI must start with a slash: " + uriInsideWebapp, null);
+			return getErrorDispatcherByCode(uriInsideWebapp, HttpServletResponse.SC_BAD_REQUEST, "URI must start with a slash: " + uriInsideWebapp, new IllegalArgumentException("method=" + request.getMethod() + "\nprotocol=" + request.getProtocol()));
 		} else if (contextStartupError != null) {
 			final StringWriter sw = new StringWriter();
 			final PrintWriter pw = new PrintWriter(sw, true);
 			contextStartupError.printStackTrace(pw);
-			return getErrorDispatcherByCode(uriInsideWebapp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The error below occurred during context initialisation, so no further requests can be \nprocessed:<br><pre>" + sw.toString() + "</pre>", contextStartupError);
+			return getErrorDispatcherByCode(uriInsideWebapp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The error below occurred during context initialisation, so no further requests can be \nprocessed:<br><pre>" + sw.toString() + "</pre>",
+					contextStartupError);
 		}
 
 		// Parse the url for query string, etc
@@ -1543,7 +1544,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 		while ((errPassDown instanceof ServletException) && (((ServletException) errPassDown).getRootCause() != null)) {
 			errPassDown = ((ServletException) errPassDown).getRootCause();
 		}
-		return getErrorDispatcherByCode(null,HttpServletResponse.SC_INTERNAL_SERVER_ERROR, null, errPassDown);
+		return getErrorDispatcherByCode(null, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, null, errPassDown);
 	}
 
 	public SimpleRequestDispatcher getErrorDispatcherByCode(final String requestURI, final int statusCode, final String summaryMessage, final Throwable exception) {
