@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2006 Rick Knowles <winstone-devel at lists sourceforge net>
+  * Copyright 2003-2006 Rick Knowles <winstone-devel at lists sourceforge net>
  * Distributed under the terms of either:
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
@@ -47,7 +47,7 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 	 * Constructor
 	 */
 	public WinstoneOutputStream(final OutputStream out, final boolean bodyOnlyForInclude) {
-		outStream = out;
+		outStream =  new ClientOutputStream(out);
 		bodyOnly = bodyOnlyForInclude;
 		bufferSize = WinstoneOutputStream.DEFAULT_BUFFER_SIZE;
 		committed = false;
