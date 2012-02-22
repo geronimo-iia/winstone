@@ -9,9 +9,7 @@ package net.winstone.core;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -92,6 +90,18 @@ public class WinstoneRequest implements HttpServletRequest {
 	protected String localAddr;
 	protected String localName;
 	protected int localPort;
+	/**
+	 * If true, it indicates that the request body was already consumed because
+	 * of the call to {@link #getParameterMap()} (or its sibling), which
+	 * requires implicit form parameter parsing.
+	 * 
+	 * If false, it indicates that the request body shall not be consumed by the
+	 * said method, because the application already called
+	 * {@link #getInputStream()} and showed the intent to parse the request body
+	 * on its own.
+	 * 
+	 * If null, it indicates that we haven't come to that decision.
+	 */
 	protected Boolean parsedParameters;
 	protected Map<String, String> requestedSessionIds;
 	protected Map<String, String> currentSessionIds;
@@ -510,22 +520,14 @@ public class WinstoneRequest implements HttpServletRequest {
 		if (getContentLength() > 0) {
 			try {
 				WinstoneRequest.logger.debug("Forcing request body parse");
-				// If body not parsed
-				if ((parsedParameters == null) || (parsedParameters.equals(Boolean.FALSE))) {
-					// read full stream length
-					try {
-						final InputStream in = getInputStream();
-						final byte buffer[] = new byte[2048];
-						while (in.read(buffer) != -1) {
-						}
-					} catch (final IllegalStateException err) {
-						final Reader in = getReader();
-						final char buffer[] = new char[2048];
-						while (in.read(buffer) != -1) {
-						}
-					}
-				}
-			} catch (final IOException err) {
+
+				// if there's any input that we haven't consumed, throw them
+				// away, so that the next request parsing
+				// will start from the right position.
+				byte buffer[] = new byte[2048];
+				while ((this.inputData.read(buffer)) != -1)
+					;
+			} catch (IOException err) {
 				WinstoneRequest.logger.error("Forcing request body parse", err);
 			}
 		}
