@@ -220,7 +220,7 @@ public class HostConfiguration implements Runnable {
 			} else {
 				// compute which temp directory to use
 				String tempDirectory = StringUtils.stringArg(args, "tempDirectory", null);
-				String child = "winstone" + File.pathSeparator;
+				String child = "winstone" + File.separator;
 				if (tempDirectory == null) {
 					// find default temp directory
 					// System.getProperty("");
@@ -229,11 +229,11 @@ public class HostConfiguration implements Runnable {
 					tempFile.delete();
 					final String userName = System.getProperty("user.name");
 					if (userName != null) {
-						child += StringUtils.replace(userName, new String[][] { { "/", "" }, { "\\", "" }, { ",", "" } }) + File.pathSeparator;
+						child += StringUtils.replace(userName, new String[][] { { "/", "" }, { "\\", "" }, { ",", "" } }) + File.separator;
 					}
 				}
 				if (hostname != null) {
-					child += hostname + File.pathSeparator;
+					child += hostname + File.separator;
 				}
 				child += warfileRef.getName();
 				unzippedDir = new File(tempDirectory, child);
