@@ -426,7 +426,11 @@ public class WinstoneResponse implements HttpServletResponse {
 		if (outputWriter != null) {
 			outputWriter.flush();
 		}
-		outputStream.flush();
+		try {
+			this.outputStream.flush();
+		} catch (ClientSocketException e) {
+			// ignore this error as it's not interesting enough to log
+		}
 	}
 
 	@Override
@@ -812,7 +816,8 @@ public class WinstoneResponse implements HttpServletResponse {
 		if (errorStatusCode == null) {
 			statusCode = sc;
 		}
-		final String output = WinstoneResourceBundle.getInstance().getString("WinstoneResponse.ErrorPage", sc + "", (msg == null ? "" : StringUtils.htmlEscapeBasicMarkup(msg)), "", WinstoneResourceBundle.getInstance().getString("ServerVersion"), "" + new Date());
+		final String output = WinstoneResourceBundle.getInstance().getString("WinstoneResponse.ErrorPage", sc + "", (msg == null ? "" : StringUtils.htmlEscapeBasicMarkup(msg)), "", WinstoneResourceBundle.getInstance().getString("ServerVersion"),
+				"" + new Date());
 		setContentLength(output.getBytes(getCharacterEncoding()).length);
 		final Writer out = getWriter();
 		out.write(output);
