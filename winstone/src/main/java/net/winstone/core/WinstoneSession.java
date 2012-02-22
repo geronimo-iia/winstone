@@ -51,13 +51,13 @@ public class WinstoneSession implements HttpSession, Serializable {
 	public static final String SESSION_COOKIE_NAME = "JSESSIONID";
 	private String sessionId;
 	private WebAppConfiguration webAppConfig;
-	private Map<String, Object> sessionData = new HashMap<String, Object>();
-	private Set<WinstoneRequest> requestsUsingMe = new HashSet<WinstoneRequest>();
-	private long createTime = System.currentTimeMillis();
+	private Map<String, Object> sessionData;
+	private Set<WinstoneRequest> requestsUsingMe;
+	private long createTime;
 	private long lastAccessedTime;
 	private int maxInactivePeriod;
-	private boolean isNew = Boolean.TRUE;
-	private boolean isInvalidated = Boolean.FALSE;
+	private boolean isNew;
+	private boolean isInvalidated;
 	private HttpSessionAttributeListener sessionAttributeListeners[];
 	private HttpSessionListener sessionListeners[];
 	private HttpSessionActivationListener sessionActivationListeners[];
@@ -70,6 +70,11 @@ public class WinstoneSession implements HttpSession, Serializable {
 	public WinstoneSession(final String sessionId) {
 		super();
 		this.sessionId = sessionId;
+		this.sessionData = new HashMap<String, Object>();
+		this.requestsUsingMe = Collections.synchronizedSet(new HashSet<WinstoneRequest>());
+		this.createTime = System.currentTimeMillis();
+		this.isNew = Boolean.TRUE;
+		this.isInvalidated = Boolean.FALSE;
 	}
 
 	public void setWebAppConfiguration(final WebAppConfiguration webAppConfig) {
@@ -486,7 +491,7 @@ public class WinstoneSession implements HttpSession, Serializable {
 
 		// Read the map
 		sessionData = new HashMap<String, Object>();
-		requestsUsingMe = new HashSet<WinstoneRequest>();
+		requestsUsingMe =Collections.synchronizedSet(new HashSet<WinstoneRequest>());
 		final int entryCount = in.readInt();
 		for (int n = 0; n < entryCount; n++) {
 			final String key = in.readUTF();
