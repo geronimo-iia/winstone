@@ -23,7 +23,7 @@ public class StringUtils {
 	}
 
 	public static int intArg(final Map<String, String> args, final String name, final int defaultValue) {
-		return Integer.parseInt(stringArg(args, name, Integer.toString(defaultValue)));
+		return Integer.parseInt(StringUtils.stringArg(args, name, Integer.toString(defaultValue)));
 	}
 
 	/**
@@ -70,7 +70,7 @@ public class StringUtils {
 		if (parameters != null) {
 			final StringBuffer out = new StringBuffer(input);
 			for (int n = 0; n < parameters.length; n++) {
-				globalReplace(out, parameters[n][0], parameters[n][1]);
+				StringUtils.globalReplace(out, parameters[n][0], parameters[n][1]);
 			}
 			return out.toString();
 		} else {
@@ -121,7 +121,7 @@ public class StringUtils {
 		if ((tokens != null) && (input != null)) {
 			String out = input;
 			for (int n = 0; n < tokens.length; n++) {
-				out = replace(out, tokens[n][0], tokens[n][1]);
+				out = StringUtils.replace(out, tokens[n][0], tokens[n][1]);
 			}
 			return out;
 		} else {

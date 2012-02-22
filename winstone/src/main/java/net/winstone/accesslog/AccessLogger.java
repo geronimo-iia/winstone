@@ -18,12 +18,12 @@ import net.winstone.core.WinstoneResponse;
  */
 public interface AccessLogger {
 
-    /**
-     * log access.
-     * 
-     * @param originalURL
-     * @param request
-     * @param response
-     */
-    public void log(final String originalURL, final WinstoneRequest request, final WinstoneResponse response);
+	/**
+	 * log access.
+	 * 
+	 * @param originalURL
+	 * @param request
+	 * @param response
+	 */
+	public void log(final String originalURL, final WinstoneRequest request, final WinstoneResponse response);
 }

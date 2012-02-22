@@ -9,15 +9,13 @@ package net.winstone.testCase.load;
 import java.io.IOException;
 import java.io.InputStream;
 
-
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
-
 
 import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
-import org.slf4j.LoggerFactory;
 
 /**
  * A single worked thread in the load testing program
@@ -27,90 +25,88 @@ import org.slf4j.LoggerFactory;
  */
 public class LoadTestThread implements Runnable {
 
-    protected static org.slf4j.Logger logger = LoggerFactory.getLogger(LoadTestThread.class);
-    private String url;
-    private long delayBeforeStarting;
-    private LoadTest loadTest;
-    private WebConversation webConv;
-    private Thread thread;
-    private boolean interrupted;
-    private LoadTestThread next;
+	protected static org.slf4j.Logger logger = LoggerFactory.getLogger(LoadTestThread.class);
+	private final String url;
+	private final long delayBeforeStarting;
+	private final LoadTest loadTest;
+	private WebConversation webConv;
+	private final Thread thread;
+	private boolean interrupted;
+	private LoadTestThread next;
 
-    public LoadTestThread(String url, LoadTest loadTest, WebConversation webConv, int delayedThreads) {
-        this.url = url;
-        this.loadTest = loadTest;
-        this.webConv = webConv;
-        this.delayBeforeStarting = 1000 * delayedThreads;
-        this.interrupted = false;
-        this.thread = new Thread(this);
-        this.thread.setDaemon(true);
-        this.thread.start();
+	public LoadTestThread(final String url, final LoadTest loadTest, final WebConversation webConv, final int delayedThreads) {
+		this.url = url;
+		this.loadTest = loadTest;
+		this.webConv = webConv;
+		delayBeforeStarting = 1000 * delayedThreads;
+		interrupted = false;
+		thread = new Thread(this);
+		thread.setDaemon(true);
+		thread.start();
 
-        // Launch the next second's getter
-        if (delayedThreads > 0) {
-            this.next = new LoadTestThread(url, loadTest, webConv, delayedThreads - 1);
-        }
-    }
+		// Launch the next second's getter
+		if (delayedThreads > 0) {
+			next = new LoadTestThread(url, loadTest, webConv, delayedThreads - 1);
+		}
+	}
 
-    @Override
-    public void run() {
-        if (this.delayBeforeStarting > 0) {
-            try {
-                Thread.sleep(this.delayBeforeStarting);
-            } catch (InterruptedException err) {
-            }
-        }
+	@Override
+	public void run() {
+		if (delayBeforeStarting > 0) {
+			try {
+				Thread.sleep(delayBeforeStarting);
+			} catch (final InterruptedException err) {
+			}
+		}
 
-        long startTime = System.currentTimeMillis();
+		final long startTime = System.currentTimeMillis();
 
-        try {
-            if (this.webConv == null) {
-                this.webConv = new WebConversation();
-            }
+		try {
+			if (webConv == null) {
+				webConv = new WebConversation();
+			}
 
-            // Access the URL
-            WebRequest wreq = new GetMethodWebRequest(this.url);
-            WebResponse wresp = this.webConv.getResponse(wreq);
-            int responseCode = wresp.getResponseCode();
-            if (responseCode >= 400) {
-                throw new IOException("Failed with status " + responseCode);
-            }
-            InputStream inContent = wresp.getInputStream();
-            int contentLength = wresp.getContentLength();
-            byte content[] = new byte[contentLength == -1 ? 100 * 1024
-                    : contentLength];
-            int position = 0;
-            int value = inContent.read();
-            while ((value != -1)
-                    && (((contentLength >= 0) && (position < contentLength)) || (contentLength < 0))) {
-                content[position++] = (byte) value;
-                value = inContent.read();
-            }
-            inContent.close();
+			// Access the URL
+			final WebRequest wreq = new GetMethodWebRequest(url);
+			final WebResponse wresp = webConv.getResponse(wreq);
+			final int responseCode = wresp.getResponseCode();
+			if (responseCode >= 400) {
+				throw new IOException("Failed with status " + responseCode);
+			}
+			final InputStream inContent = wresp.getInputStream();
+			final int contentLength = wresp.getContentLength();
+			final byte content[] = new byte[contentLength == -1 ? 100 * 1024 : contentLength];
+			int position = 0;
+			int value = inContent.read();
+			while ((value != -1) && (((contentLength >= 0) && (position < contentLength)) || (contentLength < 0))) {
+				content[position++] = (byte) value;
+				value = inContent.read();
+			}
+			inContent.close();
 
-            // Confirm the result is the same size the content-length said it
-            // was
-            if ((position == contentLength) || (contentLength == -1)) {
-                if (this.interrupted) {
-                    return;
-                }
-                this.loadTest.incTimeTotal(System.currentTimeMillis() - startTime);
-                this.loadTest.incSuccessCount();
-            } else {
-                throw new IOException("Only downloaded " + position + " of " + contentLength + " bytes");
-            }
-        } catch (IOException err) {
-            logger.debug("Error in response", err);
-        } catch (SAXException err) {
-            logger.debug("Error in response", err);
-        }
-    }
+			// Confirm the result is the same size the content-length said it
+			// was
+			if ((position == contentLength) || (contentLength == -1)) {
+				if (interrupted) {
+					return;
+				}
+				loadTest.incTimeTotal(System.currentTimeMillis() - startTime);
+				loadTest.incSuccessCount();
+			} else {
+				throw new IOException("Only downloaded " + position + " of " + contentLength + " bytes");
+			}
+		} catch (final IOException err) {
+			LoadTestThread.logger.debug("Error in response", err);
+		} catch (final SAXException err) {
+			LoadTestThread.logger.debug("Error in response", err);
+		}
+	}
 
-    public void destroy() {
-        this.interrupted = true;
-        this.thread.interrupt();
-        if (this.next != null) {
-            this.next.destroy();
-        }
-    }
+	public void destroy() {
+		interrupted = true;
+		thread.interrupt();
+		if (next != null) {
+			next.destroy();
+		}
+	}
 }

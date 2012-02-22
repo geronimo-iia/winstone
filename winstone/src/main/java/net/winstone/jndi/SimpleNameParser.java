@@ -22,16 +22,16 @@ public class SimpleNameParser implements NameParser {
 	private static final transient Properties syntax = new Properties();
 
 	static {
-		syntax.put("jndi.syntax.direction", "left_to_right");
-		syntax.put("jndi.syntax.separator", "/");
-		syntax.put("jndi.syntax.ignorecase", "false");
-		syntax.put("jndi.syntax.escape", "\\");
-		syntax.put("jndi.syntax.beginquote", "'");
+		SimpleNameParser.syntax.put("jndi.syntax.direction", "left_to_right");
+		SimpleNameParser.syntax.put("jndi.syntax.separator", "/");
+		SimpleNameParser.syntax.put("jndi.syntax.ignorecase", "false");
+		SimpleNameParser.syntax.put("jndi.syntax.escape", "\\");
+		SimpleNameParser.syntax.put("jndi.syntax.beginquote", "'");
 	}
 
 	@Override
 	public Name parse(final String name) throws NamingException {
-		return new CompoundName(name != null ? name : "", syntax);
+		return new CompoundName(name != null ? name : "", SimpleNameParser.syntax);
 	}
 
 	@Override

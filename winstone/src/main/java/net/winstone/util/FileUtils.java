@@ -131,7 +131,7 @@ public class FileUtils {
 	 * @throws IOException
 	 */
 	public static void copyStream(final InputStream in, final OutputStream out) throws IOException {
-		copyStream(in, out, -1);
+		FileUtils.copyStream(in, out, -1);
 	}
 
 	/**

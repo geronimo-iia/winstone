@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.Stack;
 
 import javax.servlet.http.Cookie;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,89 +46,89 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 	/**
 	 * Constructor
 	 */
-	public WinstoneOutputStream(OutputStream out, boolean bodyOnlyForInclude) {
-		this.outStream = out;
-		this.bodyOnly = bodyOnlyForInclude;
-		this.bufferSize = DEFAULT_BUFFER_SIZE;
-		this.committed = false;
+	public WinstoneOutputStream(final OutputStream out, final boolean bodyOnlyForInclude) {
+		outStream = out;
+		bodyOnly = bodyOnlyForInclude;
+		bufferSize = WinstoneOutputStream.DEFAULT_BUFFER_SIZE;
+		committed = false;
 		// this.headersWritten = false;
-		this.buffer = new ByteArrayOutputStream();
+		buffer = new ByteArrayOutputStream();
 	}
 
-	public void setResponse(WinstoneResponse response) {
-		this.owner = response;
+	public void setResponse(final WinstoneResponse response) {
+		owner = response;
 	}
 
 	public int getBufferSize() {
-		return this.bufferSize;
+		return bufferSize;
 	}
 
-	public void setBufferSize(int bufferSize) {
-		if (this.owner.isCommitted()) {
+	public void setBufferSize(final int bufferSize) {
+		if (owner.isCommitted()) {
 			throw new IllegalStateException("OutputStream already committed");
 		}
 		this.bufferSize = bufferSize;
 	}
 
 	public boolean isCommitted() {
-		return this.committed;
+		return committed;
 	}
 
 	public long getOutputStreamLength() {
-		return this.bytesCommitted + this.bufferPosition;
+		return bytesCommitted + bufferPosition;
 	}
 
 	public long getBytesCommitted() {
-		return this.bytesCommitted;
+		return bytesCommitted;
 	}
 
-	public void setDisregardMode(boolean disregard) {
-		this.disregardMode = disregard;
+	public void setDisregardMode(final boolean disregard) {
+		disregardMode = disregard;
 	}
 
-	public void setClosed(boolean closed) {
+	public void setClosed(final boolean closed) {
 		this.closed = closed;
 	}
 
 	@Override
-	public synchronized void write(int oneChar) throws IOException {
-		if (this.disregardMode || this.closed) {
+	public synchronized void write(final int oneChar) throws IOException {
+		if (disregardMode || closed) {
 			return;
-		} else if ((this.contentLengthFromHeader != -1) && (this.bytesCommitted >= this.contentLengthFromHeader)) {
+		} else if ((contentLengthFromHeader != -1) && (bytesCommitted >= contentLengthFromHeader)) {
 			return;
 		}
 		// System.out.println("Out: " + this.bufferPosition + " char=" +
 		// (char)oneChar);
-		this.buffer.write(oneChar);
-		this.bufferPosition++;
+		buffer.write(oneChar);
+		bufferPosition++;
 		// if (this.headersWritten)
-		if (this.bufferPosition >= this.bufferSize) {
+		if (bufferPosition >= bufferSize) {
 			commit();
-		} else if ((this.contentLengthFromHeader != -1) && ((this.bufferPosition + this.bytesCommitted) >= this.contentLengthFromHeader)) {
+		} else if ((contentLengthFromHeader != -1) && ((bufferPosition + bytesCommitted) >= contentLengthFromHeader)) {
 			commit();
 		}
 	}
 
 	@Override
-	public synchronized void write(byte b[], int off, int len) throws IOException {
+	public synchronized void write(final byte b[], final int off, final int len) throws IOException {
 		if (b == null) {
 			throw new NullPointerException();
 		} else if ((off < 0) || (off > b.length) || (len < 0) || ((off + len) > b.length) || ((off + len) < 0)) {
 			throw new IndexOutOfBoundsException();
 		} else if (len == 0) {
 			return;
-		} else if (this.disregardMode || this.closed) {
+		} else if (disregardMode || closed) {
 			return;
-		} else if ((this.contentLengthFromHeader != -1) && (this.bytesCommitted >= this.contentLengthFromHeader)) {
+		} else if ((contentLengthFromHeader != -1) && (bytesCommitted >= contentLengthFromHeader)) {
 			return;
 		}
-		int actualLength = Math.min(len, this.bufferSize - this.bufferPosition);
-		this.buffer.write(b, off, actualLength);
-		this.bufferPosition += actualLength;
+		final int actualLength = Math.min(len, bufferSize - bufferPosition);
+		buffer.write(b, off, actualLength);
+		bufferPosition += actualLength;
 		// if (this.headersWritten)
-		if (this.bufferPosition >= this.bufferSize) {
+		if (bufferPosition >= bufferSize) {
 			commit();
-		} else if ((this.contentLengthFromHeader != -1) && ((this.bufferPosition + this.bytesCommitted) >= this.contentLengthFromHeader)) {
+		} else if ((contentLengthFromHeader != -1) && ((bufferPosition + bytesCommitted) >= contentLengthFromHeader)) {
 			commit();
 		}
 
@@ -138,101 +139,102 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 	}
 
 	public void commit() throws IOException {
-		this.buffer.flush();
+		buffer.flush();
 
 		// If we haven't written the headers yet, write them out
-		if (!this.committed && !this.bodyOnly) {
-			this.owner.validateHeaders();
-			this.committed = true;
-			String contentLengthHeader = this.owner.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
+		if (!committed && !bodyOnly) {
+			owner.validateHeaders();
+			committed = true;
+			final String contentLengthHeader = owner.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
 			if (contentLengthHeader != null) {
-				this.contentLengthFromHeader = Long.parseLong(contentLengthHeader);
+				contentLengthFromHeader = Long.parseLong(contentLengthHeader);
 			}
-			logger.debug("Committing response body");
+			WinstoneOutputStream.logger.debug("Committing response body");
 
-			int statusCode = this.owner.getStatus();
-			HttpProtocole reason = HttpProtocole.valueOf("HTTP_" + Integer.toString(statusCode));
-			String statusLine = this.owner.getProtocol() + " " + statusCode + " " + (reason == null ? "No reason" : reason.toString());
-			this.outStream.write(statusLine.getBytes("8859_1"));
-			this.outStream.write(CR_LF);
-			logger.debug("Response: " + statusLine);
+			final int statusCode = owner.getStatus();
+			final HttpProtocole reason = HttpProtocole.valueOf("HTTP_" + Integer.toString(statusCode));
+			final String statusLine = owner.getProtocol() + " " + statusCode + " " + (reason == null ? "No reason" : reason.toString());
+			outStream.write(statusLine.getBytes("8859_1"));
+			outStream.write(WinstoneOutputStream.CR_LF);
+			WinstoneOutputStream.logger.debug("Response: " + statusLine);
 
 			// Write headers and cookies
-			for (Iterator<String> i = this.owner.getHeaders().iterator(); i.hasNext();) {
-				String header = (String) i.next();
-				this.outStream.write(header.getBytes("8859_1"));
-				this.outStream.write(CR_LF);
-				logger.debug("Header: " + header);
+			for (final Iterator<String> i = owner.getHeaders().iterator(); i.hasNext();) {
+				final String header = i.next();
+				outStream.write(header.getBytes("8859_1"));
+				outStream.write(WinstoneOutputStream.CR_LF);
+				WinstoneOutputStream.logger.debug("Header: " + header);
 			}
 
-			if (!this.owner.getHeaders().isEmpty()) {
-				for (Iterator<Cookie> i = this.owner.getCookies().iterator(); i.hasNext();) {
-					Cookie cookie = (Cookie) i.next();
-					String cookieText = this.owner.writeCookie(cookie);
-					this.outStream.write(cookieText.getBytes("8859_1"));
-					this.outStream.write(CR_LF);
-					logger.debug("Header: " + cookieText);
+			if (!owner.getHeaders().isEmpty()) {
+				for (final Iterator<Cookie> i = owner.getCookies().iterator(); i.hasNext();) {
+					final Cookie cookie = i.next();
+					final String cookieText = owner.writeCookie(cookie);
+					outStream.write(cookieText.getBytes("8859_1"));
+					outStream.write(WinstoneOutputStream.CR_LF);
+					WinstoneOutputStream.logger.debug("Header: " + cookieText);
 				}
 			}
-			this.outStream.write(CR_LF);
-			this.outStream.flush();
+			outStream.write(WinstoneOutputStream.CR_LF);
+			outStream.flush();
 			// Logger.log(Logger.FULL_DEBUG,
 			// Launcher.RESOURCES.getString("HttpProtocol.OutHeaders") +
 			// out.toString());
 		}
-		byte content[] = this.buffer.toByteArray();
+		final byte content[] = buffer.toByteArray();
 		// winstone.ajp13.Ajp13Listener.packetDump(content, content.length);
 		// this.buffer.writeTo(this.outStream);
 		int commitLength = content.length;
-		if (this.contentLengthFromHeader != -1) {
-			long delta = this.contentLengthFromHeader - this.bytesCommitted;
-			if (delta < Integer.MAX_VALUE)
+		if (contentLengthFromHeader != -1) {
+			final long delta = contentLengthFromHeader - bytesCommitted;
+			if (delta < Integer.MAX_VALUE) {
 				commitLength = Math.min((int) delta, content.length);
-			else
+			} else {
 				commitLength = content.length;
+			}
 		}
 		if (commitLength > 0) {
-			this.outStream.write(content, 0, commitLength);
+			outStream.write(content, 0, commitLength);
 		}
-		this.outStream.flush();
-		logger.debug("Written {} bytes to response body", Long.toString(this.bytesCommitted + commitLength));
+		outStream.flush();
+		WinstoneOutputStream.logger.debug("Written {} bytes to response body", Long.toString(bytesCommitted + commitLength));
 
-		this.bytesCommitted += commitLength;
-		this.buffer.reset();
-		this.bufferPosition = 0;
+		bytesCommitted += commitLength;
+		buffer.reset();
+		bufferPosition = 0;
 	}
 
 	public void reset() {
 		if (isCommitted()) {
 			throw new IllegalStateException("OutputStream already committed");
 		} else {
-			logger.debug("WResetting buffer - discarding {} bytes", Integer.toString(this.bufferPosition));
-			this.buffer.reset();
-			this.bufferPosition = 0;
-			this.bytesCommitted = 0;
+			WinstoneOutputStream.logger.debug("WResetting buffer - discarding {} bytes", Integer.toString(bufferPosition));
+			buffer.reset();
+			bufferPosition = 0;
+			bytesCommitted = 0;
 		}
 	}
 
 	public void finishResponse() throws IOException {
-		this.outStream.flush();
-		this.outStream = null;
+		outStream.flush();
+		outStream = null;
 	}
 
 	@Override
 	public void flush() throws IOException {
-		if (this.disregardMode) {
+		if (disregardMode) {
 			return;
 		}
-		logger.debug("ServletOutputStream flushed");
-		this.buffer.flush();
-		this.commit();
+		WinstoneOutputStream.logger.debug("ServletOutputStream flushed");
+		buffer.flush();
+		commit();
 	}
 
 	@Override
 	public void close() throws IOException {
-		if (!isCommitted() && !this.disregardMode && !this.closed && (this.owner.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER) == null)) {
-			if ((this.owner != null) && !this.bodyOnly) {
-				this.owner.setContentLength(getOutputStreamLength());
+		if (!isCommitted() && !disregardMode && !closed && (owner.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER) == null)) {
+			if ((owner != null) && !bodyOnly) {
+				owner.setContentLength(getOutputStreamLength());
 			}
 		}
 		flush();
@@ -240,26 +242,26 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 
 	// Include related buffering
 	public boolean isIncluding() {
-		return (this.includeByteStreams != null && !this.includeByteStreams.isEmpty());
+		return ((includeByteStreams != null) && !includeByteStreams.isEmpty());
 	}
 
 	public void startIncludeBuffer() {
-		synchronized (this.buffer) {
-			if (this.includeByteStreams == null) {
-				this.includeByteStreams = new Stack<ByteArrayOutputStream>();
+		synchronized (buffer) {
+			if (includeByteStreams == null) {
+				includeByteStreams = new Stack<ByteArrayOutputStream>();
 			}
 		}
-		this.includeByteStreams.push(new ByteArrayOutputStream());
+		includeByteStreams.push(new ByteArrayOutputStream());
 	}
 
 	public void finishIncludeBuffer() throws IOException {
 		if (isIncluding()) {
-			ByteArrayOutputStream body = (ByteArrayOutputStream) this.includeByteStreams.pop();
-			OutputStream topStream = this.outStream;
-			if (!this.includeByteStreams.isEmpty()) {
-				topStream = (OutputStream) this.includeByteStreams.peek();
+			final ByteArrayOutputStream body = includeByteStreams.pop();
+			OutputStream topStream = outStream;
+			if (!includeByteStreams.isEmpty()) {
+				topStream = includeByteStreams.peek();
 			}
-			byte bodyArr[] = body.toByteArray();
+			final byte bodyArr[] = body.toByteArray();
 			if (bodyArr.length > 0) {
 				topStream.write(bodyArr);
 			}
@@ -269,10 +271,10 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 
 	public void clearIncludeStackForForward() throws IOException {
 		if (isIncluding()) {
-			for (Iterator<ByteArrayOutputStream> i = this.includeByteStreams.iterator(); i.hasNext();) {
-				((ByteArrayOutputStream) i.next()).close();
+			for (final Iterator<ByteArrayOutputStream> i = includeByteStreams.iterator(); i.hasNext();) {
+				i.next().close();
 			}
-			this.includeByteStreams.clear();
+			includeByteStreams.clear();
 		}
 	}
 }

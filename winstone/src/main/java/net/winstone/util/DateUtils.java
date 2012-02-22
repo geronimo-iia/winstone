@@ -15,7 +15,7 @@ public class DateUtils {
 		shortFormat = new SimpleDateFormat("MMM dd HH:mm");
 		longFormat = new SimpleDateFormat("MMM dd yyyy");
 		gmtFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.US);
-		gmtFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		DateUtils.gmtFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 	}
 
 	/**
@@ -23,7 +23,7 @@ public class DateUtils {
 	 * @return a date string formatted in gmt style.
 	 */
 	public static String getGmt(final Date date) {
-		return gmtFormat.format(date) + " GMT";
+		return DateUtils.gmtFormat.format(date) + " GMT";
 	}
 
 	/**
@@ -35,9 +35,9 @@ public class DateUtils {
 	 */
 	public static String lsDateStr(final Date date) {
 		if (Math.abs(System.currentTimeMillis() - date.getTime()) < (183L * 24L * 60L * 60L * 1000L)) {
-			return shortFormat.format(date);
+			return DateUtils.shortFormat.format(date);
 		}
-		return longFormat.format(date);
+		return DateUtils.longFormat.format(date);
 	}
 
 }

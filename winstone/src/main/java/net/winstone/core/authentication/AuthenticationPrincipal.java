@@ -15,50 +15,52 @@ import java.util.List;
  * authenticated user.
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
- * @version $Id: AuthenticationPrincipal.java,v 1.2 2006/02/28 07:32:47 rickknowles Exp $
+ * @version $Id: AuthenticationPrincipal.java,v 1.2 2006/02/28 07:32:47
+ *          rickknowles Exp $
  */
 public class AuthenticationPrincipal implements Principal, Serializable {
-    private static final long serialVersionUID = 3716429852671570273L;
-    private String userName;
-    private String password;
-    private List<String> roles;
-    private String authenticationType;
+	private static final long serialVersionUID = 3716429852671570273L;
+	private final String userName;
+	private final String password;
+	private final List<String> roles;
+	private String authenticationType;
 
-    /**
-     * Constructor
-     */
-    public AuthenticationPrincipal(String userName, String password, List<String> roles) {
-        this.userName = userName;
-        this.password = password;
-        this.roles = roles;
-    }
+	/**
+	 * Constructor
+	 */
+	public AuthenticationPrincipal(final String userName, final String password, final List<String> roles) {
+		this.userName = userName;
+		this.password = password;
+		this.roles = roles;
+	}
 
-    @Override
-    public String getName() {
-        return this.userName;
-    }
+	@Override
+	public String getName() {
+		return userName;
+	}
 
-    public String getPassword() {
-        return this.password;
-    }
+	public String getPassword() {
+		return password;
+	}
 
-    public String getAuthType() {
-        return this.authenticationType;
-    }
+	public String getAuthType() {
+		return authenticationType;
+	}
 
-    public void setAuthType(String authType) {
-        this.authenticationType = authType;
-    }
+	public void setAuthType(final String authType) {
+		authenticationType = authType;
+	}
 
-    /**
-     * Searches for the requested role in this user's roleset.
-     */
-    public boolean isUserIsInRole(String role) {
-        if (this.roles == null)
-            return false;
-        else if (role == null)
-            return false;
-        else
-            return this.roles.contains(role);
-    }
+	/**
+	 * Searches for the requested role in this user's roleset.
+	 */
+	public boolean isUserIsInRole(final String role) {
+		if (roles == null) {
+			return false;
+		} else if (role == null) {
+			return false;
+		} else {
+			return roles.contains(role);
+		}
+	}
 }

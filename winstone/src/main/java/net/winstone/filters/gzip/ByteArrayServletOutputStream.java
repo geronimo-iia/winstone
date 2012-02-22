@@ -26,27 +26,28 @@ import javax.servlet.ServletOutputStream;
  * Acts as a simple byte array based output stream for servlet responses.
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
- * @version $Id: ByteArrayServletOutputStream.java,v 1.1 2005/08/24 06:43:34 rickknowles Exp $
+ * @version $Id: ByteArrayServletOutputStream.java,v 1.1 2005/08/24 06:43:34
+ *          rickknowles Exp $
  */
 public class ByteArrayServletOutputStream extends ServletOutputStream {
-    
-    private ByteArrayOutputStream bodyStream;
-    
-    public ByteArrayServletOutputStream() {
-        this.bodyStream = new ByteArrayOutputStream();
-    }
-    
-    public byte[] getContent() {
-        return this.bodyStream.toByteArray();
-    }
-    
-    @Override
-    public void write(int b) throws IOException {
-        this.bodyStream.write(b);
-    }
 
-    @Override
-    public void flush() throws IOException {
-        this.bodyStream.flush();
-    }
+	private final ByteArrayOutputStream bodyStream;
+
+	public ByteArrayServletOutputStream() {
+		bodyStream = new ByteArrayOutputStream();
+	}
+
+	public byte[] getContent() {
+		return bodyStream.toByteArray();
+	}
+
+	@Override
+	public void write(final int b) throws IOException {
+		bodyStream.write(b);
+	}
+
+	@Override
+	public void flush() throws IOException {
+		bodyStream.flush();
+	}
 }

@@ -52,16 +52,17 @@ public final class Base64 {
 			}
 
 			if (thisPassInBytes == 2) {
-				final int outBuffer = ((B64_DECODE_ARRAY[input[inIndex]] & 0xFF) << 18) | ((B64_DECODE_ARRAY[input[inIndex + 1]] & 0xFF) << 12);
+				final int outBuffer = ((Base64.B64_DECODE_ARRAY[input[inIndex]] & 0xFF) << 18) | ((Base64.B64_DECODE_ARRAY[input[inIndex + 1]] & 0xFF) << 12);
 				output[outIndex] = (byte) ((outBuffer >> 16) & 0xFF);
 				outIndex += 1;
 			} else if (thisPassInBytes == 3) {
-				final int outBuffer = ((B64_DECODE_ARRAY[input[inIndex]] & 0xFF) << 18) | ((B64_DECODE_ARRAY[input[inIndex + 1]] & 0xFF) << 12) | ((B64_DECODE_ARRAY[input[inIndex + 2]] & 0xFF) << 6);
+				final int outBuffer = ((Base64.B64_DECODE_ARRAY[input[inIndex]] & 0xFF) << 18) | ((Base64.B64_DECODE_ARRAY[input[inIndex + 1]] & 0xFF) << 12) | ((Base64.B64_DECODE_ARRAY[input[inIndex + 2]] & 0xFF) << 6);
 				output[outIndex] = (byte) ((outBuffer >> 16) & 0xFF);
 				output[outIndex + 1] = (byte) ((outBuffer >> 8) & 0xFF);
 				outIndex += 2;
 			} else if (thisPassInBytes == 4) {
-				final int outBuffer = ((B64_DECODE_ARRAY[input[inIndex]] & 0xFF) << 18) | ((B64_DECODE_ARRAY[input[inIndex + 1]] & 0xFF) << 12) | ((B64_DECODE_ARRAY[input[inIndex + 2]] & 0xFF) << 6) | (B64_DECODE_ARRAY[input[inIndex + 3]] & 0xFF);
+				final int outBuffer = ((Base64.B64_DECODE_ARRAY[input[inIndex]] & 0xFF) << 18) | ((Base64.B64_DECODE_ARRAY[input[inIndex + 1]] & 0xFF) << 12) | ((Base64.B64_DECODE_ARRAY[input[inIndex + 2]] & 0xFF) << 6)
+						| (Base64.B64_DECODE_ARRAY[input[inIndex + 3]] & 0xFF);
 				output[outIndex] = (byte) ((outBuffer >> 16) & 0xFF);
 				output[outIndex + 1] = (byte) ((outBuffer >> 8) & 0xFF);
 				output[outIndex + 2] = (byte) (outBuffer & 0xFF);

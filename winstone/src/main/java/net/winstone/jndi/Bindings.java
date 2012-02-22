@@ -30,14 +30,14 @@ public class Bindings implements NamingEnumeration<Binding> {
 		super();
 		this.context = context;
 		this.environnement = environnement;
-		this.iterator = bindings.entrySet().iterator();
+		iterator = bindings.entrySet().iterator();
 	}
 
 	@Override
 	public void close() throws NamingException {
-		this.context = null;
-		this.environnement = null;
-		this.iterator = null;
+		context = null;
+		environnement = null;
+		iterator = null;
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class Bindings implements NamingEnumeration<Binding> {
 			final String name = entry.getKey();
 			Object value = entry.getValue();
 			try {
-				value = NamingManager.getObjectInstance(value, new CompositeName().add(name), this.context, this.environnement);
+				value = NamingManager.getObjectInstance(value, new CompositeName().add(name), context, environnement);
 			} catch (final Throwable err) {
 				final NamingException errNaming = new NamingException("Failed To Get Instance ");
 				errNaming.setRootCause(err);

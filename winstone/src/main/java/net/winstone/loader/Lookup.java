@@ -5,8 +5,8 @@ package net.winstone.loader;
  * 
  * 
  * @author Jerome Guibert
- *
+ * 
  */
 public class Lookup {
-    
+
 }

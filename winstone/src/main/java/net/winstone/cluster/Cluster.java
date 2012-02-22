@@ -24,30 +24,36 @@ import net.winstone.core.WinstoneSession;
  */
 public interface Cluster {
 
-    /**
-     * Destroy the maintenance thread if there is one. Prepare for shutdown
-     */
-    public void destroy();
+	/**
+	 * Destroy the maintenance thread if there is one. Prepare for shutdown
+	 */
+	public void destroy();
 
-    /**
-     * Check if the other nodes in this cluster have a session for this
-     * sessionId.
-     * 
-     * @param sessionId The id of the session to check for
-     * @param webAppConfig The web app that owns the session we want
-     * @return A valid session instance
-     */
-    public WinstoneSession askClusterForSession(final String sessionId, final WebAppConfiguration webAppConfig);
+	/**
+	 * Check if the other nodes in this cluster have a session for this
+	 * sessionId.
+	 * 
+	 * @param sessionId
+	 *            The id of the session to check for
+	 * @param webAppConfig
+	 *            The web app that owns the session we want
+	 * @return A valid session instance
+	 */
+	public WinstoneSession askClusterForSession(final String sessionId, final WebAppConfiguration webAppConfig);
 
-    /**
-     * Accept a control socket request related to the cluster functions and
-     * process the request.
-     * 
-     * @param requestType A byte indicating the request type
-     * @param in Socket input stream
-     * @param outSocket output stream
-     * @param hostConfig The collection of all local webapps
-     * @throws IOException
-     */
-    public void clusterRequest(final byte requestType, final InputStream in, final OutputStream out, final Socket socket, final HostGroup hostGroup) throws IOException;
+	/**
+	 * Accept a control socket request related to the cluster functions and
+	 * process the request.
+	 * 
+	 * @param requestType
+	 *            A byte indicating the request type
+	 * @param in
+	 *            Socket input stream
+	 * @param outSocket
+	 *            output stream
+	 * @param hostConfig
+	 *            The collection of all local webapps
+	 * @throws IOException
+	 */
+	public void clusterRequest(final byte requestType, final InputStream in, final OutputStream out, final Socket socket, final HostGroup hostGroup) throws IOException;
 }

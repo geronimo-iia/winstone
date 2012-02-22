@@ -1,5 +1,7 @@
 package net.winstone;
 
+import java.io.IOException;
+
 import net.winstone.boot.BootStrap;
 import net.winstone.boot.Server;
 
@@ -17,8 +19,8 @@ public class Winstone {
 	 *             if something is wrong when reading properties files.
 	 */
 	public static void main(final String[] args) {
-		BootStrap bootStrap = new BootStrap(args);
-		Server server = bootStrap.boot();
+		final BootStrap bootStrap = new BootStrap(args);
+		final Server server = bootStrap.boot();
 		server.start();
 	}
 }

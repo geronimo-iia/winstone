@@ -12,14 +12,19 @@ import javax.servlet.ServletResponse;
 
 public class WriteAfterServletFilter implements Filter {
 
-    public void init(FilterConfig filterConfig) throws ServletException {}
-    public void destroy() {}
+	@Override
+	public void init(final FilterConfig filterConfig) throws ServletException {
+	}
 
-    public void doFilter(ServletRequest request, ServletResponse response,
-            FilterChain chain) throws IOException, ServletException {
-        chain.doFilter(request, response);
-        ServletOutputStream os = response.getOutputStream();
-        os.print("Hello");
-    }
+	@Override
+	public void destroy() {
+	}
+
+	@Override
+	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException {
+		chain.doFilter(request, response);
+		final ServletOutputStream os = response.getOutputStream();
+		os.print("Hello");
+	}
 
 }
