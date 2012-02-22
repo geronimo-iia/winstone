@@ -450,4 +450,13 @@ public class Server implements LifeCycle {
 			}
 		}
 	}
+
+	/**
+	 * Log an information message.
+	 * 
+	 * @param message
+	 */
+	public void info(final String message) {
+		logger.info(message);
+	}
 }
