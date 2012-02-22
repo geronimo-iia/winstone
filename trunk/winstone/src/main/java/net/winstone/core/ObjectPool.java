@@ -9,12 +9,9 @@ package net.winstone.core;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.winstone.WinstoneException;
 import net.winstone.core.listener.Listener;
 import net.winstone.core.listener.RequestHandlerThread;
 import net.winstone.util.StringUtils;
@@ -31,7 +28,9 @@ import org.slf4j.LoggerFactory;
 public class ObjectPool implements Runnable {
 
 	protected static org.slf4j.Logger logger = LoggerFactory.getLogger(ObjectPool.class);
+
 	private static final long FLUSH_PERIOD = 60000L;
+
 	private final static transient int STARTUP_REQUEST_HANDLERS_IN_POOL = 5;
 	private final static transient int MAX_IDLE_REQUEST_HANDLERS_IN_POOL = 50;
 	private final static transient int MAX_REQUEST_HANDLERS_IN_POOL = 1000;
@@ -40,20 +39,24 @@ public class ObjectPool implements Runnable {
 	private final static transient int MAX_REQUESTS_IN_POOL = 1000;
 	private final static transient int START_RESPONSES_IN_POOL = 10;
 	private final static transient int MAX_RESPONSES_IN_POOL = 1000;
-	private int maxIdleRequestHandlesInPool;
+
 	private final List<RequestHandlerThread> unusedRequestHandlerThreads;
 	private final List<RequestHandlerThread> usedRequestHandlerThreads;
-	private final List<WinstoneRequest> usedRequestPool;
 	private final List<WinstoneRequest> unusedRequestPool;
-	private final List<WinstoneResponse> usedResponsePool;
 	private final List<WinstoneResponse> unusedResponsePool;
 	private final Object requestHandlerSemaphore = Boolean.TRUE;
 	private final Object requestPoolSemaphore = Boolean.TRUE;
 	private final Object responsePoolSemaphore = Boolean.TRUE;
+
 	private int threadIndex = 0;
 	private final boolean simulateModUniqueId;
 	private final boolean saveSessions;
+
 	private Thread thread;
+
+	int startupRequest = ObjectPool.STARTUP_REQUEST_HANDLERS_IN_POOL;
+	int maxRequestHandlesInPool = ObjectPool.MAX_REQUEST_HANDLERS_IN_POOL;
+	int maxIdleRequestHandlesInPool = ObjectPool.MAX_IDLE_REQUEST_HANDLERS_IN_POOL;
 
 	/**
 	 * Constructs an instance of the object pool, including handlers, requests
@@ -68,23 +71,13 @@ public class ObjectPool implements Runnable {
 		usedRequestHandlerThreads = new ArrayList<RequestHandlerThread>();
 
 		// Build the request/response pools
-		usedRequestPool = new ArrayList<WinstoneRequest>();
-		usedResponsePool = new ArrayList<WinstoneResponse>();
 		unusedRequestPool = new ArrayList<WinstoneRequest>();
 		unusedResponsePool = new ArrayList<WinstoneResponse>();
 
 		// Get handler pool options
-		int startupRequest = ObjectPool.STARTUP_REQUEST_HANDLERS_IN_POOL;
-		if (args.get("handlerCountStartup") != null) {
-			startupRequest = Integer.parseInt(args.get("handlerCountStartup"));
-		}
-		maxIdleRequestHandlesInPool = ObjectPool.MAX_IDLE_REQUEST_HANDLERS_IN_POOL;
-		if (args.get("handlerCountMax") != null) {
-			maxIdleRequestHandlesInPool = Integer.parseInt(args.get("handlerCountMax"));
-		}
-		if (args.get("handlerCountMaxIdle") != null) {
-			maxIdleRequestHandlesInPool = Integer.parseInt(args.get("handlerCountMaxIdle"));
-		}
+		startupRequest = StringUtils.intArg(args, "handlerCountStartup", ObjectPool.STARTUP_REQUEST_HANDLERS_IN_POOL);
+		maxRequestHandlesInPool = StringUtils.intArg(args, "handlerCountMax", ObjectPool.MAX_REQUEST_HANDLERS_IN_POOL);
+		maxIdleRequestHandlesInPool = StringUtils.intArg(args, "handlerCountMaxIdle", ObjectPool.MAX_IDLE_REQUEST_HANDLERS_IN_POOL);
 
 		// Start the base set of handler threads
 		for (int n = 0; n < startupRequest; n++) {
@@ -104,6 +97,11 @@ public class ObjectPool implements Runnable {
 		thread.start();
 	}
 
+	/**
+	 * Every 60s, remove unused request handler.
+	 * 
+	 * @see java.lang.Runnable#run()
+	 */
 	@Override
 	public void run() {
 		boolean interrupted = false;
@@ -118,6 +116,9 @@ public class ObjectPool implements Runnable {
 		thread = null;
 	}
 
+	/**
+	 * remove Unused RequestHandlers.
+	 */
 	private void removeUnusedRequestHandlers() {
 		// Check max idle requestHandler count
 		synchronized (requestHandlerSemaphore) {
@@ -130,15 +131,16 @@ public class ObjectPool implements Runnable {
 		}
 	}
 
+	/**
+	 * Destroy Object Pool.
+	 */
 	public void destroy() {
 		synchronized (requestHandlerSemaphore) {
-			final Collection<RequestHandlerThread> usedHandlers = new ArrayList<RequestHandlerThread>(usedRequestHandlerThreads);
-			for (final Iterator<RequestHandlerThread> i = usedHandlers.iterator(); i.hasNext();) {
-				releaseRequestHandler(i.next());
+			for (final RequestHandlerThread handlerThread : usedRequestHandlerThreads) {
+				releaseRequestHandler(handlerThread);
 			}
-			final Collection<RequestHandlerThread> unusedHandlers = new ArrayList<RequestHandlerThread>(unusedRequestHandlerThreads);
-			for (final Iterator<RequestHandlerThread> i = unusedHandlers.iterator(); i.hasNext();) {
-				(i.next()).destroy();
+			for (final RequestHandlerThread handlerThread : unusedRequestHandlerThreads) {
+				handlerThread.destroy();
 			}
 			unusedRequestHandlerThreads.clear();
 		}
@@ -181,7 +183,6 @@ public class ObjectPool implements Runnable {
 		} else {
 			// Sleep for a set period and try again from the pool
 			Thread.sleep(ObjectPool.RETRY_PERIOD);
-
 			synchronized (requestHandlerSemaphore) {
 				if (usedRequestHandlerThreads.size() < ObjectPool.MAX_REQUEST_HANDLERS_IN_POOL) {
 					rh = new RequestHandlerThread(this, threadIndex++, simulateModUniqueId, saveSessions);
@@ -211,39 +212,47 @@ public class ObjectPool implements Runnable {
 
 	/**
 	 * An attempt at pooling request objects for reuse.
+	 * 
+	 * @return a WinstoneRequest instance.
 	 */
 	public WinstoneRequest getRequestFromPool() throws IOException {
-		WinstoneRequest req = null;
+		WinstoneRequest winstoneRequest = null;
 		synchronized (requestPoolSemaphore) {
 			// If we have any spare, get it from the pool
 			final int unused = unusedRequestPool.size();
 			if (unused > 0) {
-				req = unusedRequestPool.remove(unused - 1);
-				usedRequestPool.add(req);
+				winstoneRequest = unusedRequestPool.remove(unused - 1);
 				ObjectPool.logger.debug("ReqPool: Using pooled request - available: {}", "" + unusedRequestPool.size());
-			} // If we are out, allocate a new one
-			else if (usedRequestPool.size() < ObjectPool.MAX_REQUESTS_IN_POOL) {
-				req = new WinstoneRequest();
-				usedRequestPool.add(req);
-				ObjectPool.logger.debug("ReqPool: Spawning new request - available: {}", "" + usedRequestPool.size());
 			} else {
-				throw new WinstoneException("RspPool: Max responses in pool exceeded - denied");
+				// If we are out, allocate a new one
+				winstoneRequest = new WinstoneRequest();
+				ObjectPool.logger.debug("ReqPool: Spawning new request - available: {}", "" + unusedRequestPool.size());
 			}
 		}
-		return req;
+		return winstoneRequest;
 	}
 
-	public void releaseRequestToPool(final WinstoneRequest req) {
-		req.cleanUp();
+	/**
+	 * Release specified request to pool. Add it to unused if pool size is under
+	 * the limit of MAX_REQUESTS_IN_POOL objects.
+	 * 
+	 * @param winstoneRequest
+	 *            winstone Request
+	 */
+	public void releaseRequestToPool(final WinstoneRequest winstoneRequest) {
+		winstoneRequest.cleanUp();
 		synchronized (requestPoolSemaphore) {
-			usedRequestPool.remove(req);
-			unusedRequestPool.add(req);
+			if (unusedRequestPool.size() < ObjectPool.MAX_REQUESTS_IN_POOL) {
+				unusedRequestPool.add(winstoneRequest);
+			}
 			ObjectPool.logger.debug("ReqPool: Request released - available: {}", "" + unusedRequestPool.size());
 		}
 	}
 
 	/**
 	 * An attempt at pooling request objects for reuse.
+	 * 
+	 * @return a WinstoneResponse instance.
 	 */
 	public WinstoneResponse getResponseFromPool() throws IOException {
 		WinstoneResponse rsp = null;
@@ -252,25 +261,28 @@ public class ObjectPool implements Runnable {
 			final int unused = unusedResponsePool.size();
 			if (unused > 0) {
 				rsp = unusedResponsePool.remove(unused - 1);
-				usedResponsePool.add(rsp);
 				ObjectPool.logger.debug("RspPool: Using pooled response - available: {}", "" + unusedResponsePool.size());
 			} // If we are out, allocate a new one
-			else if (usedResponsePool.size() < ObjectPool.MAX_RESPONSES_IN_POOL) {
+			else {
 				rsp = new WinstoneResponse();
-				usedResponsePool.add(rsp);
-				ObjectPool.logger.debug("RspPool: Spawning new response - available: {}", "" + usedResponsePool.size());
-			} else {
-				throw new WinstoneException("RspPool: Max responses in pool exceeded - denied");
+				ObjectPool.logger.debug("RspPool: Spawning new response - available: {}", "" + unusedResponsePool.size());
 			}
 		}
 		return rsp;
 	}
 
-	public void releaseResponseToPool(final WinstoneResponse rsp) {
-		rsp.cleanUp();
+	/**
+	 * Release WinstoneResponse instance. Add it to unused if pool size is under
+	 * the limit of MAX_REQUESTS_IN_POOL objects.
+	 * 
+	 * @param winstoneResponse
+	 */
+	public void releaseResponseToPool(final WinstoneResponse winstoneResponse) {
+		winstoneResponse.cleanUp();
 		synchronized (responsePoolSemaphore) {
-			usedResponsePool.remove(rsp);
-			unusedResponsePool.add(rsp);
+			if (unusedResponsePool.size() < ObjectPool.MAX_RESPONSES_IN_POOL) {
+				unusedResponsePool.add(winstoneResponse);
+			}
 			ObjectPool.logger.debug("RspPool: Response released - available: {}", "" + unusedResponsePool.size());
 		}
 	}
