@@ -554,19 +554,37 @@ public class WinstoneRequest implements HttpServletRequest {
 			} else if (name.equalsIgnoreCase(WinstoneConstant.CONTENT_LENGTH_HEADER)) {
 				contentLength = Integer.parseInt(value);
 			} else if (name.equalsIgnoreCase(WinstoneConstant.HOST_HEADER)) {
-				final int nextColonPos = value.indexOf(':');
-				if ((nextColonPos == -1) || (nextColonPos == (value.length() - 1))) {
-					serverName = value;
-					if (scheme != null) {
-						if (scheme.equals("http")) {
-							serverPort = 80;
-						} else if (scheme.equals("https")) {
-							serverPort = 443;
+				if (value.indexOf('[') != -1 && value.indexOf(']') != -1) {
+					// IPv6 host as per rfc2732
+					this.serverName = value.substring(value.indexOf('[') + 1, value.indexOf(']'));
+					int nextColonPos = value.indexOf("]:");
+					if ((nextColonPos == -1) || (nextColonPos == value.length() - 1)) {
+						if (this.scheme != null) {
+							if (this.scheme.equals("http")) {
+								this.serverPort = 80;
+							} else if (this.scheme.equals("https")) {
+								this.serverPort = 443;
+							}
 						}
+					} else {
+						this.serverPort = Integer.parseInt(value.substring(nextColonPos + 2));
 					}
 				} else {
-					serverName = value.substring(0, nextColonPos);
-					serverPort = Integer.parseInt(value.substring(nextColonPos + 1));
+					// IPv4 host
+					int nextColonPos = value.indexOf(':');
+					if ((nextColonPos == -1) || (nextColonPos == value.length() - 1)) {
+						this.serverName = value;
+						if (this.scheme != null) {
+							if (this.scheme.equals("http")) {
+								this.serverPort = 80;
+							} else if (this.scheme.equals("https")) {
+								this.serverPort = 443;
+							}
+						}
+					} else {
+						this.serverName = value.substring(0, nextColonPos);
+						this.serverPort = Integer.parseInt(value.substring(nextColonPos + 1));
+					}
 				}
 			} else if (name.equalsIgnoreCase(WinstoneConstant.CONTENT_TYPE_HEADER)) {
 				contentType = value;
