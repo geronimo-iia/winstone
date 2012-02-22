@@ -19,6 +19,7 @@ import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpServletResponse;
 
 import net.winstone.accesslog.AccessLogger;
+import net.winstone.core.ClientSocketException;
 import net.winstone.core.HostConfiguration;
 import net.winstone.core.ObjectPool;
 import net.winstone.core.SimpleRequestDispatcher;
@@ -241,9 +242,21 @@ public class RequestHandlerThread implements Runnable {
 				rd.forward(req, rsp);
 			}
 			// if null returned, assume we were redirected
-		} catch (final Throwable err) {
-			RequestHandlerThread.logger.warn("Untrapped Error in Servlet", err);
-			rdError = webAppConfig.getErrorDispatcherByClass(err);
+		} catch (ClientSocketException err) {
+			// ignore this error. caused by a browser shutting down the
+			// connection
+		} catch (Throwable err) {
+			boolean ignore = false;
+			for (Throwable t = err; t != null; t = t.getCause()) {
+				if (t instanceof ClientSocketException) {
+					ignore = true;
+					break;
+				}
+			}
+			if (!ignore) {
+				RequestHandlerThread.logger.warn("Untrapped Error in Servlet", err);
+				rdError = webAppConfig.getErrorDispatcherByClass(err);
+			}
 		}
 
 		// If there was any kind of error, execute the error dispatcher here
