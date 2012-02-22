@@ -57,6 +57,7 @@ public class HttpListener implements Listener, Runnable {
 	protected String listenAddress;
 	protected boolean interrupted = Boolean.FALSE;
 	private final String serverVersion;
+	private ServerSocket serverSocket;
 
 	/**
 	 * Constructor
@@ -73,11 +74,17 @@ public class HttpListener implements Listener, Runnable {
 	}
 
 	@Override
-	public boolean start() {
+	public boolean start() throws IOException {
 		if (listenPort < 0) {
 			return false;
 		} else {
 			interrupted = false;
+
+			ServerSocket ss = getServerSocket();
+			ss.setSoTimeout(LISTENER_TIMEOUT);
+			HttpListener.logger.info("{} Listener started: port={}", getConnectorName().toUpperCase(), listenPort + "");
+			serverSocket = ss;
+
 			final Thread thread = new Thread(this, "ConnectorThread:" + getConnectorName() + "-" + Integer.toString(listenPort));
 			thread.setDaemon(true);
 			thread.start();
@@ -110,8 +117,11 @@ public class HttpListener implements Listener, Runnable {
 	 * override in the SSL connector.
 	 */
 	protected ServerSocket getServerSocket() throws IOException {
-		final ServerSocket ss = listenAddress == null ? new ServerSocket(listenPort, HttpListener.BACKLOG_COUNT) : new ServerSocket(listenPort, HttpListener.BACKLOG_COUNT, InetAddress.getByName(listenAddress));
-		return ss;
+		try {
+			return this.listenAddress == null ? new ServerSocket(this.listenPort, BACKLOG_COUNT) : new ServerSocket(this.listenPort, BACKLOG_COUNT, InetAddress.getByName(this.listenAddress));
+		} catch (IOException e) {
+			throw (IOException) new IOException("Failed to listen on port " + listenPort).initCause(e);
+		}
 	}
 
 	/**
@@ -122,16 +132,12 @@ public class HttpListener implements Listener, Runnable {
 	@Override
 	public void run() {
 		try {
-			final ServerSocket ss = getServerSocket();
-			ss.setSoTimeout(HttpListener.LISTENER_TIMEOUT);
-			HttpListener.logger.info("{} Listener started: port={}", getConnectorName().toUpperCase(), listenPort + "");
-
 			// Enter the main loop
 			while (!interrupted) {
 				// Get the listener
 				Socket s = null;
 				try {
-					s = ss.accept();
+					s = serverSocket.accept();
 				} catch (final java.io.InterruptedIOException err) {
 					s = null;
 				}
@@ -144,7 +150,8 @@ public class HttpListener implements Listener, Runnable {
 			}
 
 			// Close server socket
-			ss.close();
+			serverSocket.close();
+			serverSocket = null;
 		} catch (final Throwable err) {
 			HttpListener.logger.error("Error during " + getConnectorName().toUpperCase() + " listener init or shutdown", err);
 		}
@@ -223,9 +230,7 @@ public class HttpListener implements Listener, Runnable {
 
 		// Read the header line (because this is the first line of the request,
 		// apply keep-alive timeouts to it if we are not the first request)
-		if (!iAmFirst) {
-			socket.setSoTimeout(HttpListener.KEEP_ALIVE_TIMEOUT);
-		}
+		socket.setSoTimeout(KEEP_ALIVE_TIMEOUT);
 
 		byte uriBuffer[] = null;
 		try {
