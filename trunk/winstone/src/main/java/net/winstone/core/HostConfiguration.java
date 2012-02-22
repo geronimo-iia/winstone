@@ -11,20 +11,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import net.winstone.WinstoneException;
 import net.winstone.cluster.Cluster;
 import net.winstone.jndi.JndiManager;
+import net.winstone.util.FileUtils;
 import net.winstone.util.StringUtils;
 
 import org.slf4j.LoggerFactory;
@@ -43,18 +39,58 @@ import org.w3c.dom.Node;
 public class HostConfiguration implements Runnable {
 
 	protected static org.slf4j.Logger logger = LoggerFactory.getLogger(HostConfiguration.class);
+	/**
+	 * TIME PERIOD (ms) OF SESSION FLUSHING
+	 */
 	private static final long FLUSH_PERIOD = 60000L;
 	private static final String WEB_INF = "WEB-INF";
 	private static final String WEB_XML = "web.xml";
+	/**
+	 * host name/
+	 */
 	private final String hostname;
+	/**
+	 * Arguments map.
+	 */
 	private final Map<String, String> args;
+	/**
+	 * Map of WebAppConfiguration, key is context path of web application
+	 */
 	private final Map<String, WebAppConfiguration> webapps;
+	/**
+	 * Cluster instance.
+	 */
 	private final Cluster cluster;
+	/**
+	 * Object Pool instance.
+	 */
 	private final ObjectPool objectPool;
+	/**
+	 * Common libraries class loader instance.
+	 */
 	private final ClassLoader commonLibCL;
+	/**
+	 * JNDI Manager instance.
+	 */
 	private final JndiManager jndiManager;
+	/**
+	 * Thread instance in order to flush sessions.
+	 */
 	private Thread thread;
 
+	/**
+	 * 
+	 * Build a new instance of HostConfiguration.
+	 * 
+	 * @param hostname
+	 * @param cluster
+	 * @param objectPool
+	 * @param jndiManager
+	 * @param commonLibCL
+	 * @param args
+	 * @param webappsDirName
+	 * @throws IOException
+	 */
 	public HostConfiguration(final String hostname, final Cluster cluster, final ObjectPool objectPool, final JndiManager jndiManager, final ClassLoader commonLibCL, final Map<String, String> args, final String webappsDirName) throws IOException {
 		this.hostname = hostname;
 		this.args = args;
@@ -64,9 +100,8 @@ public class HostConfiguration implements Runnable {
 		this.commonLibCL = commonLibCL;
 		this.jndiManager = jndiManager;
 		// Is this the single or multiple configuration ? Check args
-		final String warfile = args.get("warfile");
-		final String webroot = args.get("webroot");
-
+		File warfile = StringUtils.fileArg(args, "warfile");
+		File webroot = StringUtils.fileArg(args, "webroot");
 		// If single-webapp mode
 		if ((webappsDirName == null) && ((warfile != null) || (webroot != null))) {
 			String prefix = args.get("prefix");
@@ -90,6 +125,10 @@ public class HostConfiguration implements Runnable {
 		thread.start();
 	}
 
+	/**
+	 * @param uri
+	 * @return a WebAppConfiguration for specified uri or null if none is found.
+	 */
 	public WebAppConfiguration getWebAppByURI(final String uri) {
 		if (uri == null) {
 			return null;
@@ -109,6 +148,18 @@ public class HostConfiguration implements Runnable {
 		}
 	}
 
+	/**
+	 * Initialize specified webapplication.
+	 * 
+	 * @param prefix
+	 *            prefix
+	 * @param webRoot
+	 *            web root file
+	 * @param contextName
+	 *            context name
+	 * @return a WebAppConfiguration instance.
+	 * @throws IOException
+	 */
 	protected final WebAppConfiguration initWebApp(final String prefix, final File webRoot, final String contextName) throws IOException {
 		Node webXMLParentNode = null;
 		final File webInfFolder = new File(webRoot, HostConfiguration.WEB_INF);
@@ -126,11 +177,13 @@ public class HostConfiguration implements Runnable {
 				}
 			}
 		}
-
 		// Instantiate the webAppConfig
 		return new WebAppConfiguration(this, cluster, jndiManager, webRoot.getCanonicalPath(), prefix, objectPool, args, webXMLParentNode, commonLibCL, contextName);
 	}
 
+	/**
+	 * @return host name
+	 */
 	public String getHostname() {
 		return hostname;
 	}
@@ -150,23 +203,32 @@ public class HostConfiguration implements Runnable {
 		}
 	}
 
+	/**
+	 * Destroy all webapplication.
+	 */
 	public void destroy() {
-		final Set<String> prefixes = new HashSet<String>(webapps.keySet());
-		for (final Iterator<String> i = prefixes.iterator(); i.hasNext();) {
-			destroyWebApp(i.next());
+		for (String prefixe : webapps.keySet()) {
+			destroyWebApp(prefixe);
 		}
 		if (thread != null) {
 			thread.interrupt();
 		}
 	}
 
+	/**
+	 * Invalidate all expired sessions.
+	 */
 	public void invalidateExpiredSessions() {
-		final Set<WebAppConfiguration> webappConfiguration = new HashSet<WebAppConfiguration>(webapps.values());
-		for (final Iterator<WebAppConfiguration> i = webappConfiguration.iterator(); i.hasNext();) {
-			i.next().invalidateExpiredSessions();
+		for (WebAppConfiguration webapp : webapps.values()) {
+			webapp.invalidateExpiredSessions();
 		}
 	}
 
+	/**
+	 * Main method of thread which invalidate Expired Sessions every 60s.
+	 * 
+	 * @see java.lang.Runnable#run()
+	 */
 	@Override
 	public void run() {
 		boolean interrupted = false;
@@ -181,6 +243,12 @@ public class HostConfiguration implements Runnable {
 		thread = null;
 	}
 
+	/**
+	 * Reload Specified Webapplication.
+	 * 
+	 * @param prefix
+	 * @throws IOException
+	 */
 	public void reloadWebApp(final String prefix) throws IOException {
 		final WebAppConfiguration webAppConfig = webapps.get(prefix);
 		if (webAppConfig != null) {
@@ -202,21 +270,24 @@ public class HostConfiguration implements Runnable {
 	 * Setup the webroot. If a warfile is supplied, extract any files that the
 	 * war file is newer than. If none is supplied, use the default temp
 	 * directory.
+	 * 
+	 * @param requestedWebroot
+	 * @param warfile
+	 * @return
+	 * @throws IOException
 	 */
-	protected final File getWebRoot(final String requestedWebroot, final String warfileName) throws IOException {
-		if (warfileName != null) {
+	protected File getWebRoot(File requestedWebroot, File warfile) throws IOException {
+		if (warfile != null) {
 			HostConfiguration.logger.info("Beginning extraction from war file");
-
 			// open the war file
-			final File warfileRef = new File(warfileName);
-			if (!warfileRef.exists() || !warfileRef.isFile()) {
-				throw new WinstoneException("The warfile supplied is unavailable or invalid (" + warfileName + ")");
+			if (!warfile.exists() || !warfile.isFile()) {
+				throw new WinstoneException("The warfile supplied is unavailable or invalid (" + warfile + ")");
 			}
 
 			// Get the webroot folder (or a temp dir if none supplied)
 			File unzippedDir = null;
 			if (requestedWebroot != null) {
-				unzippedDir = new File(requestedWebroot);
+				unzippedDir = requestedWebroot;
 			} else {
 				// compute which temp directory to use
 				String tempDirectory = StringUtils.stringArg(args, "tempDirectory", null);
@@ -235,7 +306,7 @@ public class HostConfiguration implements Runnable {
 				if (hostname != null) {
 					child += hostname + File.separator;
 				}
-				child += warfileRef.getName();
+				child += warfile.getName();
 				unzippedDir = new File(tempDirectory, child);
 			}
 			if (unzippedDir.exists()) {
@@ -244,12 +315,22 @@ public class HostConfiguration implements Runnable {
 				} else {
 					HostConfiguration.logger.debug("The webroot supplied already exists - overwriting where newer ({})", unzippedDir.getCanonicalPath());
 				}
-			} else {
+			}
+
+			// check consistency and if out-of-sync, recreate
+			File timestampFile = new File(unzippedDir, ".timestamp");
+			if (!timestampFile.exists() || Math.abs(timestampFile.lastModified() - warfile.lastModified()) > 1000) {
+				// contents of the target directory is inconsistent from the
+				// war.
+				FileUtils.delete(unzippedDir);
 				unzippedDir.mkdirs();
+			} else {
+				// files are up to date
+				return unzippedDir;
 			}
 
 			// Iterate through the files
-			final JarFile warArchive = new JarFile(warfileRef);
+			final JarFile warArchive = new JarFile(warfile);
 			for (final Enumeration<JarEntry> e = warArchive.entries(); e.hasMoreElements();) {
 				final JarEntry element = e.nextElement();
 				if (element.isDirectory()) {
@@ -259,9 +340,10 @@ public class HostConfiguration implements Runnable {
 
 				// If archive date is newer than unzipped file, overwrite
 				final File outFile = new File(unzippedDir, elemName);
-				if (outFile.exists() && (outFile.lastModified() > warfileRef.lastModified())) {
+				if (outFile.exists() && (outFile.lastModified() > warfile.lastModified())) {
 					continue;
 				}
+
 				outFile.getParentFile().mkdirs();
 				final byte buffer[] = new byte[8192];
 
@@ -276,14 +358,23 @@ public class HostConfiguration implements Runnable {
 				inContent.close();
 				outStream.close();
 			}
+			// extraction completed
+			new FileOutputStream(timestampFile).close();
+			timestampFile.setLastModified(warfile.lastModified());
 
 			// Return webroot
 			return unzippedDir;
 		} else {
-			return new File(requestedWebroot);
+			return requestedWebroot;
 		}
 	}
 
+	/**
+	 * Initialize host with multiple webapplication from specified directory.
+	 * 
+	 * @param webappsDirName
+	 * @throws IOException
+	 */
 	protected final void initMultiWebappDir(String webappsDirName) throws IOException {
 		if (webappsDirName == null) {
 			webappsDirName = "webapps";
@@ -295,20 +386,19 @@ public class HostConfiguration implements Runnable {
 			throw new WinstoneException("Webapps dir " + webappsDirName + " is not a directory");
 		} else {
 			final File children[] = webappsDir.listFiles();
-			for (int n = 0; n < children.length; n++) {
-				final String childName = children[n].getName();
-
+			for (File aChildren : children) {
+				final String childName = aChildren.getName();
 				// Check any directories for warfiles that match, and skip: only
 				// deploy the war file
-				if (children[n].isDirectory()) {
-					final File matchingWarFile = new File(webappsDir, children[n].getName() + ".war");
+				if (aChildren.isDirectory()) {
+					final File matchingWarFile = new File(webappsDir, aChildren.getName() + ".war");
 					if (matchingWarFile.exists() && matchingWarFile.isFile()) {
 						HostConfiguration.logger.debug("Webapp dir deployment {} skipped, since there is a war file of the same name to check for re-extraction", childName);
 					} else {
 						final String prefix = childName.equalsIgnoreCase("ROOT") ? "" : "/" + childName;
 						if (!webapps.containsKey(prefix)) {
 							try {
-								final WebAppConfiguration webAppConfig = initWebApp(prefix, children[n], childName);
+								final WebAppConfiguration webAppConfig = initWebApp(prefix, aChildren, childName);
 								webapps.put(webAppConfig.getContextPath(), webAppConfig);
 								HostConfiguration.logger.info("Deployed web application found at {}", childName);
 							} catch (final Throwable err) {
@@ -324,7 +414,7 @@ public class HostConfiguration implements Runnable {
 						final File outputDir = new File(webappsDir, outputName);
 						outputDir.mkdirs();
 						try {
-							final WebAppConfiguration webAppConfig = initWebApp(prefix, getWebRoot(new File(webappsDir, outputName).getCanonicalPath(), children[n].getCanonicalPath()), outputName);
+							final WebAppConfiguration webAppConfig = initWebApp(prefix, getWebRoot(new File(webappsDir, outputName), aChildren), outputName);
 							webapps.put(webAppConfig.getContextPath(), webAppConfig);
 							HostConfiguration.logger.info("Deployed web application found at {}", childName);
 						} catch (final Throwable err) {
@@ -336,13 +426,16 @@ public class HostConfiguration implements Runnable {
 		}
 	}
 
+	/**
+	 * @param sessionKey
+	 * @return a WebAppConfiguration instance for specified session key or null
+	 *         if none was found.
+	 */
 	public WebAppConfiguration getWebAppBySessionKey(final String sessionKey) {
-		final List<WebAppConfiguration> allwebapps = new ArrayList<WebAppConfiguration>(webapps.values());
-		for (final Iterator<WebAppConfiguration> i = allwebapps.iterator(); i.hasNext();) {
-			final WebAppConfiguration webapp = i.next();
-			final WinstoneSession session = webapp.getSessionById(sessionKey, false);
+		for (WebAppConfiguration webAppConfiguration : webapps.values()) {
+			final WinstoneSession session = webAppConfiguration.getSessionById(sessionKey, false);
 			if (session != null) {
-				return webapp;
+				return webAppConfiguration;
 			}
 		}
 		return null;

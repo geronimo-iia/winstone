@@ -166,4 +166,25 @@ public class FileUtils {
 		}
 	}
 
+	/**
+	 * Utility to delete file (directory or single file)
+	 * 
+	 * @param from
+	 *            Deletes the file or directory denoted by this abstract
+	 *            pathname.
+	 * @return true if and only if the file or directory is successfully
+	 *         deleted; false otherwise
+	 */
+	public static boolean delete(final File from) {
+		if ((from != null) && from.exists()) {
+			if (from.isDirectory()) {
+				for (final File child : from.listFiles()) {
+					FileUtils.delete(child);
+				}
+			}
+			return from.delete();
+		}
+		return false;
+	}
+
 }
