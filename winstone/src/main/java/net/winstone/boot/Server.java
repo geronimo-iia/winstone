@@ -160,8 +160,9 @@ public class Server implements LifeCycle {
 
 	/**
 	 * Instanciate listener.
+	 * @throws IOException 
 	 */
-	private void initializeListener() {
+	private void initializeListener() throws IOException {
 		// TODO create a parameters for this list
 		// Create connectors (http, https and ajp)
 		listeners = new ArrayList<Listener>();
@@ -308,8 +309,9 @@ public class Server implements LifeCycle {
 	 * is interpreted as the listener being disabled, so don't do anything too
 	 * adventurous in the constructor, or if you do, catch and log any errors
 	 * locally before rethrowing.
+	 * @throws IOException 
 	 */
-	protected final void spawnListener(final String listenerClassName) {
+	protected final void spawnListener(final String listenerClassName) throws IOException {
 		try {
 			final Class<?> listenerClass = Class.forName(listenerClassName);
 			final Constructor<?> listenerConstructor = listenerClass.getConstructor(new Class[] { Map.class, ObjectPool.class, HostGroup.class });
@@ -321,6 +323,7 @@ public class Server implements LifeCycle {
 			Server.logger.info("Listener {} not found / disabled - ignoring", listenerClassName);
 		} catch (final Throwable err) {
 			Server.logger.error("Error during listener startup " + listenerClassName, err);
+			 throw (IOException)new IOException("Failed to start a listener: "+listenerClassName).initCause(err);
 		}
 	}
 
