@@ -152,10 +152,11 @@ public class HttpListener implements Listener, Runnable {
 			// Close server socket
 			serverSocket.close();
 			serverSocket = null;
+
+			HttpListener.logger.info("{} Listener shutdown successfully", getConnectorName().toUpperCase());
 		} catch (final Throwable err) {
 			HttpListener.logger.error("Error during " + getConnectorName().toUpperCase() + " listener init or shutdown", err);
 		}
-		HttpListener.logger.info("{} Listener shutdown successfully", getConnectorName().toUpperCase());
 	}
 
 	/**
@@ -256,7 +257,7 @@ public class HttpListener implements Listener, Runnable {
 		if (uriLine.trim().equals("")) {
 			throw new SocketException("Empty URI Line");
 		}
-		final String servletURI = HttpListener.parseURILine(uriLine, req, rsp);
+		final String servletURI = parseURILine(uriLine, req, rsp);
 		parseHeaders(req, inData);
 		rsp.extractRequestKeepAliveHeader(req);
 		final int contentLength = req.getContentLength();
@@ -334,56 +335,56 @@ public class HttpListener implements Listener, Runnable {
 
 	/**
 	 * Processes the uri line into it's component parts, determining protocol,
-	 * method and uri.
+	 * method and uri
 	 */
-	public static String parseURILine(final String uriLine, final WinstoneRequest request, final WinstoneResponse response) {
+	private static String parseURILine(String uriLine, WinstoneRequest req, WinstoneResponse rsp) {
 		HttpListener.logger.trace("URI Line:", uriLine.trim());
 
 		// Method
 		int spacePos = uriLine.indexOf(' ');
-		if (spacePos == -1) {
+		if (spacePos == -1)
 			throw new WinstoneException("Error URI Line: " + uriLine);
-		}
-		final String method = uriLine.substring(0, spacePos).toUpperCase();
-		String fullURI = null;
+		String method = uriLine.substring(0, spacePos).toUpperCase();
+		String fullURI;
 
 		// URI
-		final String remainder = uriLine.substring(spacePos + 1);
+		String remainder = uriLine.substring(spacePos + 1);
 		spacePos = remainder.indexOf(' ');
 		if (spacePos == -1) {
-			fullURI = HttpListener.trimHostName(remainder.trim());
-			request.setProtocol("HTTP/0.9");
-			response.setProtocol("HTTP/0.9");
+			fullURI = trimHostName(remainder.trim());
+			req.setProtocol("HTTP/0.9");
+			rsp.setProtocol("HTTP/0.9");
 		} else {
-			fullURI = HttpListener.trimHostName(remainder.substring(0, spacePos).trim());
-			final String protocol = remainder.substring(spacePos + 1).trim().toUpperCase();
-			request.setProtocol(protocol);
-			response.setProtocol(protocol);
+			fullURI = trimHostName(remainder.substring(0, spacePos).trim());
+			String protocol = remainder.substring(spacePos + 1).trim().toUpperCase();
+			if (!protocol.startsWith("HTTP/"))
+				protocol = "HTTP/1.0"; // didn't understand this protocol. this
+										// typically means the request line had
+										// extra space. assume 1.0
+			req.setProtocol(protocol);
+			rsp.setProtocol(protocol);
 		}
 
-		request.setMethod(method);
+		req.setMethod(method);
 		// req.setRequestURI(fullURI);
 		return fullURI;
 	}
 
-	public static String trimHostName(final String input) {
-		if (input == null) {
+	private static String trimHostName(String input) {
+		if (input == null)
 			return null;
-		} else if (input.startsWith("/")) {
+		else if (input.startsWith("/"))
 			return input;
-		}
 
-		final int hostStart = input.indexOf("://");
-		if (hostStart == -1) {
+		int hostStart = input.indexOf("://");
+		if (hostStart == -1)
 			return input;
-		}
-		final String hostName = input.substring(hostStart + 3);
-		final int pathStart = hostName.indexOf('/');
-		if (pathStart == -1) {
+		String hostName = input.substring(hostStart + 3);
+		int pathStart = hostName.indexOf('/');
+		if (pathStart == -1)
 			return "/";
-		} else {
+		else
 			return hostName.substring(pathStart);
-		}
 	}
 
 	/**
@@ -412,4 +413,5 @@ public class HttpListener implements Listener, Runnable {
 		// If no headers available, parse an empty list
 		req.parseHeaders(headerList);
 	}
+
 }
