@@ -1037,7 +1037,7 @@ public class WinstoneRequest implements HttpServletRequest {
 			}
 		}
 		if (method.equals(WinstoneConstant.METHOD_POST) && WinstoneConstant.POST_PARAMETERS.equals(contentType)) {
-			this.parsedParameters = new Boolean(false);
+			this.parsedParameters = Boolean.FALSE;
 		}
 		return inputData;
 	}
