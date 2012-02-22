@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +71,7 @@ public class WinstoneSession implements HttpSession, Serializable {
 	public WinstoneSession(final String sessionId) {
 		super();
 		this.sessionId = sessionId;
-		this.sessionData = new HashMap<String, Object>();
+		this.sessionData = new Hashtable<String, Object>();
 		this.requestsUsingMe = Collections.synchronizedSet(new HashSet<WinstoneRequest>());
 		this.createTime = System.currentTimeMillis();
 		this.isNew = Boolean.TRUE;
@@ -490,7 +491,7 @@ public class WinstoneSession implements HttpSession, Serializable {
 		distributable = in.readBoolean();
 
 		// Read the map
-		sessionData = new HashMap<String, Object>();
+		sessionData = new Hashtable<String, Object>();
 		requestsUsingMe =Collections.synchronizedSet(new HashSet<WinstoneRequest>());
 		final int entryCount = in.readInt();
 		for (int n = 0; n < entryCount; n++) {
