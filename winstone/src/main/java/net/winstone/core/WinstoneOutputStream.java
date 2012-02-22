@@ -1,15 +1,15 @@
 /*
-  * Copyright 2003-2006 Rick Knowles <winstone-devel at lists sourceforge net>
+ * Copyright 2003-2006 Rick Knowles <winstone-devel at lists sourceforge net>
  * Distributed under the terms of either:
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
 package net.winstone.core;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Iterator;
 import java.util.Stack;
 
 import javax.servlet.http.Cookie;
@@ -33,21 +33,20 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 	protected OutputStream outStream;
 	protected int bufferSize;
 	protected int bufferPosition;
-	protected long bytesCommitted;
-	protected final ByteArrayOutputStream buffer;
+	protected int bytesCommitted;
+	protected ByteArrayOutputStream buffer;
 	protected boolean committed;
-	protected final boolean bodyOnly;
+	protected boolean bodyOnly;
 	protected WinstoneResponse owner;
 	protected boolean disregardMode = false;
 	protected boolean closed = false;
 	protected Stack<ByteArrayOutputStream> includeByteStreams;
-	private long contentLengthFromHeader = -1;
 
 	/**
 	 * Constructor
 	 */
 	public WinstoneOutputStream(final OutputStream out, final boolean bodyOnlyForInclude) {
-		outStream =  new ClientOutputStream(out);
+		outStream = new ClientOutputStream(out);
 		bodyOnly = bodyOnlyForInclude;
 		bufferSize = WinstoneOutputStream.DEFAULT_BUFFER_SIZE;
 		committed = false;
@@ -91,50 +90,41 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 	}
 
 	@Override
-	public synchronized void write(final int oneChar) throws IOException {
+	public void write(final int oneChar) throws IOException {
 		if (disregardMode || closed) {
 			return;
-		} else if ((contentLengthFromHeader != -1) && (bytesCommitted >= contentLengthFromHeader)) {
+		}
+		final String contentLengthHeader = owner.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
+		if ((contentLengthHeader != null) && (bytesCommitted >= Integer.parseInt(contentLengthHeader))) {
 			return;
 		}
 		// System.out.println("Out: " + this.bufferPosition + " char=" +
 		// (char)oneChar);
 		buffer.write(oneChar);
-		bufferPosition++;
-		// if (this.headersWritten)
-		if (bufferPosition >= bufferSize) {
-			commit();
-		} else if ((contentLengthFromHeader != -1) && ((bufferPosition + bytesCommitted) >= contentLengthFromHeader)) {
-			commit();
-		}
+		commit(contentLengthHeader, 1);
 	}
 
 	@Override
-	public synchronized void write(final byte b[], final int off, final int len) throws IOException {
-		if (b == null) {
-			throw new NullPointerException();
-		} else if ((off < 0) || (off > b.length) || (len < 0) || ((off + len) > b.length) || ((off + len) < 0)) {
-			throw new IndexOutOfBoundsException();
-		} else if (len == 0) {
-			return;
-		} else if (disregardMode || closed) {
-			return;
-		} else if ((contentLengthFromHeader != -1) && (bytesCommitted >= contentLengthFromHeader)) {
+	public void write(final byte[] b, final int off, final int len) throws IOException {
+		if (disregardMode || closed) {
 			return;
 		}
-		final int actualLength = Math.min(len, bufferSize - bufferPosition);
-		buffer.write(b, off, actualLength);
-		bufferPosition += actualLength;
+		final String contentLengthHeader = owner.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
+		if ((contentLengthHeader != null) && ((bytesCommitted + len) > Integer.parseInt(contentLengthHeader))) {
+			return;
+		}
+
+		buffer.write(b, off, len);
+		commit(contentLengthHeader, len);
+	}
+
+	private void commit(final String contentLengthHeader, final int len) throws IOException {
+		bufferPosition += len;
 		// if (this.headersWritten)
 		if (bufferPosition >= bufferSize) {
 			commit();
-		} else if ((contentLengthFromHeader != -1) && ((bufferPosition + bytesCommitted) >= contentLengthFromHeader)) {
+		} else if ((contentLengthHeader != null) && ((bufferPosition + bytesCommitted) >= Integer.parseInt(contentLengthHeader))) {
 			commit();
-		}
-
-		// Write the remainder
-		if (actualLength < len) {
-			write(b, off + actualLength, len - actualLength);
 		}
 	}
 
@@ -145,38 +135,36 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 		if (!committed && !bodyOnly) {
 			owner.validateHeaders();
 			committed = true;
-			final String contentLengthHeader = owner.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
-			if (contentLengthHeader != null) {
-				contentLengthFromHeader = Long.parseLong(contentLengthHeader);
-			}
+
 			WinstoneOutputStream.logger.debug("Committing response body");
 
 			final int statusCode = owner.getStatus();
 			final HttpProtocole reason = HttpProtocole.valueOf("HTTP_" + Integer.toString(statusCode));
 			final String statusLine = owner.getProtocol() + " " + statusCode + " " + (reason == null ? "No reason" : reason.toString());
-			outStream.write(statusLine.getBytes("8859_1"));
-			outStream.write(WinstoneOutputStream.CR_LF);
+			final OutputStream o = new BufferedOutputStream(outStream);
+			o.write(statusLine.getBytes("8859_1"));
+			o.write(WinstoneOutputStream.CR_LF);
 			WinstoneOutputStream.logger.debug("Response: " + statusLine);
 
 			// Write headers and cookies
-			for (final Iterator<String> i = owner.getHeaders().iterator(); i.hasNext();) {
-				final String header = i.next();
-				outStream.write(header.getBytes("8859_1"));
-				outStream.write(WinstoneOutputStream.CR_LF);
+			for (final Object o2 : owner.getHeaders()) {
+				final String header = (String) o2;
+				o.write(header.getBytes("8859_1"));
+				o.write(WinstoneOutputStream.CR_LF);
 				WinstoneOutputStream.logger.debug("Header: " + header);
 			}
 
 			if (!owner.getHeaders().isEmpty()) {
-				for (final Iterator<Cookie> i = owner.getCookies().iterator(); i.hasNext();) {
-					final Cookie cookie = i.next();
+				for (final Object o1 : owner.getCookies()) {
+					final Cookie cookie = (Cookie) o1;
 					final String cookieText = owner.writeCookie(cookie);
-					outStream.write(cookieText.getBytes("8859_1"));
-					outStream.write(WinstoneOutputStream.CR_LF);
+					o.write(cookieText.getBytes("8859_1"));
+					o.write(WinstoneOutputStream.CR_LF);
 					WinstoneOutputStream.logger.debug("Header: " + cookieText);
 				}
 			}
-			outStream.write(WinstoneOutputStream.CR_LF);
-			outStream.flush();
+			o.write(WinstoneOutputStream.CR_LF);
+			o.flush();
 			// Logger.log(Logger.FULL_DEBUG,
 			// Launcher.RESOURCES.getString("HttpProtocol.OutHeaders") +
 			// out.toString());
@@ -185,13 +173,9 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 		// winstone.ajp13.Ajp13Listener.packetDump(content, content.length);
 		// this.buffer.writeTo(this.outStream);
 		int commitLength = content.length;
-		if (contentLengthFromHeader != -1) {
-			final long delta = contentLengthFromHeader - bytesCommitted;
-			if (delta < Integer.MAX_VALUE) {
-				commitLength = Math.min((int) delta, content.length);
-			} else {
-				commitLength = content.length;
-			}
+		final String contentLengthHeader = owner.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
+		if (contentLengthHeader != null) {
+			commitLength = Math.min(Integer.parseInt(contentLengthHeader) - bytesCommitted, content.length);
 		}
 		if (commitLength > 0) {
 			outStream.write(content, 0, commitLength);
@@ -227,7 +211,7 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 		}
 		WinstoneOutputStream.logger.debug("ServletOutputStream flushed");
 		buffer.flush();
-		commit();
+		this.commit();
 	}
 
 	@Override
@@ -271,8 +255,8 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 
 	public void clearIncludeStackForForward() throws IOException {
 		if (isIncluding()) {
-			for (final Iterator<ByteArrayOutputStream> i = includeByteStreams.iterator(); i.hasNext();) {
-				i.next().close();
+			for (final Object includeByteStream : includeByteStreams) {
+				((ByteArrayOutputStream) includeByteStream).close();
 			}
 			includeByteStreams.clear();
 		}
