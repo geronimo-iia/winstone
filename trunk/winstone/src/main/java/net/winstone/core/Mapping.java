@@ -143,7 +143,7 @@ public class Mapping implements java.util.Comparator<Mapping> {
 		case FOLDER_PATTERN:
 			if (inputPattern.startsWith(urlPattern + '/') || inputPattern.equals(urlPattern)) {
 				if (servletPath != null) {
-					servletPath.append(WinstoneRequest.decodeURLToken(urlPattern));
+					servletPath.append(WinstoneRequest.decodeURLToken(urlPattern, false));
 				}
 				if (pathInfo != null) {
 					pathInfo.append(WinstoneRequest.decodeURLToken(inputPattern.substring(urlPattern.length())));
@@ -162,7 +162,7 @@ public class Mapping implements java.util.Comparator<Mapping> {
 			final String fileName = inputPattern.substring(slashPos + 1);
 			if ((isPatternFirst && fileName.startsWith(urlPattern)) || (!isPatternFirst && fileName.endsWith(urlPattern))) {
 				if (servletPath != null) {
-					servletPath.append(WinstoneRequest.decodeURLToken(inputPattern));
+					servletPath.append(WinstoneRequest.decodeURLToken(inputPattern, false));
 				}
 				return true;
 			} else {
@@ -172,7 +172,7 @@ public class Mapping implements java.util.Comparator<Mapping> {
 		case EXACT_PATTERN:
 			if (inputPattern.equals(urlPattern)) {
 				if (servletPath != null) {
-					servletPath.append(WinstoneRequest.decodeURLToken(inputPattern));
+					servletPath.append(WinstoneRequest.decodeURLToken(inputPattern, false));
 				}
 				return true;
 			} else {
@@ -181,7 +181,7 @@ public class Mapping implements java.util.Comparator<Mapping> {
 
 		case DEFAULT_SERVLET:
 			if (servletPath != null) {
-				servletPath.append(WinstoneRequest.decodeURLToken(inputPattern));
+				servletPath.append(WinstoneRequest.decodeURLToken(inputPattern, false));
 			}
 			return true;
 
