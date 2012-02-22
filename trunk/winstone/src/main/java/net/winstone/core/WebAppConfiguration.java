@@ -635,7 +635,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 				final Constructor<?> authConstr = authClass.getConstructor(new Class[] { Node.class, List.class, Set.class, AuthenticationRealm.class });
 				authenticationHandler = (AuthenticationHandler) authConstr.newInstance(new Object[] { loginConfigNode, constraintNodes, rolesAllowed, authenticationRealm });
 			} catch (final ClassNotFoundException err) {
-				WebAppConfiguration.logger.debug("Authentication disabled - can't load authentication handler for {} authentication", authMethod);
+				WebAppConfiguration.logger.error("Authentication disabled - can't load authentication handler for {} authentication", authMethod);
 			} catch (final Throwable err) {
 				WebAppConfiguration.logger.error("Authentication disabled - couldn't load authentication handler: " + authClassName + " or realm: " + realmClassName, err);
 			}
