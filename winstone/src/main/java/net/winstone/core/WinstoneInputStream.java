@@ -7,7 +7,7 @@
 package net.winstone.core;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -26,7 +26,6 @@ public class WinstoneInputStream extends javax.servlet.ServletInputStream {
 	protected static Logger logger = LoggerFactory.getLogger(WinstoneInputStream.class);
 	final int BUFFER_SIZE = 4096;
 	private final InputStream inData;
-	private final ByteArrayOutputStream dump;
 	private Integer contentLength;
 	private int readSoFar;
 
@@ -36,7 +35,6 @@ public class WinstoneInputStream extends javax.servlet.ServletInputStream {
 	public WinstoneInputStream(final InputStream inData) {
 		super();
 		this.inData = inData;
-		dump = new ByteArrayOutputStream();
 	}
 
 	public WinstoneInputStream(final byte inData[]) {
@@ -56,18 +54,51 @@ public class WinstoneInputStream extends javax.servlet.ServletInputStream {
 	public int read() throws IOException {
 		if (contentLength == null) {
 			final int data = inData.read();
-			dump.write(data);
-			// System.out.println("Char: " + (char) data);
 			return data;
 		} else if (contentLength.intValue() > readSoFar) {
 			readSoFar++;
 			final int data = inData.read();
-			dump.write(data);
-			// System.out.println("Char: " + (char) data);
 			return data;
 		} else {
 			return -1;
 		}
+	}
+
+	@Override
+	public int read(final byte[] b, final int off, int len) throws IOException {
+		if (contentLength == null) {
+			return inData.read(b, off, len);
+		} else {
+			len = Math.min(len, contentLength.intValue() - readSoFar);
+			if (len <= 0) {
+				return -1;
+			}
+			final int r = inData.read(b, off, len);
+			if (r < 0) {
+				return r; // EOF
+			}
+			readSoFar += r;
+			return r;
+		}
+
+	}
+
+	/**
+	 * Reads like {@link DataInputStream#readFully(byte[], int, int)}, except
+	 * EOF before fully reading it won't result in an exception.
+	 * 
+	 * @return number of bytes read.
+	 */
+	public int readAsMuchAsPossible(final byte[] buf, final int offset, final int len) throws IOException {
+		int total = 0;
+		while (total < len) {
+			final int count = read(buf, offset + total, len - total);
+			if (count < 0) {
+				break;
+			}
+			total += count;
+		}
+		return total;
 	}
 
 	public void finishRequest() {
@@ -86,7 +117,6 @@ public class WinstoneInputStream extends javax.servlet.ServletInputStream {
 	 * Wrapper for the servletInputStream's readline method
 	 */
 	public byte[] readLine() throws IOException {
-		// System.out.println("ReadLine()");
 		final byte buffer[] = new byte[BUFFER_SIZE];
 		final int charsRead = super.readLine(buffer, 0, BUFFER_SIZE);
 		if (charsRead == -1) {
