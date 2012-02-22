@@ -139,24 +139,24 @@ public class NamingContext implements Context {
 		// Check for absolute urls and redirect or correct
 		if (name.isEmpty()) {
 			return name;
-		} else if (name.get(0).equals(BODGED_PREFIX)) {
-			final Name newName = name.getSuffix(1).add(0, FIRST_CHILD).add(0, PREFIX);
+		} else if (name.get(0).equals(NamingContext.BODGED_PREFIX)) {
+			final Name newName = name.getSuffix(1).add(0, NamingContext.FIRST_CHILD).add(0, NamingContext.PREFIX);
 			return validateName(newName);
-		} else if (name.get(0).equals(PREFIX)) {
-			final String nameInNamespace = this.getNameInNamespace();
+		} else if (name.get(0).equals(NamingContext.PREFIX)) {
+			final String nameInNamespace = getNameInNamespace();
 			final String stringName = name.toString();
 			if (stringName.equals(nameInNamespace)) {
-				return nameParser.parse("");
+				return NamingContext.nameParser.parse("");
 			} else if (nameInNamespace.equals("")) {
-				return nameParser.parse(stringName);
+				return NamingContext.nameParser.parse(stringName);
 			} else if (stringName.startsWith(nameInNamespace)) {
-				return nameParser.parse(stringName.substring(nameInNamespace.length() + 1));
-			} else if (this.parent != null) {
+				return NamingContext.nameParser.parse(stringName.substring(nameInNamespace.length() + 1));
+			} else if (parent != null) {
 				return null;
 			}
 			throw new NameNotFoundException("Name '" + name.toString() + "' Not Found");
 		} else if (name instanceof CompositeName) {
-			return nameParser.parse(name.toString());
+			return NamingContext.nameParser.parse(name.toString());
 		}
 		return name;
 	}
@@ -220,7 +220,7 @@ public class NamingContext implements Context {
 		// If null, it means we don't know how to handle this -> throw to the
 		// parent
 		if (bindName == null) {
-			this.parent.bind(name, obj);
+			parent.bind(name, obj);
 		}
 		// If empty name, complain - we should have a child name here
 		if (bindName.isEmpty()) {
@@ -263,7 +263,7 @@ public class NamingContext implements Context {
 		// If null, it means we don't know how to handle this -> throw to the
 		// parent
 		if (bindName == null) {
-			this.parent.bind(name, obj);
+			parent.bind(name, obj);
 		}
 		// If empty name, complain - we should have a child name here
 		if (bindName.isEmpty()) {
@@ -304,7 +304,7 @@ public class NamingContext implements Context {
 		// If null, it means we don't know how to handle this -> throw to the
 		// parent
 		if (unbindName == null) {
-			this.parent.unbind(name);
+			parent.unbind(name);
 		} else if (unbindName.isEmpty()) {
 			throw new InvalidNameException("Cannot unbind empty name");
 		}
@@ -344,7 +344,7 @@ public class NamingContext implements Context {
 		// If null, it means we don't know how to handle this -> throw to the
 		// parent
 		if (oldnm == null) {
-			this.parent.rename(oldname, newname);
+			parent.rename(oldname, newname);
 		} else if (oldname.isEmpty()) {
 			throw new InvalidNameException("Cannot rename from an empty name");
 		}
@@ -398,7 +398,7 @@ public class NamingContext implements Context {
 		// If null, it means we don't know how to handle this -> throw to the
 		// parent
 		if (searchName == null) {
-			return this.parent.list(name);
+			return parent.list(name);
 		} else if (searchName.isEmpty()) {
 			// listing this context
 			return new Names(bindings);
@@ -423,11 +423,11 @@ public class NamingContext implements Context {
 		// If null, it means we don't know how to handle this -> throw to the
 		// parent
 		if (searchName == null) {
-			return this.parent.listBindings(name);
+			return parent.listBindings(name);
 		}
 		if (searchName.isEmpty()) {
 			// listing this context
-			return new Bindings(this, this.environnement, this.bindings);
+			return new Bindings(this, environnement, bindings);
 		}
 
 		// Perhaps 'name' names a context
@@ -449,12 +449,12 @@ public class NamingContext implements Context {
 		// If null, it means we don't know how to handle this -> throw to the
 		// parent
 		if (childName == null) {
-			this.parent.destroySubcontext(name);
+			parent.destroySubcontext(name);
 		}
 		// checking for nonempty context first
 		if (childName.isEmpty()) {
 			if (!name.isEmpty() && (name.size() > 1)) {
-				this.parent.destroySubcontext(name.getSuffix(name.size() - 2));
+				parent.destroySubcontext(name.getSuffix(name.size() - 2));
 				return;
 			}
 			throw new InvalidNameException("Cannot destroy context using empty name");
@@ -474,7 +474,7 @@ public class NamingContext implements Context {
 		// If null, it means we don't know how to handle this -> throw to the
 		// parent
 		if (childName == null) {
-			return this.parent.createSubcontext(name);
+			return parent.createSubcontext(name);
 			// If empty name, complain - we should have a child name here
 		}
 
@@ -539,7 +539,7 @@ public class NamingContext implements Context {
 		if (obj instanceof Context) {
 			((Context) obj).close();
 		}
-		return nameParser;
+		return NamingContext.nameParser;
 	}
 
 	@Override
@@ -595,7 +595,7 @@ public class NamingContext implements Context {
 		if (ancestor == null) {
 			return "";
 		}
-		final Name name = nameParser.parse("");
+		final Name name = NamingContext.nameParser.parse("");
 		name.add(myAtomicName);
 		// Get parent's names
 		while ((ancestor != null) && (ancestor.myAtomicName != null)) {

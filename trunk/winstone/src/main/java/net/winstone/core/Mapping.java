@@ -6,201 +6,208 @@
  */
 package net.winstone.core;
 
-import net.winstone.core.WinstoneRequest;
 import net.winstone.WinstoneException;
+
 import org.slf4j.LoggerFactory;
 
 /**
- * Encapsulates the parsing of URL patterns, as well as the mapping of a url pattern to a servlet instance
+ * Encapsulates the parsing of URL patterns, as well as the mapping of a url
+ * pattern to a servlet instance
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: Mapping.java,v 1.9 2007/04/23 02:55:35 rickknowles Exp $
  */
 public class Mapping implements java.util.Comparator<Mapping> {
 
-    protected static org.slf4j.Logger logger = LoggerFactory.getLogger(Mapping.class);
-    public static final int EXACT_PATTERN = 1;
-    public static final int FOLDER_PATTERN = 2;
-    public static final int EXTENSION_PATTERN = 3;
-    public static final int DEFAULT_SERVLET = 4;
-    public static final String STAR = "*";
-    public static final String SLASH = "/";
-    private String urlPattern;
-    private String linkName; // used to map filters to a specific servlet by
-    // name
-    private String mappedTo;
-    private int patternType;
-    private boolean isPatternFirst; // ie is this a blah* pattern, not *blah
+	protected static org.slf4j.Logger logger = LoggerFactory.getLogger(Mapping.class);
+	public static final int EXACT_PATTERN = 1;
+	public static final int FOLDER_PATTERN = 2;
+	public static final int EXTENSION_PATTERN = 3;
+	public static final int DEFAULT_SERVLET = 4;
+	public static final String STAR = "*";
+	public static final String SLASH = "/";
+	private String urlPattern;
+	private String linkName; // used to map filters to a specific servlet by
+	// name
+	private final String mappedTo;
+	private int patternType;
+	private boolean isPatternFirst; // ie is this a blah* pattern, not *blah
 
-    // (extensions only)
-    protected Mapping(String mappedTo) {
-        this.mappedTo = mappedTo;
-    }
+	// (extensions only)
+	protected Mapping(final String mappedTo) {
+		this.mappedTo = mappedTo;
+	}
 
-    /**
-     * Factory constructor method - this parses the url pattern into pieces we can use to match against incoming URLs.
-     */
-    public static Mapping createFromURL(String mappedTo, String pattern) {
-        if ((pattern == null) || (mappedTo == null)) {
-            throw new WinstoneException("WebAppConfig: Invalid pattern mount for " + mappedTo + " pattern " + pattern + " - ignoring");
-        }
+	/**
+	 * Factory constructor method - this parses the url pattern into pieces we
+	 * can use to match against incoming URLs.
+	 */
+	public static Mapping createFromURL(final String mappedTo, String pattern) {
+		if ((pattern == null) || (mappedTo == null)) {
+			throw new WinstoneException("WebAppConfig: Invalid pattern mount for " + mappedTo + " pattern " + pattern + " - ignoring");
+		}
 
-        // Compatibility hacks - add a leading slash if one is not found and not
-        // an extension mapping
-        if (!pattern.equals("") && !pattern.startsWith(STAR) && !pattern.startsWith(SLASH)) {
-            pattern = SLASH + pattern;
-        } else if (pattern.equals(STAR)) {
-            logger.warn("WARNING: Invalid \"*\" only mount. Interpreting as a \"/*\" mount");
-            pattern = SLASH + STAR;
-        }
+		// Compatibility hacks - add a leading slash if one is not found and not
+		// an extension mapping
+		if (!pattern.equals("") && !pattern.startsWith(Mapping.STAR) && !pattern.startsWith(Mapping.SLASH)) {
+			pattern = Mapping.SLASH + pattern;
+		} else if (pattern.equals(Mapping.STAR)) {
+			Mapping.logger.warn("WARNING: Invalid \"*\" only mount. Interpreting as a \"/*\" mount");
+			pattern = Mapping.SLASH + Mapping.STAR;
+		}
 
-        Mapping me = new Mapping(mappedTo);
+		final Mapping me = new Mapping(mappedTo);
 
-        int firstStarPos = pattern.indexOf(STAR);
-        int lastStarPos = pattern.lastIndexOf(STAR);
-        int patternLength = pattern.length();
+		final int firstStarPos = pattern.indexOf(Mapping.STAR);
+		final int lastStarPos = pattern.lastIndexOf(Mapping.STAR);
+		final int patternLength = pattern.length();
 
-        // check for default servlet, ie mapping = exactly /
-        if (pattern.equals(SLASH)) {
-            me.urlPattern = "";
-            me.patternType = DEFAULT_SERVLET;
-        } else if (firstStarPos == -1) {
-            me.urlPattern = pattern;
-            me.patternType = EXACT_PATTERN;
-        } // > 1 star = error
-        else if (firstStarPos != lastStarPos) {
-            throw new WinstoneException("WebAppConfig: Invalid pattern mount for " + mappedTo + " pattern " + pattern + " - ignoring");
-        } // check for folder style mapping (ends in /*)
-        else if (pattern.indexOf(SLASH + STAR) == (patternLength - (SLASH + STAR).length())) {
-            me.urlPattern = pattern.substring(0, pattern.length() - (SLASH + STAR).length());
-            me.patternType = FOLDER_PATTERN;
-        } // check for non-extension match
-        else if (pattern.indexOf(SLASH) != -1) {
-            throw new WinstoneException("WebAppConfig: Invalid pattern mount for " + mappedTo + " pattern " + pattern + " - ignoring");
-        } // check for extension match at the beginning (eg *blah)
-        else if (firstStarPos == 0) {
-            me.urlPattern = pattern.substring(STAR.length());
-            me.patternType = EXTENSION_PATTERN;
-            me.isPatternFirst = false;
-        } // check for extension match at the end (eg blah*)
-        else if (firstStarPos == (patternLength - STAR.length())) {
-            me.urlPattern = pattern.substring(0, patternLength - STAR.length());
-            me.patternType = EXTENSION_PATTERN;
-            me.isPatternFirst = true;
-        } else {
-            throw new WinstoneException("WebAppConfig: Invalid pattern mount for " + mappedTo + " pattern " + pattern + " - ignoring");
-        }
-        logger.debug("Mapped: {} to {}", mappedTo, pattern);
-        return me;
-    }
+		// check for default servlet, ie mapping = exactly /
+		if (pattern.equals(Mapping.SLASH)) {
+			me.urlPattern = "";
+			me.patternType = Mapping.DEFAULT_SERVLET;
+		} else if (firstStarPos == -1) {
+			me.urlPattern = pattern;
+			me.patternType = Mapping.EXACT_PATTERN;
+		} // > 1 star = error
+		else if (firstStarPos != lastStarPos) {
+			throw new WinstoneException("WebAppConfig: Invalid pattern mount for " + mappedTo + " pattern " + pattern + " - ignoring");
+		} // check for folder style mapping (ends in /*)
+		else if (pattern.indexOf(Mapping.SLASH + Mapping.STAR) == (patternLength - (Mapping.SLASH + Mapping.STAR).length())) {
+			me.urlPattern = pattern.substring(0, pattern.length() - (Mapping.SLASH + Mapping.STAR).length());
+			me.patternType = Mapping.FOLDER_PATTERN;
+		} // check for non-extension match
+		else if (pattern.indexOf(Mapping.SLASH) != -1) {
+			throw new WinstoneException("WebAppConfig: Invalid pattern mount for " + mappedTo + " pattern " + pattern + " - ignoring");
+		} // check for extension match at the beginning (eg *blah)
+		else if (firstStarPos == 0) {
+			me.urlPattern = pattern.substring(Mapping.STAR.length());
+			me.patternType = Mapping.EXTENSION_PATTERN;
+			me.isPatternFirst = false;
+		} // check for extension match at the end (eg blah*)
+		else if (firstStarPos == (patternLength - Mapping.STAR.length())) {
+			me.urlPattern = pattern.substring(0, patternLength - Mapping.STAR.length());
+			me.patternType = Mapping.EXTENSION_PATTERN;
+			me.isPatternFirst = true;
+		} else {
+			throw new WinstoneException("WebAppConfig: Invalid pattern mount for " + mappedTo + " pattern " + pattern + " - ignoring");
+		}
+		Mapping.logger.debug("Mapped: {} to {}", mappedTo, pattern);
+		return me;
+	}
 
-    /**
-     * Factory constructor method - this turns a servlet name into a mapping element
-     */
-    public static Mapping createFromLink(String mappedTo, String linkName) {
-        if ((linkName == null) || (mappedTo == null)) {
-            throw new WinstoneException("WebAppConfig: Invalid link mount for " + mappedTo + " link " + linkName + " - ignoring");
-        }
+	/**
+	 * Factory constructor method - this turns a servlet name into a mapping
+	 * element
+	 */
+	public static Mapping createFromLink(final String mappedTo, final String linkName) {
+		if ((linkName == null) || (mappedTo == null)) {
+			throw new WinstoneException("WebAppConfig: Invalid link mount for " + mappedTo + " link " + linkName + " - ignoring");
+		}
 
-        Mapping me = new Mapping(mappedTo);
-        me.linkName = linkName;
-        return me;
-    }
+		final Mapping me = new Mapping(mappedTo);
+		me.linkName = linkName;
+		return me;
+	}
 
-    public int getPatternType() {
-        return this.patternType;
-    }
+	public int getPatternType() {
+		return patternType;
+	}
 
-    public String getUrlPattern() {
-        return this.urlPattern;
-    }
+	public String getUrlPattern() {
+		return urlPattern;
+	}
 
-    public String getMappedTo() {
-        return this.mappedTo;
-    }
+	public String getMappedTo() {
+		return mappedTo;
+	}
 
-    public String getLinkName() {
-        return this.linkName;
-    }
+	public String getLinkName() {
+		return linkName;
+	}
 
-    /**
-     * Try to match this pattern against the incoming url
-     * 
-     * @param inputPattern The URL we want to check for a match
-     * @param servletPath An empty stringbuffer for the servletPath of a successful match
-     * @param pathInfo An empty stringbuffer for the pathInfo of a successful match
-     * @return true if the match is successful
-     */
-    public boolean match(String inputPattern, StringBuffer servletPath, StringBuffer pathInfo) {
-        switch (this.patternType) {
-            case FOLDER_PATTERN:
-                if (inputPattern.startsWith(this.urlPattern + '/') || inputPattern.equals(this.urlPattern)) {
-                    if (servletPath != null) {
-                        servletPath.append(WinstoneRequest.decodeURLToken(this.urlPattern));
-                    }
-                    if (pathInfo != null) {
-                        pathInfo.append(WinstoneRequest.decodeURLToken(inputPattern.substring(this.urlPattern.length())));
-                    }
-                    return true;
-                } else {
-                    return false;
-                }
+	/**
+	 * Try to match this pattern against the incoming url
+	 * 
+	 * @param inputPattern
+	 *            The URL we want to check for a match
+	 * @param servletPath
+	 *            An empty stringbuffer for the servletPath of a successful
+	 *            match
+	 * @param pathInfo
+	 *            An empty stringbuffer for the pathInfo of a successful match
+	 * @return true if the match is successful
+	 */
+	public boolean match(final String inputPattern, final StringBuffer servletPath, final StringBuffer pathInfo) {
+		switch (patternType) {
+		case FOLDER_PATTERN:
+			if (inputPattern.startsWith(urlPattern + '/') || inputPattern.equals(urlPattern)) {
+				if (servletPath != null) {
+					servletPath.append(WinstoneRequest.decodeURLToken(urlPattern));
+				}
+				if (pathInfo != null) {
+					pathInfo.append(WinstoneRequest.decodeURLToken(inputPattern.substring(urlPattern.length())));
+				}
+				return true;
+			} else {
+				return false;
+			}
 
-            case EXTENSION_PATTERN:
-                // Strip down to the last item in the path
-                int slashPos = inputPattern.lastIndexOf(SLASH);
-                if ((slashPos == -1) || (slashPos == inputPattern.length() - 1)) {
-                    return false;
-                }
-                String fileName = inputPattern.substring(slashPos + 1);
-                if ((this.isPatternFirst && fileName.startsWith(this.urlPattern)) || (!this.isPatternFirst && fileName.endsWith(this.urlPattern))) {
-                    if (servletPath != null) {
-                        servletPath.append(WinstoneRequest.decodeURLToken(inputPattern));
-                    }
-                    return true;
-                } else {
-                    return false;
-                }
+		case EXTENSION_PATTERN:
+			// Strip down to the last item in the path
+			final int slashPos = inputPattern.lastIndexOf(Mapping.SLASH);
+			if ((slashPos == -1) || (slashPos == (inputPattern.length() - 1))) {
+				return false;
+			}
+			final String fileName = inputPattern.substring(slashPos + 1);
+			if ((isPatternFirst && fileName.startsWith(urlPattern)) || (!isPatternFirst && fileName.endsWith(urlPattern))) {
+				if (servletPath != null) {
+					servletPath.append(WinstoneRequest.decodeURLToken(inputPattern));
+				}
+				return true;
+			} else {
+				return false;
+			}
 
-            case EXACT_PATTERN:
-                if (inputPattern.equals(this.urlPattern)) {
-                    if (servletPath != null) {
-                        servletPath.append(WinstoneRequest.decodeURLToken(inputPattern));
-                    }
-                    return true;
-                } else {
-                    return false;
-                }
+		case EXACT_PATTERN:
+			if (inputPattern.equals(urlPattern)) {
+				if (servletPath != null) {
+					servletPath.append(WinstoneRequest.decodeURLToken(inputPattern));
+				}
+				return true;
+			} else {
+				return false;
+			}
 
-            case DEFAULT_SERVLET:
-                if (servletPath != null) {
-                    servletPath.append(WinstoneRequest.decodeURLToken(inputPattern));
-                }
-                return true;
+		case DEFAULT_SERVLET:
+			if (servletPath != null) {
+				servletPath.append(WinstoneRequest.decodeURLToken(inputPattern));
+			}
+			return true;
 
-            default:
-                return false;
-        }
-    }
+		default:
+			return false;
+		}
+	}
 
-    @Override
-    public String toString() {
-        return this.linkName != null ? "Link:" + this.linkName : "URLPattern:type=" + this.patternType + ",pattern=" + this.urlPattern;
-    }
+	@Override
+	public String toString() {
+		return linkName != null ? "Link:" + linkName : "URLPattern:type=" + patternType + ",pattern=" + urlPattern;
+	}
 
-    @Override
-    public int compare(Mapping one, Mapping two) {
-        Integer intOne = new Integer(one.getPatternType());
-        Integer intTwo = new Integer(two.getPatternType());
-        int order = -1 * intOne.compareTo(intTwo);
-        if (order != 0) {
-            return order;
-        }
-        if (one.getLinkName() != null) {
-            // servlet name mapping - just alphabetical sort
-            return one.getLinkName().compareTo(two.getLinkName());
-        } else {
-            return -1 * one.getUrlPattern().compareTo(two.getUrlPattern());
-        }
-    }
+	@Override
+	public int compare(final Mapping one, final Mapping two) {
+		final Integer intOne = new Integer(one.getPatternType());
+		final Integer intTwo = new Integer(two.getPatternType());
+		final int order = -1 * intOne.compareTo(intTwo);
+		if (order != 0) {
+			return order;
+		}
+		if (one.getLinkName() != null) {
+			// servlet name mapping - just alphabetical sort
+			return one.getLinkName().compareTo(two.getLinkName());
+		} else {
+			return -1 * one.getUrlPattern().compareTo(two.getUrlPattern());
+		}
+	}
 }

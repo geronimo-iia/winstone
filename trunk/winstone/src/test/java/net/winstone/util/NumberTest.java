@@ -15,7 +15,7 @@ public class NumberTest extends TestCase {
 		try {
 			Integer.parseInt("2516506624");
 			Assert.fail();
-		} catch (NumberFormatException e) {
+		} catch (final NumberFormatException e) {
 		}
 		Long.parseLong("2516506624");
 	}

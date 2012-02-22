@@ -19,29 +19,32 @@ import javax.servlet.http.HttpServletResponse;
  * Used to test the unavailable exception processing
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
- * @version $Id: UnavailableServlet.java,v 1.2 2006/02/28 07:32:49 rickknowles Exp $
+ * @version $Id: UnavailableServlet.java,v 1.2 2006/02/28 07:32:49 rickknowles
+ *          Exp $
  */
 public class UnavailableServlet extends HttpServlet {
-    
-    private static final long serialVersionUID = 4534971467464517373L;
-    protected boolean errorAtInit;
-    
-    @Override
-    public void init() throws ServletException {
-        String errorTime = getServletConfig().getInitParameter("errorTime");
-        this.errorAtInit = ((errorTime == null) || errorTime.equals("init"));
-        if (this.errorAtInit)
-            throw new UnavailableException("Error thrown deliberately during init");
-    }
-    
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if (!this.errorAtInit)
-            throw new UnavailableException("Error thrown deliberately during get");
-        
-        Writer out = response.getWriter();
-        out.write("This should not be shown, because we've thrown unavailable exceptions");
-        out.close();
-    }
-    
+
+	private static final long serialVersionUID = 4534971467464517373L;
+	protected boolean errorAtInit;
+
+	@Override
+	public void init() throws ServletException {
+		final String errorTime = getServletConfig().getInitParameter("errorTime");
+		errorAtInit = ((errorTime == null) || errorTime.equals("init"));
+		if (errorAtInit) {
+			throw new UnavailableException("Error thrown deliberately during init");
+		}
+	}
+
+	@Override
+	protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+		if (!errorAtInit) {
+			throw new UnavailableException("Error thrown deliberately during get");
+		}
+
+		final Writer out = response.getWriter();
+		out.write("This should not be shown, because we've thrown unavailable exceptions");
+		out.close();
+	}
+
 }

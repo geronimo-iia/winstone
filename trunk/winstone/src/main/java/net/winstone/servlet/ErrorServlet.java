@@ -19,8 +19,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 
 import net.winstone.WinstoneResourceBundle;
-import net.winstone.util.StringUtils;
 import net.winstone.core.WinstoneConstant;
+import net.winstone.util.StringUtils;
 
 /**
  * A simple servlet that writes out the body of the error
@@ -30,38 +30,39 @@ import net.winstone.core.WinstoneConstant;
  */
 public class ErrorServlet extends HttpServlet {
 
-    private static final long serialVersionUID = -1210902945433492424L;
-    private String template;
-    private String serverVersion;
+	private static final long serialVersionUID = -1210902945433492424L;
+	private String template;
+	private String serverVersion;
 
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-        template = WinstoneResourceBundle.getInstance().getString("WinstoneResponse.ErrorPage");
-        serverVersion = WinstoneResourceBundle.getInstance().getString("ServerVersion");
-    }
+	@Override
+	public void init(final ServletConfig config) throws ServletException {
+		super.init(config);
+		template = WinstoneResourceBundle.getInstance().getString("WinstoneResponse.ErrorPage");
+		serverVersion = WinstoneResourceBundle.getInstance().getString("ServerVersion");
+	}
 
-    @Override
-    public void service(final ServletRequest request, final ServletResponse response) throws ServletException, IOException {
+	@Override
+	public void service(final ServletRequest request, final ServletResponse response) throws ServletException, IOException {
 
-        Integer sc = (Integer) request.getAttribute(WinstoneConstant.ERROR_STATUS_CODE);
-        String msg = (String) request.getAttribute(WinstoneConstant.ERROR_MESSAGE);
-        Throwable err = (Throwable) request.getAttribute(WinstoneConstant.ERROR_EXCEPTION);
+		final Integer sc = (Integer) request.getAttribute(WinstoneConstant.ERROR_STATUS_CODE);
+		final String msg = (String) request.getAttribute(WinstoneConstant.ERROR_MESSAGE);
+		final Throwable err = (Throwable) request.getAttribute(WinstoneConstant.ERROR_EXCEPTION);
 
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        if (err != null) {
-            err.printStackTrace(pw);
-        } else {
-            pw.println("(none)");
-        }
-        pw.flush();
-        // If we are here there was no error servlet, so show the default error page
-        String output = StringUtils.replaceToken(template, sc != null ? sc.toString() : "", (msg == null ? "" : msg), sw.toString(), serverVersion, new Date().toString());
+		final StringWriter sw = new StringWriter();
+		final PrintWriter pw = new PrintWriter(sw);
+		if (err != null) {
+			err.printStackTrace(pw);
+		} else {
+			pw.println("(none)");
+		}
+		pw.flush();
+		// If we are here there was no error servlet, so show the default error
+		// page
+		final String output = StringUtils.replaceToken(template, sc != null ? sc.toString() : "", (msg == null ? "" : msg), sw.toString(), serverVersion, new Date().toString());
 
-        response.setContentLength(output.getBytes(response.getCharacterEncoding()).length);
-        Writer out = response.getWriter();
-        out.write(output);
-        out.flush();
-    }
+		response.setContentLength(output.getBytes(response.getCharacterEncoding()).length);
+		final Writer out = response.getWriter();
+		out.write(output);
+		out.flush();
+	}
 }

@@ -7,70 +7,74 @@
 package net.winstone.testCase.load;
 
 import java.util.Map;
+
 import net.winstone.boot.BootStrap;
 import net.winstone.boot.Server;
+
 import org.slf4j.LoggerFactory;
 
 /**
- * This is the class that gets launched by the command line.
- * Load argument from command line, process them and try to launch server.
- *
+ * This is the class that gets launched by the command line. Load argument from
+ * command line, process them and try to launch server.
+ * 
  * @author Jerome Guibert
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  */
 public class Launcher {
 
-    protected static org.slf4j.Logger logger = LoggerFactory.getLogger(Launcher.class);
-    // server attribut member
-    private Server server;
+	protected static org.slf4j.Logger logger = LoggerFactory.getLogger(Launcher.class);
+	// server attribut member
+	private Server server;
 
-    /**
-     * Main method. This basically just accepts a few args, then initialises the listener thread. For now, just shut it down with a
-     * control-C.
-     */
-    public static void main(String argv[]) {
-        Launcher launcher = new Launcher(argv);
-        launcher.launch();
-    }
+	/**
+	 * Main method. This basically just accepts a few args, then initialises the
+	 * listener thread. For now, just shut it down with a control-C.
+	 */
+	public static void main(final String argv[]) {
+		final Launcher launcher = new Launcher(argv);
+		launcher.launch();
+	}
 
-    /**
-     * Build a new Launcher from java code.
-     * @param args
-     */
-    public Launcher(final Map<String, String> args) {
-        server = new BootStrap(args).boot();
-    }
+	/**
+	 * Build a new Launcher from java code.
+	 * 
+	 * @param args
+	 */
+	public Launcher(final Map<String, String> args) {
+		server = new BootStrap(args).boot();
+	}
 
-    /**
-     * Build a new Launcher from command line.
-     * @param argv
-     */
-    public Launcher(final String argv[]) {
-        super();
-        server = new BootStrap(argv).boot();
-    }
+	/**
+	 * Build a new Launcher from command line.
+	 * 
+	 * @param argv
+	 */
+	public Launcher(final String argv[]) {
+		super();
+		server = new BootStrap(argv).boot();
+	}
 
-    /**
-     * Launch server.
-     */
-    public final void launch() {
-        try {
-            if (server != null) {
-                server.start();
-            }
-        } catch (Throwable err) {
-            System.err.println("Container startup failed");
-            err.printStackTrace(System.err);
-        }
-    }
+	/**
+	 * Launch server.
+	 */
+	public final void launch() {
+		try {
+			if (server != null) {
+				server.start();
+			}
+		} catch (final Throwable err) {
+			System.err.println("Container startup failed");
+			err.printStackTrace(System.err);
+		}
+	}
 
-    /**
-     * Shutdown server.
-     */
-    public void shutdown() {
-        if (server != null) {
-            server.shutdown();
-            server = null;
-        }
-    }
+	/**
+	 * Shutdown server.
+	 */
+	public void shutdown() {
+		if (server != null) {
+			server.shutdown();
+			server = null;
+		}
+	}
 }

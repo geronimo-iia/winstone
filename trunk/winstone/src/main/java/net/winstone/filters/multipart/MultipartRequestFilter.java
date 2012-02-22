@@ -30,69 +30,63 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Checks the content type, and wraps the request in a MultipartRequestWrapper if
- * it's a multipart request.
+ * Checks the content type, and wraps the request in a MultipartRequestWrapper
+ * if it's a multipart request.
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
- * @version $Id: MultipartRequestFilter.java,v 1.1 2005/08/24 06:43:34 rickknowles Exp $
+ * @version $Id: MultipartRequestFilter.java,v 1.1 2005/08/24 06:43:34
+ *          rickknowles Exp $
  */
 public class MultipartRequestFilter implements Filter {
 
-    private int maxContentLength = -1;
-    private String tooBigPage;
-    private ServletContext context;
+	private int maxContentLength = -1;
+	private String tooBigPage;
+	private ServletContext context;
 
-    @Override
-    public void init(final FilterConfig config) throws ServletException {
-        this.tooBigPage = config.getInitParameter("tooBigPage");
-        String pmaxContentLength = config.getInitParameter("maxContentLength");
-        if (pmaxContentLength == null) {
-            pmaxContentLength = "-1";
-        }
-        this.maxContentLength = Integer.parseInt(pmaxContentLength);
-        this.context = config.getServletContext();
-    }
+	@Override
+	public void init(final FilterConfig config) throws ServletException {
+		tooBigPage = config.getInitParameter("tooBigPage");
+		String pmaxContentLength = config.getInitParameter("maxContentLength");
+		if (pmaxContentLength == null) {
+			pmaxContentLength = "-1";
+		}
+		maxContentLength = Integer.parseInt(pmaxContentLength);
+		context = config.getServletContext();
+	}
 
-    @Override
-    public void destroy() {
-        this.context = null;
-        this.maxContentLength = -1;
-        this.tooBigPage = null;
-    }
+	@Override
+	public void destroy() {
+		context = null;
+		maxContentLength = -1;
+		tooBigPage = null;
+	}
 
-    @Override
-    public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException {
-        String contentType = request.getContentType();
-        if ((contentType != null) && contentType.startsWith("multipart/form-data")) {
-            if (this.maxContentLength >= 0) {
-                int contentLength = request.getContentLength();
-                if ((contentLength != -1) && (contentLength > this.maxContentLength)) {
-                    if (this.tooBigPage == null) {
-                        ((HttpServletResponse) response).sendError(
-                                HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                                "Upload size (" + contentLength + " bytes) was larger "
-                                + "than the maxContentLength (" + this.maxContentLength
-                                + " bytes)");
-                    } else {
-                        RequestDispatcher rdTooBig = context.getRequestDispatcher(this.tooBigPage);
-                        if (rdTooBig == null) {
-                            ((HttpServletResponse) response).sendError(
-                                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                                    "Upload size (" + contentLength + " bytes) was larger "
-                                    + "than the maxContentLength (" + this.maxContentLength
-                                    + " bytes) - page " + this.tooBigPage + " not found");
-                        } else {
-                            rdTooBig.forward(request, response);
-                        }
-                    }
-                } else {
-                    chain.doFilter(new MultipartRequestWrapper(request), response);
-                }
-            } else {
-                chain.doFilter(new MultipartRequestWrapper(request), response);
-            }
-        } else {
-            chain.doFilter(request, response);
-        }
-    }
+	@Override
+	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException {
+		final String contentType = request.getContentType();
+		if ((contentType != null) && contentType.startsWith("multipart/form-data")) {
+			if (maxContentLength >= 0) {
+				final int contentLength = request.getContentLength();
+				if ((contentLength != -1) && (contentLength > maxContentLength)) {
+					if (tooBigPage == null) {
+						((HttpServletResponse) response).sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Upload size (" + contentLength + " bytes) was larger " + "than the maxContentLength (" + maxContentLength + " bytes)");
+					} else {
+						final RequestDispatcher rdTooBig = context.getRequestDispatcher(tooBigPage);
+						if (rdTooBig == null) {
+							((HttpServletResponse) response).sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Upload size (" + contentLength + " bytes) was larger " + "than the maxContentLength (" + maxContentLength + " bytes) - page "
+									+ tooBigPage + " not found");
+						} else {
+							rdTooBig.forward(request, response);
+						}
+					}
+				} else {
+					chain.doFilter(new MultipartRequestWrapper(request), response);
+				}
+			} else {
+				chain.doFilter(new MultipartRequestWrapper(request), response);
+			}
+		} else {
+			chain.doFilter(request, response);
+		}
+	}
 }

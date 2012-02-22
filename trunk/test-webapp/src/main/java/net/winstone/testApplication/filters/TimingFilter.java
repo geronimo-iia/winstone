@@ -24,39 +24,37 @@ import javax.servlet.ServletResponse;
  * @version $Id: TimingFilter.java,v 1.2 2006/02/28 07:32:50 rickknowles Exp $
  */
 public class TimingFilter implements Filter {
-    private boolean dumpRequestParams;
+	private boolean dumpRequestParams;
 
-    private ServletContext context;
+	private ServletContext context;
 
-    public void init(FilterConfig config) {
-        String dumpRequestParams = config
-                .getInitParameter("dumpRequestParameters");
-        this.dumpRequestParams = ((dumpRequestParams != null) && dumpRequestParams
-                .equalsIgnoreCase("true"));
-        this.context = config.getServletContext();
-    }
+	@Override
+	public void init(final FilterConfig config) {
+		final String dumpRequestParams = config.getInitParameter("dumpRequestParameters");
+		this.dumpRequestParams = ((dumpRequestParams != null) && dumpRequestParams.equalsIgnoreCase("true"));
+		context = config.getServletContext();
+	}
 
-    public void destroy() {
-        this.context = null;
-    }
+	@Override
+	public void destroy() {
+		context = null;
+	}
 
-    /**
-     * Times the execution of the rest of the filter chain, optionally dumping
-     * the request parameters to the servlet context log
-     */
-    public void doFilter(ServletRequest request, ServletResponse response,
-            FilterChain chain) throws IOException, ServletException {
-        if (this.dumpRequestParams)
-            for (Enumeration<?> paramNames = request.getParameterNames(); paramNames
-                    .hasMoreElements();) {
-                String name = (String) paramNames.nextElement();
-                this.context.log("Request parameter: " + name + "="
-                        + request.getParameter(name));
-            }
+	/**
+	 * Times the execution of the rest of the filter chain, optionally dumping
+	 * the request parameters to the servlet context log
+	 */
+	@Override
+	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException {
+		if (dumpRequestParams) {
+			for (final Enumeration<?> paramNames = request.getParameterNames(); paramNames.hasMoreElements();) {
+				final String name = (String) paramNames.nextElement();
+				context.log("Request parameter: " + name + "=" + request.getParameter(name));
+			}
+		}
 
-        long startTime = System.currentTimeMillis();
-        chain.doFilter(request, response);
-        this.context.log("Filter chain executed in "
-                + (System.currentTimeMillis() - startTime) + "ms");
-    }
+		final long startTime = System.currentTimeMillis();
+		chain.doFilter(request, response);
+		context.log("Filter chain executed in " + (System.currentTimeMillis() - startTime) + "ms");
+	}
 }

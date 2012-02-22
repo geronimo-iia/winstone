@@ -24,6 +24,7 @@ import java.util.TimeZone;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+
 import net.winstone.WinstoneResourceBundle;
 
 import org.slf4j.Logger;
@@ -43,8 +44,8 @@ public class WinstoneResponse implements HttpServletResponse {
 	protected static Logger logger = LoggerFactory.getLogger(WinstoneResponse.class);
 
 	static {
-		HTTP_DF.setTimeZone(TimeZone.getTimeZone("GMT"));
-		VERSION0_DF.setTimeZone(TimeZone.getTimeZone("GMT"));
+		WinstoneResponse.HTTP_DF.setTimeZone(TimeZone.getTimeZone("GMT"));
+		WinstoneResponse.VERSION0_DF.setTimeZone(TimeZone.getTimeZone("GMT"));
 	}
 	public static final transient String X_POWERED_BY_HEADER_VALUE = WinstoneResourceBundle.getInstance().getString("PoweredByHeader");
 	private int statusCode;
@@ -66,127 +67,127 @@ public class WinstoneResponse implements HttpServletResponse {
 	 */
 	public WinstoneResponse() {
 
-		this.headers = new ArrayList<String>();
-		this.cookies = new ArrayList<Cookie>();
+		headers = new ArrayList<String>();
+		cookies = new ArrayList<Cookie>();
 
-		this.statusCode = SC_OK;
-		this.locale = null; // Locale.getDefault();
-		this.explicitEncoding = null;
-		this.protocol = null;
-		this.reqKeepAliveHeader = null;
+		statusCode = HttpServletResponse.SC_OK;
+		locale = null; // Locale.getDefault();
+		explicitEncoding = null;
+		protocol = null;
+		reqKeepAliveHeader = null;
 	}
 
 	/**
 	 * Resets the request to be reused
 	 */
 	public void cleanUp() {
-		this.req = null;
-		this.webAppConfig = null;
-		this.outputStream = null;
-		this.outputWriter = null;
-		this.headers.clear();
-		this.cookies.clear();
-		this.protocol = null;
-		this.reqKeepAliveHeader = null;
+		req = null;
+		webAppConfig = null;
+		outputStream = null;
+		outputWriter = null;
+		headers.clear();
+		cookies.clear();
+		protocol = null;
+		reqKeepAliveHeader = null;
 
-		this.statusCode = SC_OK;
-		this.errorStatusCode = null;
-		this.locale = null; // Locale.getDefault();
-		this.explicitEncoding = null;
-		this.implicitEncoding = null;
+		statusCode = HttpServletResponse.SC_OK;
+		errorStatusCode = null;
+		locale = null; // Locale.getDefault();
+		explicitEncoding = null;
+		implicitEncoding = null;
 	}
 
-	private String getEncodingFromLocale(Locale local) {
+	private String getEncodingFromLocale(final Locale local) {
 		String localeString = local.getLanguage() + "_" + local.getCountry();
-		Map<String, String> encMap = this.webAppConfig.getLocaleEncodingMap();
-		logger.debug("Scanning for locale-encoding match: {} in {}", localeString, encMap + "");
+		final Map<String, String> encMap = webAppConfig.getLocaleEncodingMap();
+		WinstoneResponse.logger.debug("Scanning for locale-encoding match: {} in {}", localeString, encMap + "");
 
-		String fullMatch = (String) encMap.get(localeString);
+		final String fullMatch = encMap.get(localeString);
 		if (fullMatch != null) {
-			logger.debug("Found locale-encoding match: {}", fullMatch);
+			WinstoneResponse.logger.debug("Found locale-encoding match: {}", fullMatch);
 			return fullMatch;
 		} else {
 			localeString = local.getLanguage();
-			logger.debug("Scanning for locale-encoding match: {} in {}", localeString, encMap + "");
-			String match = (String) encMap.get(localeString);
+			WinstoneResponse.logger.debug("Scanning for locale-encoding match: {} in {}", localeString, encMap + "");
+			final String match = encMap.get(localeString);
 			if (match != null) {
-				logger.debug("Found locale-encoding match: {}", match);
+				WinstoneResponse.logger.debug("Found locale-encoding match: {}", match);
 			}
 			return match;
 		}
 	}
 
-	public void setErrorStatusCode(int statusCode) {
-		this.errorStatusCode = new Integer(statusCode);
+	public void setErrorStatusCode(final int statusCode) {
+		errorStatusCode = new Integer(statusCode);
 		this.statusCode = statusCode;
 	}
 
 	public WinstoneOutputStream getWinstoneOutputStream() {
-		return this.outputStream;
+		return outputStream;
 	}
 
-	public void setOutputStream(WinstoneOutputStream outData) {
-		this.outputStream = outData;
+	public void setOutputStream(final WinstoneOutputStream outData) {
+		outputStream = outData;
 	}
 
-	public void setWebAppConfig(WebAppConfiguration webAppConfig) {
+	public void setWebAppConfig(final WebAppConfiguration webAppConfig) {
 		this.webAppConfig = webAppConfig;
 	}
 
 	public String getProtocol() {
-		return this.protocol;
+		return protocol;
 	}
 
-	public void setProtocol(String protocol) {
+	public void setProtocol(final String protocol) {
 		this.protocol = protocol;
 	}
 
-	public void extractRequestKeepAliveHeader(WinstoneRequest req) {
-		this.reqKeepAliveHeader = req.getHeader(WinstoneConstant.KEEP_ALIVE_HEADER);
+	public void extractRequestKeepAliveHeader(final WinstoneRequest req) {
+		reqKeepAliveHeader = req.getHeader(WinstoneConstant.KEEP_ALIVE_HEADER);
 	}
 
 	public List<String> getHeaders() {
-		return this.headers;
+		return headers;
 	}
 
 	public List<Cookie> getCookies() {
-		return this.cookies;
+		return cookies;
 	}
 
 	public WinstoneRequest getRequest() {
-		return this.req;
+		return req;
 	}
 
-	public void setRequest(WinstoneRequest req) {
+	public void setRequest(final WinstoneRequest req) {
 		this.req = req;
 	}
 
 	public void startIncludeBuffer() {
-		this.outputStream.startIncludeBuffer();
+		outputStream.startIncludeBuffer();
 	}
 
 	public void finishIncludeBuffer() throws IOException {
 		if (isIncluding()) {
-			if (this.outputWriter != null) {
-				this.outputWriter.flush();
+			if (outputWriter != null) {
+				outputWriter.flush();
 			}
-			this.outputStream.finishIncludeBuffer();
+			outputStream.finishIncludeBuffer();
 		}
 	}
 
 	public void clearIncludeStackForForward() throws IOException {
-		this.outputStream.clearIncludeStackForForward();
+		outputStream.clearIncludeStackForForward();
 	}
 
-	protected static String getCharsetFromContentTypeHeader(String type, StringBuffer remainder) {
+	protected static String getCharsetFromContentTypeHeader(final String type, final StringBuffer remainder) {
 		if (type == null) {
 			return null;
 		}
 		// Parse type to set encoding if needed
-		StringTokenizer st = new StringTokenizer(type, ";");
+		final StringTokenizer st = new StringTokenizer(type, ";");
 		String localEncoding = null;
 		while (st.hasMoreTokens()) {
-			String clause = st.nextToken().trim();
+			final String clause = st.nextToken().trim();
 			if (clause.startsWith("charset=")) {
 				localEncoding = clause.substring(8);
 			} else {
@@ -210,38 +211,38 @@ public class WinstoneResponse implements HttpServletResponse {
 		// Need this block for WebDAV support. "Connection:close" header is
 		// ignored
 		String lengthHeader = getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
-		if ((lengthHeader == null) && (this.statusCode >= 300)) {
-			long bodyBytes = this.outputStream.getOutputStreamLength();
+		if ((lengthHeader == null) && (statusCode >= 300)) {
+			final long bodyBytes = outputStream.getOutputStreamLength();
 			if (getBufferSize() > bodyBytes) {
-				logger.debug("Keep-alive requested but no content length set. Setting to {} bytes", "" + bodyBytes);
+				WinstoneResponse.logger.debug("Keep-alive requested but no content length set. Setting to {} bytes", "" + bodyBytes);
 				forceHeader(WinstoneConstant.CONTENT_LENGTH_HEADER, "" + bodyBytes);
 				lengthHeader = getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
 			}
 		}
 
 		forceHeader(WinstoneConstant.KEEP_ALIVE_HEADER, !closeAfterRequest() ? WinstoneConstant.KEEP_ALIVE_OPEN : WinstoneConstant.KEEP_ALIVE_CLOSE);
-		String contentType = getHeader(WinstoneConstant.CONTENT_TYPE_HEADER);
-		if (this.statusCode != SC_MOVED_TEMPORARILY) {
+		final String contentType = getHeader(WinstoneConstant.CONTENT_TYPE_HEADER);
+		if (statusCode != HttpServletResponse.SC_MOVED_TEMPORARILY) {
 			if (contentType == null) {
 				// Bypass normal encoding
 				forceHeader(WinstoneConstant.CONTENT_TYPE_HEADER, "text/html;charset=" + getCharacterEncoding());
 			} else if (contentType.startsWith("text/")) {
 				// replace charset in content
-				StringBuffer remainder = new StringBuffer();
-				getCharsetFromContentTypeHeader(contentType, remainder);
+				final StringBuffer remainder = new StringBuffer();
+				WinstoneResponse.getCharsetFromContentTypeHeader(contentType, remainder);
 				forceHeader(WinstoneConstant.CONTENT_TYPE_HEADER, remainder.toString() + ";charset=" + getCharacterEncoding());
 			}
 		}
 		if (getHeader(WinstoneConstant.DATE_HEADER) == null) {
-			forceHeader(WinstoneConstant.DATE_HEADER, formatHeaderDate(new Date()));
+			forceHeader(WinstoneConstant.DATE_HEADER, WinstoneResponse.formatHeaderDate(new Date()));
 		}
 		if (getHeader(WinstoneConstant.X_POWERED_BY_HEADER) == null) {
-			forceHeader(WinstoneConstant.X_POWERED_BY_HEADER, X_POWERED_BY_HEADER_VALUE);
+			forceHeader(WinstoneConstant.X_POWERED_BY_HEADER, WinstoneResponse.X_POWERED_BY_HEADER_VALUE);
 		}
-		if (this.locale != null) {
-			String lang = this.locale.getLanguage();
-			if ((this.locale.getCountry() != null) && !this.locale.getCountry().equals("")) {
-				lang = lang + "-" + this.locale.getCountry();
+		if (locale != null) {
+			String lang = locale.getLanguage();
+			if ((locale.getCountry() != null) && !locale.getCountry().equals("")) {
+				lang = lang + "-" + locale.getCountry();
 			}
 			forceHeader(WinstoneConstant.CONTENT_LANGUAGE_HEADER, lang);
 		}
@@ -252,50 +253,50 @@ public class WinstoneResponse implements HttpServletResponse {
 			return;
 		}
 		// Write out the new session cookie if it's present
-		HostConfiguration hostConfig = req.getHostGroup().getHostByName(req.getServerName());
-		for (Iterator<String> i = req.getCurrentSessionIds().keySet().iterator(); i.hasNext();) {
-			String prefix = i.next();
-			String sessionId = req.getCurrentSessionIds().get(prefix);
-			WebAppConfiguration ownerContext = hostConfig.getWebAppByURI(prefix);
+		final HostConfiguration hostConfig = req.getHostGroup().getHostByName(req.getServerName());
+		for (final Iterator<String> i = req.getCurrentSessionIds().keySet().iterator(); i.hasNext();) {
+			final String prefix = i.next();
+			final String sessionId = req.getCurrentSessionIds().get(prefix);
+			final WebAppConfiguration ownerContext = hostConfig.getWebAppByURI(prefix);
 			if (ownerContext != null) {
-				WinstoneSession session = ownerContext.getSessionById(sessionId, true);
+				final WinstoneSession session = ownerContext.getSessionById(sessionId, true);
 				if ((session != null) && session.isNew()) {
 					session.setIsNew(false);
-					Cookie cookie = new Cookie(WinstoneSession.SESSION_COOKIE_NAME, session.getId());
+					final Cookie cookie = new Cookie(WinstoneSession.SESSION_COOKIE_NAME, session.getId());
 					cookie.setMaxAge(-1);
 					cookie.setSecure(req.isSecure());
 					cookie.setVersion(0); // req.isSecure() ? 1 : 0);
 					cookie.setPath(req.getWebAppConfig().getContextPath().equals("") ? "/" : req.getWebAppConfig().getContextPath());
-					this.cookies.add(cookie); // don't call addCookie because we
-												// might be including
+					cookies.add(cookie); // don't call addCookie because we
+											// might be including
 				}
 			}
 		}
 
 		// Look for expired sessions: ie ones where the requested and current
 		// ids are different
-		for (Iterator<String> i = req.getRequestedSessionIds().keySet().iterator(); i.hasNext();) {
-			String prefix = i.next();
-			String sessionId = req.getRequestedSessionIds().get(prefix);
+		for (final Iterator<String> i = req.getRequestedSessionIds().keySet().iterator(); i.hasNext();) {
+			final String prefix = i.next();
+			final String sessionId = req.getRequestedSessionIds().get(prefix);
 			if (!req.getCurrentSessionIds().containsKey(prefix)) {
-				Cookie cookie = new Cookie(WinstoneSession.SESSION_COOKIE_NAME, sessionId);
+				final Cookie cookie = new Cookie(WinstoneSession.SESSION_COOKIE_NAME, sessionId);
 				cookie.setMaxAge(0); // explicitly expire this cookie
 				cookie.setSecure(req.isSecure());
 				cookie.setVersion(0); // req.isSecure() ? 1 : 0);
 				cookie.setPath(prefix.equals("") ? "/" : prefix);
-				this.cookies.add(cookie); // don't call addCookie because we
-											// might be including
+				cookies.add(cookie); // don't call addCookie because we
+										// might be including
 			}
 		}
-		logger.debug("Headers prepared for writing: {}", "" + this.headers + "");
+		WinstoneResponse.logger.debug("Headers prepared for writing: {}", "" + headers + "");
 	}
 
 	/**
 	 * Writes out the http header for a single cookie
 	 */
-	public String writeCookie(Cookie cookie) throws IOException {
-		logger.debug("Writing cookie to output: {}", "" + cookie + "");
-		StringBuffer out = new StringBuffer();
+	public String writeCookie(final Cookie cookie) throws IOException {
+		WinstoneResponse.logger.debug("Writing cookie to output: {}", "" + cookie + "");
+		final StringBuffer out = new StringBuffer();
 
 		// Set-Cookie or Set-Cookie2
 		if (cookie.getVersion() >= 1) {
@@ -312,14 +313,14 @@ public class WinstoneResponse implements HttpServletResponse {
 			out.append(cookie.getName()).append("=").append(cookie.getValue());
 		} else {
 			out.append(cookie.getName()).append("=");
-			quote(cookie.getValue(), out);
+			WinstoneResponse.quote(cookie.getValue(), out);
 		}
 
 		if (cookie.getVersion() >= 1) {
 			out.append("; Version=1");
 			if (cookie.getDomain() != null) {
 				out.append("; Domain=");
-				quote(cookie.getDomain(), out);
+				WinstoneResponse.quote(cookie.getDomain(), out);
 			}
 			if (cookie.getSecure()) {
 				out.append("; Secure");
@@ -332,7 +333,7 @@ public class WinstoneResponse implements HttpServletResponse {
 			}
 			if (cookie.getPath() != null) {
 				out.append("; Path=");
-				quote(cookie.getPath(), out);
+				WinstoneResponse.quote(cookie.getPath(), out);
 			}
 		} else {
 			if (cookie.getDomain() != null) {
@@ -340,16 +341,16 @@ public class WinstoneResponse implements HttpServletResponse {
 				out.append(cookie.getDomain());
 			}
 			if (cookie.getMaxAge() > 0) {
-				long expiryMS = System.currentTimeMillis() + (1000 * (long) cookie.getMaxAge());
+				final long expiryMS = System.currentTimeMillis() + (1000 * (long) cookie.getMaxAge());
 				String expiryDate = null;
-				synchronized (VERSION0_DF) {
-					expiryDate = VERSION0_DF.format(new Date(expiryMS));
+				synchronized (WinstoneResponse.VERSION0_DF) {
+					expiryDate = WinstoneResponse.VERSION0_DF.format(new Date(expiryMS));
 				}
 				out.append("; Expires=").append(expiryDate);
 			} else if (cookie.getMaxAge() == 0) {
 				String expiryDate = null;
-				synchronized (VERSION0_DF) {
-					expiryDate = VERSION0_DF.format(new Date(5000));
+				synchronized (WinstoneResponse.VERSION0_DF) {
+					expiryDate = WinstoneResponse.VERSION0_DF.format(new Date(5000));
 				}
 				out.append("; Expires=").append(expiryDate);
 			}
@@ -363,10 +364,10 @@ public class WinstoneResponse implements HttpServletResponse {
 		return out.toString();
 	}
 
-	private static String formatHeaderDate(Date dateIn) {
+	private static String formatHeaderDate(final Date dateIn) {
 		String date = null;
-		synchronized (HTTP_DF) {
-			date = HTTP_DF.format(dateIn);
+		synchronized (WinstoneResponse.HTTP_DF) {
+			date = WinstoneResponse.HTTP_DF.format(dateIn);
 		}
 		return date;
 	}
@@ -375,14 +376,14 @@ public class WinstoneResponse implements HttpServletResponse {
 	 * Quotes the necessary strings in a cookie header. The quoting is only
 	 * applied if the string contains special characters.
 	 */
-	protected static void quote(String value, StringBuffer out) {
+	protected static void quote(final String value, final StringBuffer out) {
 		if (value.startsWith("\"") && value.endsWith("\"")) {
 			out.append(value);
 		} else {
 			boolean containsSpecial = false;
 			for (int n = 0; n < value.length(); n++) {
-				char thisChar = value.charAt(n);
-				if ((thisChar < 32) || (thisChar >= 127) || (specialCharacters.indexOf(thisChar) != -1)) {
+				final char thisChar = value.charAt(n);
+				if ((thisChar < 32) || (thisChar >= 127) || (WinstoneResponse.specialCharacters.indexOf(thisChar) != -1)) {
 					containsSpecial = true;
 					break;
 				}
@@ -402,13 +403,13 @@ public class WinstoneResponse implements HttpServletResponse {
 	 * not this connection should operate in keep-alive mode.
 	 */
 	public boolean closeAfterRequest() {
-		String inKeepAliveHeader = this.reqKeepAliveHeader;
-		String outKeepAliveHeader = getHeader(WinstoneConstant.KEEP_ALIVE_HEADER);
-		boolean hasContentLength = (getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER) != null);
-		if (this.protocol.startsWith("HTTP/0")) {
+		final String inKeepAliveHeader = reqKeepAliveHeader;
+		final String outKeepAliveHeader = getHeader(WinstoneConstant.KEEP_ALIVE_HEADER);
+		final boolean hasContentLength = (getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER) != null);
+		if (protocol.startsWith("HTTP/0")) {
 			return true;
 		} else if ((inKeepAliveHeader == null) && (outKeepAliveHeader == null)) {
-			return this.protocol.equals("HTTP/1.0") ? true : !hasContentLength;
+			return protocol.equals("HTTP/1.0") ? true : !hasContentLength;
 		} else if (outKeepAliveHeader != null) {
 			return outKeepAliveHeader.equalsIgnoreCase(WinstoneConstant.KEEP_ALIVE_CLOSE) || !hasContentLength;
 		} else if (inKeepAliveHeader != null) {
@@ -421,42 +422,42 @@ public class WinstoneResponse implements HttpServletResponse {
 	// ServletResponse interface methods
 	@Override
 	public void flushBuffer() throws IOException {
-		if (this.outputWriter != null) {
-			this.outputWriter.flush();
+		if (outputWriter != null) {
+			outputWriter.flush();
 		}
-		this.outputStream.flush();
+		outputStream.flush();
 	}
 
 	@Override
-	public void setBufferSize(int size) {
-		this.outputStream.setBufferSize(size);
+	public void setBufferSize(final int size) {
+		outputStream.setBufferSize(size);
 	}
 
 	@Override
 	public int getBufferSize() {
-		return this.outputStream.getBufferSize();
+		return outputStream.getBufferSize();
 	}
 
 	@Override
 	public String getCharacterEncoding() {
-		String enc = getCurrentEncoding();
+		final String enc = getCurrentEncoding();
 		return (enc == null ? "ISO-8859-1" : enc);
 	}
 
 	@Override
-	public void setCharacterEncoding(String encoding) {
-		if ((this.outputWriter == null) && !isCommitted()) {
-			logger.debug("Setting response character encoding to {}", encoding);
-			this.explicitEncoding = encoding;
+	public void setCharacterEncoding(final String encoding) {
+		if ((outputWriter == null) && !isCommitted()) {
+			WinstoneResponse.logger.debug("Setting response character encoding to {}", encoding);
+			explicitEncoding = encoding;
 			correctContentTypeHeaderEncoding(encoding);
 		}
 	}
 
-	private void correctContentTypeHeaderEncoding(String encoding) {
-		String contentType = getContentType();
+	private void correctContentTypeHeaderEncoding(final String encoding) {
+		final String contentType = getContentType();
 		if (contentType != null) {
-			StringBuffer remainderHeader = new StringBuffer();
-			getCharsetFromContentTypeHeader(contentType, remainderHeader);
+			final StringBuffer remainderHeader = new StringBuffer();
+			WinstoneResponse.getCharsetFromContentTypeHeader(contentType, remainderHeader);
 			if (remainderHeader.length() != 0) {
 				forceHeader(WinstoneConstant.CONTENT_TYPE_HEADER, remainderHeader + ";charset=" + encoding);
 			}
@@ -469,66 +470,66 @@ public class WinstoneResponse implements HttpServletResponse {
 	}
 
 	@Override
-	public void setContentType(String type) {
+	public void setContentType(final String type) {
 		setHeader(WinstoneConstant.CONTENT_TYPE_HEADER, type);
 	}
 
 	@Override
 	public Locale getLocale() {
-		return this.locale == null ? Locale.getDefault() : this.locale;
+		return locale == null ? Locale.getDefault() : locale;
 	}
 
 	private boolean isIncluding() {
-		return this.outputStream.isIncluding();
+		return outputStream.isIncluding();
 	}
 
 	@Override
-	public void setLocale(Locale loc) {
+	public void setLocale(final Locale loc) {
 		if (isIncluding()) {
 			return;
 		} else if (isCommitted()) {
-			logger.warn("Response.setLocale() ignored, because getWriter already called");
+			WinstoneResponse.logger.warn("Response.setLocale() ignored, because getWriter already called");
 		} else {
-			if ((this.outputWriter == null) && (this.explicitEncoding == null)) {
-				String localeEncoding = getEncodingFromLocale(loc);
+			if ((outputWriter == null) && (explicitEncoding == null)) {
+				final String localeEncoding = getEncodingFromLocale(loc);
 				if (localeEncoding != null) {
-					this.implicitEncoding = localeEncoding;
+					implicitEncoding = localeEncoding;
 					correctContentTypeHeaderEncoding(localeEncoding);
 				}
 			}
-			this.locale = loc;
+			locale = loc;
 		}
 	}
 
 	@Override
 	public ServletOutputStream getOutputStream() throws IOException {
-		logger.debug("Called ServletResponse.getOutputStream()");
-		return this.outputStream;
+		WinstoneResponse.logger.debug("Called ServletResponse.getOutputStream()");
+		return outputStream;
 	}
 
 	@Override
 	public PrintWriter getWriter() throws IOException {
-		logger.debug("Called ServletResponse.getWriter()");
-		if (this.outputWriter != null) {
-			return this.outputWriter;
+		WinstoneResponse.logger.debug("Called ServletResponse.getWriter()");
+		if (outputWriter != null) {
+			return outputWriter;
 		} else {
-			this.outputWriter = new WinstoneResponseWriter(this.outputStream, this);
-			return this.outputWriter;
+			outputWriter = new WinstoneResponseWriter(outputStream, this);
+			return outputWriter;
 		}
 	}
 
 	@Override
 	public boolean isCommitted() {
-		return this.outputStream.isCommitted();
+		return outputStream.isCommitted();
 	}
 
 	@Override
 	public void reset() {
 		if (!isIncluding()) {
 			resetBuffer();
-			this.statusCode = SC_OK;
-			this.headers.clear();
-			this.cookies.clear();
+			statusCode = HttpServletResponse.SC_OK;
+			headers.clear();
+			cookies.clear();
 		}
 	}
 
@@ -540,38 +541,38 @@ public class WinstoneResponse implements HttpServletResponse {
 			}
 
 			// Disregard any output temporarily while we flush
-			this.outputStream.setDisregardMode(true);
+			outputStream.setDisregardMode(true);
 
-			if (this.outputWriter != null) {
-				this.outputWriter.flush();
+			if (outputWriter != null) {
+				outputWriter.flush();
 			}
 
-			this.outputStream.setDisregardMode(false);
-			this.outputStream.reset();
+			outputStream.setDisregardMode(false);
+			outputStream.reset();
 		}
 	}
 
-	public void setContentLength(long len) {
+	public void setContentLength(final long len) {
 		setHeader(WinstoneConstant.CONTENT_LENGTH_HEADER, Long.toString(len));
 	}
 
 	@Override
-	public void setContentLength(int len) {
+	public void setContentLength(final int len) {
 		setIntHeader(WinstoneConstant.CONTENT_LENGTH_HEADER, len);
 	}
 
 	// HttpServletResponse interface methods
 	@Override
-	public void addCookie(Cookie cookie) {
+	public void addCookie(final Cookie cookie) {
 		if (!isIncluding()) {
-			this.cookies.add(cookie);
+			cookies.add(cookie);
 		}
 	}
 
 	@Override
-	public boolean containsHeader(String name) {
-		for (int n = 0; n < this.headers.size(); n++) {
-			if (((String) this.headers.get(n)).startsWith(name)) {
+	public boolean containsHeader(final String name) {
+		for (int n = 0; n < headers.size(); n++) {
+			if (headers.get(n).startsWith(name)) {
 				return true;
 			}
 		}
@@ -579,76 +580,76 @@ public class WinstoneResponse implements HttpServletResponse {
 	}
 
 	@Override
-	public void addDateHeader(String name, long date) {
-		addHeader(name, formatHeaderDate(new Date(date)));
+	public void addDateHeader(final String name, final long date) {
+		addHeader(name, WinstoneResponse.formatHeaderDate(new Date(date)));
 	} // df.format(new Date(date)));}
 
 	@Override
-	public void addIntHeader(String name, int value) {
+	public void addIntHeader(final String name, final int value) {
 		addHeader(name, "" + value);
 	}
 
 	@Override
-	public void addHeader(String name, String value) {
+	public void addHeader(final String name, String value) {
 		if (isIncluding()) {
-			logger.debug("Header ignored inside include - {}: {} ", name, value);
+			WinstoneResponse.logger.debug("Header ignored inside include - {}: {} ", name, value);
 		} else if (isCommitted()) {
-			logger.debug("Header ignored after response committed - {}: {} ", name, value);
+			WinstoneResponse.logger.debug("Header ignored after response committed - {}: {} ", name, value);
 		} else if (value != null) {
 			if (name.equals(WinstoneConstant.CONTENT_TYPE_HEADER)) {
-				StringBuffer remainderHeader = new StringBuffer();
-				String headerEncoding = getCharsetFromContentTypeHeader(value, remainderHeader);
-				if (this.outputWriter != null) {
+				final StringBuffer remainderHeader = new StringBuffer();
+				final String headerEncoding = WinstoneResponse.getCharsetFromContentTypeHeader(value, remainderHeader);
+				if (outputWriter != null) {
 					value = remainderHeader + ";charset=" + getCharacterEncoding();
 				} else if (headerEncoding != null) {
-					this.explicitEncoding = headerEncoding;
+					explicitEncoding = headerEncoding;
 				}
 			}
-			this.headers.add(name + ": " + value);
+			headers.add(name + ": " + value);
 		}
 	}
 
 	@Override
-	public void setDateHeader(String name, long date) {
-		setHeader(name, formatHeaderDate(new Date(date)));
+	public void setDateHeader(final String name, final long date) {
+		setHeader(name, WinstoneResponse.formatHeaderDate(new Date(date)));
 	}
 
 	@Override
-	public void setIntHeader(String name, int value) {
+	public void setIntHeader(final String name, final int value) {
 		setHeader(name, "" + value);
 	}
 
 	@Override
-	public void setHeader(String name, String value) {
+	public void setHeader(final String name, String value) {
 		if (isIncluding()) {
-			logger.debug("Header ignored inside include - {}: {} ", name, value);
+			WinstoneResponse.logger.debug("Header ignored inside include - {}: {} ", name, value);
 		} else if (isCommitted()) {
-			logger.debug("Header ignored after response committed - {}: {} ", name, value);
+			WinstoneResponse.logger.debug("Header ignored after response committed - {}: {} ", name, value);
 		} else {
 			boolean found = false;
-			for (int n = 0; (n < this.headers.size()); n++) {
-				String header = (String) this.headers.get(n);
+			for (int n = 0; (n < headers.size()); n++) {
+				final String header = headers.get(n);
 				if (header.startsWith(name + ": ")) {
 					if (found) {
-						this.headers.remove(n);
+						headers.remove(n);
 						continue;
 					}
 					if (name.equals(WinstoneConstant.CONTENT_TYPE_HEADER)) {
 						if (value != null) {
-							StringBuffer remainderHeader = new StringBuffer();
-							String headerEncoding = getCharsetFromContentTypeHeader(value, remainderHeader);
-							if (this.outputWriter != null) {
+							final StringBuffer remainderHeader = new StringBuffer();
+							final String headerEncoding = WinstoneResponse.getCharsetFromContentTypeHeader(value, remainderHeader);
+							if (outputWriter != null) {
 								value = remainderHeader + ";charset=" + getCharacterEncoding();
 							} else if (headerEncoding != null) {
-								this.explicitEncoding = headerEncoding;
+								explicitEncoding = headerEncoding;
 							}
 						}
 					}
 
 					if (value != null) {
-						this.headers.set(n, name + ": " + value);
+						headers.set(n, name + ": " + value);
 					} else {
-						this.headers.remove(n);
+						headers.remove(n);
 					}
 					found = true;
 				}
@@ -659,30 +660,30 @@ public class WinstoneResponse implements HttpServletResponse {
 		}
 	}
 
-	private void forceHeader(String name, String value) {
+	private void forceHeader(final String name, final String value) {
 		boolean found = false;
-		for (int n = 0; (n < this.headers.size()); n++) {
-			String header = (String) this.headers.get(n);
+		for (int n = 0; (n < headers.size()); n++) {
+			final String header = headers.get(n);
 			if (header.startsWith(name + ": ")) {
 				found = true;
-				this.headers.set(n, name + ": " + value);
+				headers.set(n, name + ": " + value);
 			}
 		}
 		if (!found) {
-			this.headers.add(name + ": " + value);
+			headers.add(name + ": " + value);
 		}
 	}
 
 	private String getCurrentEncoding() {
-		if (this.explicitEncoding != null) {
-			return this.explicitEncoding;
-		} else if (this.implicitEncoding != null) {
-			return this.implicitEncoding;
-		} else if ((this.req != null) && (this.req.getCharacterEncoding() != null)) {
+		if (explicitEncoding != null) {
+			return explicitEncoding;
+		} else if (implicitEncoding != null) {
+			return implicitEncoding;
+		} else if ((req != null) && (req.getCharacterEncoding() != null)) {
 			try {
-				"0".getBytes(this.req.getCharacterEncoding());
-				return this.req.getCharacterEncoding();
-			} catch (UnsupportedEncodingException err) {
+				"0".getBytes(req.getCharacterEncoding());
+				return req.getCharacterEncoding();
+			} catch (final UnsupportedEncodingException err) {
 				return null;
 			}
 		} else {
@@ -690,9 +691,9 @@ public class WinstoneResponse implements HttpServletResponse {
 		}
 	}
 
-	public String getHeader(String name) {
-		for (int n = 0; n < this.headers.size(); n++) {
-			String header = (String) this.headers.get(n);
+	public String getHeader(final String name) {
+		for (int n = 0; n < headers.size(); n++) {
+			final String header = headers.get(n);
 			if (header.startsWith(name + ": ")) {
 				return header.substring(name.length() + 2);
 			}
@@ -701,28 +702,28 @@ public class WinstoneResponse implements HttpServletResponse {
 	}
 
 	@Override
-	public String encodeRedirectURL(String url) {
+	public String encodeRedirectURL(final String url) {
 		return url;
 	}
 
 	@Override
-	public String encodeURL(String url) {
+	public String encodeURL(final String url) {
 		return url;
 	}
 
 	public int getStatus() {
-		return this.statusCode;
+		return statusCode;
 	}
 
 	public Integer getErrorStatusCode() {
-		return this.errorStatusCode;
+		return errorStatusCode;
 	}
 
 	@Override
-	public void setStatus(int sc) {
-		if (!isIncluding() && (this.errorStatusCode == null)) {
+	public void setStatus(final int sc) {
+		if (!isIncluding() && (errorStatusCode == null)) {
 			// if (!isIncluding()) {
-			this.statusCode = sc;
+			statusCode = sc;
 			// if (this.errorStatusCode != null) {
 			// this.errorStatusCode = new Integer(sc);
 			// }
@@ -732,7 +733,7 @@ public class WinstoneResponse implements HttpServletResponse {
 	@Override
 	public void sendRedirect(String location) throws IOException {
 		if (isIncluding()) {
-			logger.error("Ignoring redirect in include: " + location);
+			WinstoneResponse.logger.error("Ignoring redirect in include: " + location);
 			return;
 		} else if (isCommitted()) {
 			throw new IllegalStateException("OutputStream already committed");
@@ -740,7 +741,7 @@ public class WinstoneResponse implements HttpServletResponse {
 		resetBuffer();
 
 		// Build location
-		StringBuilder fullLocation = new StringBuilder();
+		final StringBuilder fullLocation = new StringBuilder();
 		if (location.startsWith("http://") || location.startsWith("https://")) {
 			fullLocation.append(location);
 		} else {
@@ -748,16 +749,16 @@ public class WinstoneResponse implements HttpServletResponse {
 				location = "";
 			}
 
-			fullLocation.append(this.req.getScheme()).append("://");
-			fullLocation.append(this.req.getServerName());
-			if (!((this.req.getServerPort() == 80) && this.req.getScheme().equals("http")) && !((this.req.getServerPort() == 443) && this.req.getScheme().equals("https"))) {
-				fullLocation.append(':').append(this.req.getServerPort());
+			fullLocation.append(req.getScheme()).append("://");
+			fullLocation.append(req.getServerName());
+			if (!((req.getServerPort() == 80) && req.getScheme().equals("http")) && !((req.getServerPort() == 443) && req.getScheme().equals("https"))) {
+				fullLocation.append(':').append(req.getServerPort());
 			}
 			if (location.startsWith("/")) {
 				fullLocation.append(location);
 			} else {
-				fullLocation.append(this.req.getRequestURI());
-				int questionPos = fullLocation.toString().indexOf("?");
+				fullLocation.append(req.getRequestURI());
+				final int questionPos = fullLocation.toString().indexOf("?");
 				if (questionPos != -1) {
 					fullLocation.delete(questionPos, fullLocation.length());
 				}
@@ -765,41 +766,41 @@ public class WinstoneResponse implements HttpServletResponse {
 				fullLocation.append(location);
 			}
 		}
-		if (this.req != null) {
-			this.req.discardRequestBody();
+		if (req != null) {
+			req.discardRequestBody();
 		}
-		this.statusCode = HttpServletResponse.SC_MOVED_TEMPORARILY;
+		statusCode = HttpServletResponse.SC_MOVED_TEMPORARILY;
 		setHeader(WinstoneConstant.LOCATION_HEADER, fullLocation.toString());
 		setContentLength(0);
 		getWriter().flush();
 	}
 
 	@Override
-	public void sendError(int sc) throws IOException {
+	public void sendError(final int sc) throws IOException {
 		sendError(sc, null);
 	}
 
 	@Override
-	public void sendError(int sc, String msg) throws IOException {
+	public void sendError(final int sc, final String msg) throws IOException {
 		if (isIncluding()) {
-			logger.error("Error in include: {} {}", "" + sc, msg);
+			WinstoneResponse.logger.error("Error in include: {} {}", "" + sc, msg);
 			return;
 		}
-		logger.debug("Sending error message to browser: code {}, message: {}", "" + sc, msg);
-		if ((this.webAppConfig != null) && (this.req != null)) {
+		WinstoneResponse.logger.debug("Sending error message to browser: code {}, message: {}", "" + sc, msg);
+		if ((webAppConfig != null) && (req != null)) {
 
-			SimpleRequestDispatcher rd = this.webAppConfig.getErrorDispatcherByCode(sc, msg, null);
+			final SimpleRequestDispatcher rd = webAppConfig.getErrorDispatcherByCode(sc, msg, null);
 			if (rd != null) {
 				try {
-					rd.forward(this.req, this);
+					rd.forward(req, this);
 					return;
-				} catch (IllegalStateException err) {
+				} catch (final IllegalStateException err) {
 					throw err;
-				} catch (IOException err) {
+				} catch (final IOException err) {
 					throw err;
-				} catch (Throwable err) {
-					if (logger.isWarnEnabled()) {
-						logger.warn("Sending error message to browser: code " + rd.getName() + ", message: " + sc, err);
+				} catch (final Throwable err) {
+					if (WinstoneResponse.logger.isWarnEnabled()) {
+						WinstoneResponse.logger.warn("Sending error message to browser: code " + rd.getName() + ", message: " + sc, err);
 					}
 					return;
 				}
@@ -807,12 +808,12 @@ public class WinstoneResponse implements HttpServletResponse {
 		}
 		// If we are here there was no webapp and/or no request object, so
 		// show the default error page
-		if (this.errorStatusCode == null) {
-			this.statusCode = sc;
+		if (errorStatusCode == null) {
+			statusCode = sc;
 		}
-		String output = WinstoneResourceBundle.getInstance().getString("WinstoneResponse.ErrorPage", sc + "", (msg == null ? "" : msg), "", WinstoneResourceBundle.getInstance().getString("ServerVersion"), "" + new Date());
+		final String output = WinstoneResourceBundle.getInstance().getString("WinstoneResponse.ErrorPage", sc + "", (msg == null ? "" : msg), "", WinstoneResourceBundle.getInstance().getString("ServerVersion"), "" + new Date());
 		setContentLength(output.getBytes(getCharacterEncoding()).length);
-		Writer out = getWriter();
+		final Writer out = getWriter();
 		out.write(output);
 		out.flush();
 	}
@@ -820,24 +821,27 @@ public class WinstoneResponse implements HttpServletResponse {
 	/**
 	 * @deprecated
 	 */
+	@Deprecated
 	@Override
-	public String encodeRedirectUrl(String url) {
+	public String encodeRedirectUrl(final String url) {
 		return encodeRedirectURL(url);
 	}
 
 	/**
 	 * @deprecated
 	 */
+	@Deprecated
 	@Override
-	public String encodeUrl(String url) {
+	public String encodeUrl(final String url) {
 		return encodeURL(url);
 	}
 
 	/**
 	 * @deprecated
 	 */
+	@Deprecated
 	@Override
-	public void setStatus(int sc, String sm) {
+	public void setStatus(final int sc, final String sm) {
 		setStatus(sc);
 	}
 }

@@ -15,29 +15,31 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Simple test servlet that counts the number of times it has been requested, and returns that number in the response.
+ * Simple test servlet that counts the number of times it has been requested,
+ * and returns that number in the response.
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
- * @version $Id: CountRequestsServlet.java,v 1.3 2006/02/28 07:32:49 rickknowles Exp $
+ * @version $Id: CountRequestsServlet.java,v 1.3 2006/02/28 07:32:49 rickknowles
+ *          Exp $
  */
 public class CountRequestsServlet extends HttpServlet {
-    private static final long serialVersionUID = -1276193379275847349L;
-    private int numberOfGets;
-    
-    @Override
-    public void init() {
-        String offset = getServletConfig().getInitParameter("offset");
-        numberOfGets = offset == null ? 0 : Integer.parseInt(offset);
-    }
-    
-    /**
-     * Get implementation - increments and shows the access count
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        numberOfGets++;
-        ServletOutputStream out = response.getOutputStream();
-        out.println("<html><body>This servlet has been accessed via GET " + numberOfGets + " times</body></html>");
-        out.flush();
-    }
+	private static final long serialVersionUID = -1276193379275847349L;
+	private int numberOfGets;
+
+	@Override
+	public void init() {
+		final String offset = getServletConfig().getInitParameter("offset");
+		numberOfGets = offset == null ? 0 : Integer.parseInt(offset);
+	}
+
+	/**
+	 * Get implementation - increments and shows the access count
+	 */
+	@Override
+	protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+		numberOfGets++;
+		final ServletOutputStream out = response.getOutputStream();
+		out.println("<html><body>This servlet has been accessed via GET " + numberOfGets + " times</body></html>");
+		out.flush();
+	}
 }

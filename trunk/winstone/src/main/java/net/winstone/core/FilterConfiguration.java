@@ -21,8 +21,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.UnavailableException;
 
 import net.winstone.WinstoneException;
-import org.slf4j.LoggerFactory;
 
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 /**
@@ -59,22 +59,22 @@ public class FilterConfiguration implements javax.servlet.FilterConfig {
 
 		// Parse the web.xml file entry
 		for (int n = 0; n < elm.getChildNodes().getLength(); n++) {
-			Node child = elm.getChildNodes().item(n);
+			final Node child = elm.getChildNodes().item(n);
 			if (child.getNodeType() != Node.ELEMENT_NODE) {
 				continue;
 			}
-			String nodeName = child.getNodeName();
+			final String nodeName = child.getNodeName();
 
 			// Construct the servlet instances
 			if (nodeName.equals(ELEM_NAME)) {
-				this.filterName = WebAppConfiguration.getTextFromNode(child);
+				filterName = WebAppConfiguration.getTextFromNode(child);
 			} else if (nodeName.equals(ELEM_CLASS)) {
-				this.classFile = WebAppConfiguration.getTextFromNode(child);
+				classFile = WebAppConfiguration.getTextFromNode(child);
 			} else if (nodeName.equals(ELEM_INIT_PARAM)) {
 				String paramName = null;
 				String paramValue = null;
 				for (int k = 0; k < child.getChildNodes().getLength(); k++) {
-					Node paramNode = child.getChildNodes().item(k);
+					final Node paramNode = child.getChildNodes().item(k);
 					if (paramNode.getNodeType() != Node.ELEMENT_NODE) {
 						continue;
 					} else if (paramNode.getNodeName().equals(ELEM_INIT_PARAM_NAME)) {
@@ -84,31 +84,31 @@ public class FilterConfiguration implements javax.servlet.FilterConfig {
 					}
 				}
 				if ((paramName != null) && (paramValue != null)) {
-					this.initParameters.put(paramName, paramValue);
+					initParameters.put(paramName, paramValue);
 				}
 			}
 		}
-		logger.debug("Loaded filter instance {} class: {}]", this.filterName, this.classFile);
+		FilterConfiguration.logger.debug("Loaded filter instance {} class: {}]", filterName, classFile);
 	}
 
 	@Override
 	public String getFilterName() {
-		return this.filterName;
+		return filterName;
 	}
 
 	@Override
-	public String getInitParameter(String paramName) {
-		return (String) this.initParameters.get(paramName);
+	public String getInitParameter(final String paramName) {
+		return initParameters.get(paramName);
 	}
 
 	@Override
 	public Enumeration<String> getInitParameterNames() {
-		return Collections.enumeration(this.initParameters.keySet());
+		return Collections.enumeration(initParameters.keySet());
 	}
 
 	@Override
 	public ServletContext getServletContext() {
-		return this.context;
+		return context;
 	}
 
 	/**
@@ -116,32 +116,32 @@ public class FilterConfiguration implements javax.servlet.FilterConfig {
 	 * dispatcher.
 	 */
 	public Filter getFilter() throws ServletException {
-		synchronized (this.filterSemaphore) {
+		synchronized (filterSemaphore) {
 			if (isUnavailable()) {
 				throw new WinstoneException("This filter has been marked unavailable because of an earlier error");
-			} else if (this.instance == null) {
+			} else if (instance == null) {
 				try {
 					// Initialise with the correct classloader
-					ClassLoader cl = Thread.currentThread().getContextClassLoader();
-					Thread.currentThread().setContextClassLoader(this.loader);
+					final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+					Thread.currentThread().setContextClassLoader(loader);
 
-					Class<?> filterClass = Class.forName(classFile, true, this.loader);
-					Object object = filterClass.newInstance();
-					logger.debug("{}: assignable {}", filterClass.getName(), Filter.class.isAssignableFrom(object.getClass()));
-					this.instance = (Filter) object;
-					logger.debug("{}: init", filterName);
-					this.instance.init(this);
+					final Class<?> filterClass = Class.forName(classFile, true, loader);
+					final Object object = filterClass.newInstance();
+					FilterConfiguration.logger.debug("{}: assignable {}", filterClass.getName(), Filter.class.isAssignableFrom(object.getClass()));
+					instance = (Filter) object;
+					FilterConfiguration.logger.debug("{}: init", filterName);
+					instance.init(this);
 					Thread.currentThread().setContextClassLoader(cl);
-				} catch (ClassCastException err) {
-					logger.error("Failed to load class: " + classFile, err);
-				} catch (ClassNotFoundException err) {
-					logger.error("Failed to load class: " + classFile, err);
-				} catch (IllegalAccessException err) {
-					logger.error("Failed to load class: " + classFile, err);
-				} catch (InstantiationException err) {
-					logger.error("Failed to load class: " + classFile, err);
-				} catch (ServletException err) {
-					this.instance = null;
+				} catch (final ClassCastException err) {
+					FilterConfiguration.logger.error("Failed to load class: " + classFile, err);
+				} catch (final ClassNotFoundException err) {
+					FilterConfiguration.logger.error("Failed to load class: " + classFile, err);
+				} catch (final IllegalAccessException err) {
+					FilterConfiguration.logger.error("Failed to load class: " + classFile, err);
+				} catch (final InstantiationException err) {
+					FilterConfiguration.logger.error("Failed to load class: " + classFile, err);
+				} catch (final ServletException err) {
+					instance = null;
 					if (err instanceof UnavailableException) {
 						setUnavailable();
 					}
@@ -149,14 +149,14 @@ public class FilterConfiguration implements javax.servlet.FilterConfig {
 				}
 			}
 		}
-		return this.instance;
+		return instance;
 	}
 
 	/**
 	 * Called when it's time for the container to shut this servlet down.
 	 */
 	public void destroy() {
-		synchronized (this.filterSemaphore) {
+		synchronized (filterSemaphore) {
 			setUnavailable();
 		}
 	}
@@ -167,27 +167,27 @@ public class FilterConfiguration implements javax.servlet.FilterConfig {
 	}
 
 	public boolean isUnavailable() {
-		return this.unavailableException;
+		return unavailableException;
 	}
 
 	protected void setUnavailable() {
-		this.unavailableException = true;
-		if (this.instance != null) {
-			logger.debug("{}: destroy", filterName);
-			ClassLoader cl = Thread.currentThread().getContextClassLoader();
-			Thread.currentThread().setContextClassLoader(this.loader);
-			this.instance.destroy();
+		unavailableException = true;
+		if (instance != null) {
+			FilterConfiguration.logger.debug("{}: destroy", filterName);
+			final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(loader);
+			instance.destroy();
 			Thread.currentThread().setContextClassLoader(cl);
-			this.instance = null;
+			instance = null;
 		}
 	}
 
-	public void execute(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		Thread.currentThread().setContextClassLoader(this.loader);
+	public void execute(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws ServletException, IOException {
+		final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(loader);
 		try {
 			getFilter().doFilter(request, response, chain);
-		} catch (UnavailableException err) {
+		} catch (final UnavailableException err) {
 			setUnavailable();
 			throw new ServletException("Error in filter - marking unavailable", err);
 		} finally {
@@ -199,12 +199,12 @@ public class FilterConfiguration implements javax.servlet.FilterConfig {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((filterName == null) ? 0 : filterName.hashCode());
+		result = (prime * result) + ((filterName == null) ? 0 : filterName.hashCode());
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -214,7 +214,7 @@ public class FilterConfiguration implements javax.servlet.FilterConfig {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		FilterConfiguration other = (FilterConfiguration) obj;
+		final FilterConfiguration other = (FilterConfiguration) obj;
 		if (filterName == null) {
 			if (other.filterName != null) {
 				return false;

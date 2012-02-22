@@ -14,17 +14,16 @@ import javax.servlet.ServletResponse;
 
 /**
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
- * @version $Id: AuthenticationHandler.java,v 1.2 2006/02/28 07:32:47 rickknowles Exp $
+ * @version $Id: AuthenticationHandler.java,v 1.2 2006/02/28 07:32:47
+ *          rickknowles Exp $
  */
 public interface AuthenticationHandler {
-    /**
-     * Evaluates any authentication constraints, intercepting if auth is
-     * required. The relevant authentication handler subclass's logic is used to
-     * actually authenticate.
-     * 
-     * @return A boolean indicating whether to continue after this request
-     */
-    public boolean processAuthentication(ServletRequest request,
-            ServletResponse response, String pathRequested) throws IOException,
-            ServletException;
+	/**
+	 * Evaluates any authentication constraints, intercepting if auth is
+	 * required. The relevant authentication handler subclass's logic is used to
+	 * actually authenticate.
+	 * 
+	 * @return A boolean indicating whether to continue after this request
+	 */
+	public boolean processAuthentication(ServletRequest request, ServletResponse response, String pathRequested) throws IOException, ServletException;
 }

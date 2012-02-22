@@ -17,180 +17,179 @@ import java.util.Map;
 import javax.servlet.http.Cookie;
 
 import net.winstone.WinstoneException;
-
 import net.winstone.core.WinstoneOutputStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 /**
  * Extends the winstone output stream, so that the ajp13 protocol requirements
  * can be fulfilled.
  * 
  * @author mailto: <a href="rick_knowles@hotmail.com">Rick Knowles</a>
- * @version $Id: Ajp13OutputStream.java,v 1.7 2007/05/05 00:52:50 rickknowles Exp $
+ * @version $Id: Ajp13OutputStream.java,v 1.7 2007/05/05 00:52:50 rickknowles
+ *          Exp $
  */
 public class Ajp13OutputStream extends WinstoneOutputStream {
-    // Container originated packet types
+	// Container originated packet types
 
-    protected static Logger logger = LoggerFactory.getLogger(Ajp13OutputStream.class);
-    
-    byte CONTAINER_SEND_BODY_CHUNK = 0x03;
-    byte CONTAINER_SEND_HEADERS = 0x04;
-    byte CONTAINER_END_RESPONSE = 0x05;
-    // byte CONTAINER_GET_BODY_CHUNK = 0x06;
-    // byte CONTAINER_CPONG_REPLY = 0x09;
-    final static Map<String, byte[]> headerCodes;
+	protected static Logger logger = LoggerFactory.getLogger(Ajp13OutputStream.class);
 
-    static {
-        headerCodes = new HashMap<String, byte[]>();
-        headerCodes.put("content-type", new byte[]{(byte) 0xA0, 0x01});
-        headerCodes.put("content-language", new byte[]{(byte) 0xA0, 0x02});
-        headerCodes.put("content-length", new byte[]{(byte) 0xA0, 0x03});
-        headerCodes.put("date", new byte[]{(byte) 0xA0, 0x04});
-        headerCodes.put("last-modified", new byte[]{(byte) 0xA0, 0x05});
-        headerCodes.put("location", new byte[]{(byte) 0xA0, 0x06});
-        headerCodes.put("set-cookie", new byte[]{(byte) 0xA0, 0x07});
-        headerCodes.put("set-cookie2", new byte[]{(byte) 0xA0, 0x08});
-        headerCodes.put("servlet-engine", new byte[]{(byte) 0xA0, 0x09});
-        headerCodes.put("server", new byte[]{(byte) 0xA0, 0x09});
-        headerCodes.put("status", new byte[]{(byte) 0xA0, 0x0A});
-        headerCodes.put("www-authenticate", new byte[]{(byte) 0xA0, 0x0B});
-    }
-    private String headerEncoding;
+	byte CONTAINER_SEND_BODY_CHUNK = 0x03;
+	byte CONTAINER_SEND_HEADERS = 0x04;
+	byte CONTAINER_END_RESPONSE = 0x05;
+	// byte CONTAINER_GET_BODY_CHUNK = 0x06;
+	// byte CONTAINER_CPONG_REPLY = 0x09;
+	final static Map<String, byte[]> headerCodes;
 
-    public Ajp13OutputStream(final OutputStream outStream, final String headerEncoding) {
-        super(outStream, false);
-        this.headerEncoding = headerEncoding;
-    }
+	static {
+		headerCodes = new HashMap<String, byte[]>();
+		Ajp13OutputStream.headerCodes.put("content-type", new byte[] { (byte) 0xA0, 0x01 });
+		Ajp13OutputStream.headerCodes.put("content-language", new byte[] { (byte) 0xA0, 0x02 });
+		Ajp13OutputStream.headerCodes.put("content-length", new byte[] { (byte) 0xA0, 0x03 });
+		Ajp13OutputStream.headerCodes.put("date", new byte[] { (byte) 0xA0, 0x04 });
+		Ajp13OutputStream.headerCodes.put("last-modified", new byte[] { (byte) 0xA0, 0x05 });
+		Ajp13OutputStream.headerCodes.put("location", new byte[] { (byte) 0xA0, 0x06 });
+		Ajp13OutputStream.headerCodes.put("set-cookie", new byte[] { (byte) 0xA0, 0x07 });
+		Ajp13OutputStream.headerCodes.put("set-cookie2", new byte[] { (byte) 0xA0, 0x08 });
+		Ajp13OutputStream.headerCodes.put("servlet-engine", new byte[] { (byte) 0xA0, 0x09 });
+		Ajp13OutputStream.headerCodes.put("server", new byte[] { (byte) 0xA0, 0x09 });
+		Ajp13OutputStream.headerCodes.put("status", new byte[] { (byte) 0xA0, 0x0A });
+		Ajp13OutputStream.headerCodes.put("www-authenticate", new byte[] { (byte) 0xA0, 0x0B });
+	}
+	private final String headerEncoding;
 
-    @Override
-    public void commit() throws IOException {
-        logger.trace("Written {} bytes to response body", "" + this.bytesCommitted);
+	public Ajp13OutputStream(final OutputStream outStream, final String headerEncoding) {
+		super(outStream, false);
+		this.headerEncoding = headerEncoding;
+	}
 
-        this.buffer.flush();
+	@Override
+	public void commit() throws IOException {
+		Ajp13OutputStream.logger.trace("Written {} bytes to response body", "" + bytesCommitted);
 
-        // If we haven't written the headers yet, write them out
-        if (!this.committed) {
-            this.owner.validateHeaders();
-            this.committed = true;
+		buffer.flush();
 
-            ByteArrayOutputStream headerArrayStream = new ByteArrayOutputStream();
-            for (Iterator<String> i = this.owner.getHeaders().iterator(); i.hasNext();) {
-                String header = (String) i.next();
-                int colonPos = header.indexOf(':');
-                if (colonPos == -1) {
-                    throw new WinstoneException("No colon header: " + header);
-                }
-                String headerName = header.substring(0, colonPos).trim();
-                String headerValue = header.substring(colonPos + 1).trim();
-                byte headerCode[] = (byte[]) headerCodes.get(headerName.toLowerCase());
-                if (headerCode == null) {
-                    headerArrayStream.write(getStringBlock(headerName));
-                } else {
-                    headerArrayStream.write(headerCode);
-                }
-                headerArrayStream.write(getStringBlock(headerValue));
-            }
+		// If we haven't written the headers yet, write them out
+		if (!committed) {
+			owner.validateHeaders();
+			committed = true;
 
-            for (Iterator<Cookie> i = this.owner.getCookies().iterator(); i.hasNext();) {
-                Cookie cookie = (Cookie) i.next();
-                String cookieText = this.owner.writeCookie(cookie);
-                int colonPos = cookieText.indexOf(':');
-                if (colonPos == -1) {
-                    throw new WinstoneException("No colon header: " +cookieText);
-                }
-                String headerName = cookieText.substring(0, colonPos).trim();
-                String headerValue = cookieText.substring(colonPos + 1).trim();
-                byte headerCode[] = (byte[]) headerCodes.get(headerName.toLowerCase());
-                if (headerCode == null) {
-                    headerArrayStream.write(getStringBlock(headerName));
-                } else {
-                    headerArrayStream.write(headerCode);
-                }
-                headerArrayStream.write(getStringBlock(headerValue));
-            }
+			final ByteArrayOutputStream headerArrayStream = new ByteArrayOutputStream();
+			for (final Iterator<String> i = owner.getHeaders().iterator(); i.hasNext();) {
+				final String header = i.next();
+				final int colonPos = header.indexOf(':');
+				if (colonPos == -1) {
+					throw new WinstoneException("No colon header: " + header);
+				}
+				final String headerName = header.substring(0, colonPos).trim();
+				final String headerValue = header.substring(colonPos + 1).trim();
+				final byte headerCode[] = Ajp13OutputStream.headerCodes.get(headerName.toLowerCase());
+				if (headerCode == null) {
+					headerArrayStream.write(getStringBlock(headerName));
+				} else {
+					headerArrayStream.write(headerCode);
+				}
+				headerArrayStream.write(getStringBlock(headerValue));
+			}
 
-            // Write packet header + prefix + status code + status msg + header
-            // count
-            byte headerArray[] = headerArrayStream.toByteArray();
-            byte headerPacket[] = new byte[12];
-            headerPacket[0] = (byte) 0x41;
-            headerPacket[1] = (byte) 0x42;
-            setIntBlock(headerArray.length + 8, headerPacket, 2);
-            headerPacket[4] = CONTAINER_SEND_HEADERS;
-            setIntBlock(this.owner.getStatus(), headerPacket, 5);
-            setIntBlock(0, headerPacket, 7); // empty msg
-            headerPacket[9] = (byte) 0x00;
-            setIntBlock(this.owner.getHeaders().size()
-                    + this.owner.getCookies().size(), headerPacket, 10);
+			for (final Iterator<Cookie> i = owner.getCookies().iterator(); i.hasNext();) {
+				final Cookie cookie = i.next();
+				final String cookieText = owner.writeCookie(cookie);
+				final int colonPos = cookieText.indexOf(':');
+				if (colonPos == -1) {
+					throw new WinstoneException("No colon header: " + cookieText);
+				}
+				final String headerName = cookieText.substring(0, colonPos).trim();
+				final String headerValue = cookieText.substring(colonPos + 1).trim();
+				final byte headerCode[] = Ajp13OutputStream.headerCodes.get(headerName.toLowerCase());
+				if (headerCode == null) {
+					headerArrayStream.write(getStringBlock(headerName));
+				} else {
+					headerArrayStream.write(headerCode);
+				}
+				headerArrayStream.write(getStringBlock(headerValue));
+			}
 
-            // Ajp13Listener.packetDump(headerPacket, headerPacket.length);
-            // Ajp13Listener.packetDump(headerArray, headerArray.length);
+			// Write packet header + prefix + status code + status msg + header
+			// count
+			final byte headerArray[] = headerArrayStream.toByteArray();
+			final byte headerPacket[] = new byte[12];
+			headerPacket[0] = (byte) 0x41;
+			headerPacket[1] = (byte) 0x42;
+			Ajp13OutputStream.setIntBlock(headerArray.length + 8, headerPacket, 2);
+			headerPacket[4] = CONTAINER_SEND_HEADERS;
+			Ajp13OutputStream.setIntBlock(owner.getStatus(), headerPacket, 5);
+			Ajp13OutputStream.setIntBlock(0, headerPacket, 7); // empty msg
+			headerPacket[9] = (byte) 0x00;
+			Ajp13OutputStream.setIntBlock(owner.getHeaders().size() + owner.getCookies().size(), headerPacket, 10);
 
-            this.outStream.write(headerPacket);
-            this.outStream.write(headerArray);
-        }
+			// Ajp13Listener.packetDump(headerPacket, headerPacket.length);
+			// Ajp13Listener.packetDump(headerArray, headerArray.length);
 
-        // Write out the contents of the buffer in max 8k chunks
-        byte bufferContents[] = this.buffer.toByteArray();
-        int position = 0;
-        while (position < bufferContents.length) {
-            int packetLength = Math.min(bufferContents.length - position, 8184);
-            byte responsePacket[] = new byte[packetLength + 8];
-            responsePacket[0] = 0x41;
-            responsePacket[1] = 0x42;
-            setIntBlock(packetLength + 4, responsePacket, 2);
-            responsePacket[4] = CONTAINER_SEND_BODY_CHUNK;
-            setIntBlock(packetLength, responsePacket, 5);
-            System.arraycopy(bufferContents, position, responsePacket, 7, packetLength);
-            responsePacket[packetLength + 7] = 0x00;
-            position += packetLength;
+			outStream.write(headerPacket);
+			outStream.write(headerArray);
+		}
 
-            // Ajp13Listener.packetDump(responsePacket, responsePacket.length);
-            this.outStream.write(responsePacket);
-        }
+		// Write out the contents of the buffer in max 8k chunks
+		final byte bufferContents[] = buffer.toByteArray();
+		int position = 0;
+		while (position < bufferContents.length) {
+			final int packetLength = Math.min(bufferContents.length - position, 8184);
+			final byte responsePacket[] = new byte[packetLength + 8];
+			responsePacket[0] = 0x41;
+			responsePacket[1] = 0x42;
+			Ajp13OutputStream.setIntBlock(packetLength + 4, responsePacket, 2);
+			responsePacket[4] = CONTAINER_SEND_BODY_CHUNK;
+			Ajp13OutputStream.setIntBlock(packetLength, responsePacket, 5);
+			System.arraycopy(bufferContents, position, responsePacket, 7, packetLength);
+			responsePacket[packetLength + 7] = 0x00;
+			position += packetLength;
 
-        this.buffer.reset();
-        this.bufferPosition = 0;
-    }
+			// Ajp13Listener.packetDump(responsePacket, responsePacket.length);
+			outStream.write(responsePacket);
+		}
 
-    @Override
-    public void finishResponse() throws IOException {
-        // Send end response packet
-        byte endResponse[] = new byte[]{0x41, 0x42, 0x00, 0x02,
-            CONTAINER_END_RESPONSE, 1};
-        // Ajp13Listener.packetDump(endResponse, endResponse.length);
-        this.outStream.write(endResponse);
-    }
+		buffer.reset();
+		bufferPosition = 0;
+	}
 
-    /**
-     * Useful generic method for getting ajp13 format integers in a packet.
-     */
-    public byte[] getIntBlock(int integer) {
-        byte hi = (byte) (0xFF & (integer >> 8));
-        byte lo = (byte) (0xFF & (integer - (hi << 8)));
-        return new byte[]{hi, lo};
-    }
+	@Override
+	public void finishResponse() throws IOException {
+		// Send end response packet
+		final byte endResponse[] = new byte[] { 0x41, 0x42, 0x00, 0x02, CONTAINER_END_RESPONSE, 1 };
+		// Ajp13Listener.packetDump(endResponse, endResponse.length);
+		outStream.write(endResponse);
+	}
 
-    /**
-     * Useful generic method for setting ajp13 format integers in a packet.
-     */
-    public static void setIntBlock(int integer, byte packet[], int offset) {
-        byte hi = (byte) (0xFF & (integer >> 8));
-        byte lo = (byte) (0xFF & (integer - (hi << 8)));
-        packet[offset] = hi;
-        packet[offset + 1] = lo;
-    }
+	/**
+	 * Useful generic method for getting ajp13 format integers in a packet.
+	 */
+	public byte[] getIntBlock(final int integer) {
+		final byte hi = (byte) (0xFF & (integer >> 8));
+		final byte lo = (byte) (0xFF & (integer - (hi << 8)));
+		return new byte[] { hi, lo };
+	}
 
-    /**
-     * Useful generic method for getting ajp13 format strings in a packet.
-     */
-    public byte[] getStringBlock(String text)
-            throws UnsupportedEncodingException {
-        byte textBytes[] = text.getBytes(headerEncoding);
-        byte outArray[] = new byte[textBytes.length + 3];
-        System.arraycopy(getIntBlock(textBytes.length), 0, outArray, 0, 2);
-        System.arraycopy(textBytes, 0, outArray, 2, textBytes.length);
-        outArray[textBytes.length + 2] = 0x00;
-        return outArray;
-    }
+	/**
+	 * Useful generic method for setting ajp13 format integers in a packet.
+	 */
+	public static void setIntBlock(final int integer, final byte packet[], final int offset) {
+		final byte hi = (byte) (0xFF & (integer >> 8));
+		final byte lo = (byte) (0xFF & (integer - (hi << 8)));
+		packet[offset] = hi;
+		packet[offset + 1] = lo;
+	}
+
+	/**
+	 * Useful generic method for getting ajp13 format strings in a packet.
+	 */
+	public byte[] getStringBlock(final String text) throws UnsupportedEncodingException {
+		final byte textBytes[] = text.getBytes(headerEncoding);
+		final byte outArray[] = new byte[textBytes.length + 3];
+		System.arraycopy(getIntBlock(textBytes.length), 0, outArray, 0, 2);
+		System.arraycopy(textBytes, 0, outArray, 2, textBytes.length);
+		outArray[textBytes.length + 2] = 0x00;
+		return outArray;
+	}
 }

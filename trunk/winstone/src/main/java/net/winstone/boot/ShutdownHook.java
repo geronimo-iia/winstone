@@ -7,24 +7,25 @@
 package net.winstone.boot;
 
 /**
- * A jvm hook to force the calling of the web-app destroy before the process terminates
+ * A jvm hook to force the calling of the web-app destroy before the process
+ * terminates
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: ShutdownHook.java,v 1.3 2006/02/28 07:32:47 rickknowles Exp $
  */
 public class ShutdownHook extends Thread {
 
-    private Server server;
+	private Server server;
 
-    public ShutdownHook(final Server server) {
-        this.server = server;
-    }
+	public ShutdownHook(final Server server) {
+		this.server = server;
+	}
 
-    @Override
-    public void run() {
-        if (this.server != null) {
-            this.server.shutdown();
-            this.server = null;
-        }
-    }
+	@Override
+	public void run() {
+		if (server != null) {
+			server.shutdown();
+			server = null;
+		}
+	}
 }

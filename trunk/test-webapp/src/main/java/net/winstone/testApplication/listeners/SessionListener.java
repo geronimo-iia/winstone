@@ -16,48 +16,42 @@ import javax.servlet.http.HttpSessionListener;
  * Logs messages when any session event is received
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
- * @version $Id: SessionListener.java,v 1.2 2006/02/28 07:32:46 rickknowles Exp $
+ * @version $Id: SessionListener.java,v 1.2 2006/02/28 07:32:46 rickknowles Exp
+ *          $
  */
-public class SessionListener implements HttpSessionListener,
-        HttpSessionAttributeListener, HttpSessionActivationListener {
-    public void sessionCreated(HttpSessionEvent se) {
-        se.getSession().getServletContext().log(
-                "Session Created - id=" + se.getSession().getId());
-    }
+public class SessionListener implements HttpSessionListener, HttpSessionAttributeListener, HttpSessionActivationListener {
+	@Override
+	public void sessionCreated(final HttpSessionEvent se) {
+		se.getSession().getServletContext().log("Session Created - id=" + se.getSession().getId());
+	}
 
-    public void sessionDestroyed(HttpSessionEvent se) {
-        se.getSession().getServletContext().log(
-                "Session Destroyed - id=" + se.getSession().getId());
-    }
+	@Override
+	public void sessionDestroyed(final HttpSessionEvent se) {
+		se.getSession().getServletContext().log("Session Destroyed - id=" + se.getSession().getId());
+	}
 
-    public void attributeAdded(HttpSessionBindingEvent se) {
-        se.getSession().getServletContext().log(
-                "Session Attribute added (session id="
-                        + se.getSession().getId() + ") " + se.getName() + "="
-                        + se.getValue());
-    }
+	@Override
+	public void attributeAdded(final HttpSessionBindingEvent se) {
+		se.getSession().getServletContext().log("Session Attribute added (session id=" + se.getSession().getId() + ") " + se.getName() + "=" + se.getValue());
+	}
 
-    public void attributeRemoved(HttpSessionBindingEvent se) {
-        se.getSession().getServletContext().log(
-                "Session Attribute removed (session id="
-                        + se.getSession().getId() + ") " + se.getName() + "="
-                        + se.getValue());
-    }
+	@Override
+	public void attributeRemoved(final HttpSessionBindingEvent se) {
+		se.getSession().getServletContext().log("Session Attribute removed (session id=" + se.getSession().getId() + ") " + se.getName() + "=" + se.getValue());
+	}
 
-    public void attributeReplaced(HttpSessionBindingEvent se) {
-        se.getSession().getServletContext().log(
-                "Session Attribute replaced (session id="
-                        + se.getSession().getId() + ") " + se.getName() + "="
-                        + se.getValue());
-    }
+	@Override
+	public void attributeReplaced(final HttpSessionBindingEvent se) {
+		se.getSession().getServletContext().log("Session Attribute replaced (session id=" + se.getSession().getId() + ") " + se.getName() + "=" + se.getValue());
+	}
 
-    public void sessionDidActivate(HttpSessionEvent se) {
-        se.getSession().getServletContext().log(
-                "Session activated - id=" + se.getSession().getId());
-    }
+	@Override
+	public void sessionDidActivate(final HttpSessionEvent se) {
+		se.getSession().getServletContext().log("Session activated - id=" + se.getSession().getId());
+	}
 
-    public void sessionWillPassivate(HttpSessionEvent se) {
-        se.getSession().getServletContext().log(
-                "Session passivating - id=" + se.getSession().getId());
-    }
+	@Override
+	public void sessionWillPassivate(final HttpSessionEvent se) {
+		se.getSession().getServletContext().log("Session passivating - id=" + se.getSession().getId());
+	}
 }

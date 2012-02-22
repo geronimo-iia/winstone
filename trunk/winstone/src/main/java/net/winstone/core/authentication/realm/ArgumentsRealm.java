@@ -15,90 +15,92 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.slf4j.LoggerFactory;
-
 import net.winstone.core.authentication.AuthenticationPrincipal;
 import net.winstone.core.authentication.AuthenticationRealm;
 import net.winstone.util.StringUtils;
 
+import org.slf4j.LoggerFactory;
+
 /**
- * Base class for authentication realms. Subclasses provide the source of authentication roles, usernames, passwords, etc, and when asked
- * for validation respond with a role if valid, or null otherwise.
+ * Base class for authentication realms. Subclasses provide the source of
+ * authentication roles, usernames, passwords, etc, and when asked for
+ * validation respond with a role if valid, or null otherwise.
  * 
  * @author mailto: <a href="rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: ArgumentsRealm.java,v 1.4 2007/06/01 15:55:41 rickknowles Exp $
  */
 public class ArgumentsRealm implements AuthenticationRealm {
 
-    protected static org.slf4j.Logger logger = LoggerFactory.getLogger(ArgumentsRealm.class);
-    private static final transient String PASSWORD_PREFIX = "argumentsRealm.passwd.";
-    private static final transient String ROLES_PREFIX = "argumentsRealm.roles.";
-    private final Map<String, String> passwords;
-    private final Map<String, List<String>> roles;
+	protected static org.slf4j.Logger logger = LoggerFactory.getLogger(ArgumentsRealm.class);
+	private static final transient String PASSWORD_PREFIX = "argumentsRealm.passwd.";
+	private static final transient String ROLES_PREFIX = "argumentsRealm.roles.";
+	private final Map<String, String> passwords;
+	private final Map<String, List<String>> roles;
 
-    /**
-     * Constructor - this sets up an authentication realm, using the arguments supplied on the command line as a source of
-     * userNames/passwords/roles.
-     */
-    public ArgumentsRealm(final Set<String> rolesAllowed, final Map<String, String> args) {
-        this.passwords = new HashMap<String, String>();
-        this.roles = new HashMap<String, List<String>>();
-        for (Iterator<String> i = args.keySet().iterator(); i.hasNext();) {
-            String key = (String) i.next();
-            if (key.startsWith(PASSWORD_PREFIX)) {
-                String userName = key.substring(PASSWORD_PREFIX.length());
-                String password = (String) args.get(key);
+	/**
+	 * Constructor - this sets up an authentication realm, using the arguments
+	 * supplied on the command line as a source of userNames/passwords/roles.
+	 */
+	public ArgumentsRealm(final Set<String> rolesAllowed, final Map<String, String> args) {
+		passwords = new HashMap<String, String>();
+		roles = new HashMap<String, List<String>>();
+		for (final Iterator<String> i = args.keySet().iterator(); i.hasNext();) {
+			final String key = i.next();
+			if (key.startsWith(ArgumentsRealm.PASSWORD_PREFIX)) {
+				final String userName = key.substring(ArgumentsRealm.PASSWORD_PREFIX.length());
+				final String password = args.get(key);
 
-                String roleList = StringUtils.stringArg(args, ROLES_PREFIX + userName, "");
-                if (roleList.equals("")) {
-                    logger.warn("WARNING: No roles detected in configuration for user {}", userName);
-                } else {
-                    StringTokenizer st = new StringTokenizer(roleList, ",");
-                    List<String> rl = new ArrayList<String>();
-                    for (; st.hasMoreTokens();) {
-                        String currentRole = st.nextToken();
-                        if (rolesAllowed.contains(currentRole)) {
-                            rl.add(currentRole);
-                        }
-                    }
-                    String[] roleArray = (String[]) rl.toArray();
-                    Arrays.sort(roleArray);
-                    this.roles.put(userName, Arrays.asList(roleArray));
-                }
-                this.passwords.put(userName, password);
-            }
-        }
-        logger.debug("ArgumentsRealm initialised: users: " + this.passwords.size());
-    }
+				final String roleList = StringUtils.stringArg(args, ArgumentsRealm.ROLES_PREFIX + userName, "");
+				if (roleList.equals("")) {
+					ArgumentsRealm.logger.warn("WARNING: No roles detected in configuration for user {}", userName);
+				} else {
+					final StringTokenizer st = new StringTokenizer(roleList, ",");
+					final List<String> rl = new ArrayList<String>();
+					for (; st.hasMoreTokens();) {
+						final String currentRole = st.nextToken();
+						if (rolesAllowed.contains(currentRole)) {
+							rl.add(currentRole);
+						}
+					}
+					final String[] roleArray = (String[]) rl.toArray();
+					Arrays.sort(roleArray);
+					roles.put(userName, Arrays.asList(roleArray));
+				}
+				passwords.put(userName, password);
+			}
+		}
+		ArgumentsRealm.logger.debug("ArgumentsRealm initialised: users: " + passwords.size());
+	}
 
-    /**
-     * Authenticate the user - do we know them ? Return a principal once we know them
-     */
-    @Override
-    public AuthenticationPrincipal authenticateByUsernamePassword(final String userName, final String password) {
-        if ((userName == null) || (password == null)) {
-            return null;
-        }
+	/**
+	 * Authenticate the user - do we know them ? Return a principal once we know
+	 * them
+	 */
+	@Override
+	public AuthenticationPrincipal authenticateByUsernamePassword(final String userName, final String password) {
+		if ((userName == null) || (password == null)) {
+			return null;
+		}
 
-        String realPassword = (String) this.passwords.get(userName);
-        if (realPassword == null) {
-            return null;
-        } else if (!realPassword.equals(password)) {
-            return null;
-        } else {
-            return new AuthenticationPrincipal(userName, password, (List<String>) this.roles.get(userName));
-        }
-    }
+		final String realPassword = passwords.get(userName);
+		if (realPassword == null) {
+			return null;
+		} else if (!realPassword.equals(password)) {
+			return null;
+		} else {
+			return new AuthenticationPrincipal(userName, password, roles.get(userName));
+		}
+	}
 
-    /**
-     * Retrieve an authenticated user
-     */
-    @Override
-    public AuthenticationPrincipal retrieveUser(final String userName) {
-        if (userName == null) {
-            return null;
-        } else {
-            return new AuthenticationPrincipal(userName, (String) this.passwords.get(userName), (List<String>) this.roles.get(userName));
-        }
-    }
+	/**
+	 * Retrieve an authenticated user
+	 */
+	@Override
+	public AuthenticationPrincipal retrieveUser(final String userName) {
+		if (userName == null) {
+			return null;
+		} else {
+			return new AuthenticationPrincipal(userName, passwords.get(userName), roles.get(userName));
+		}
+	}
 }

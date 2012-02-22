@@ -17,7 +17,7 @@ public final class DateCache {
 
 	public DateCache(final DateFormat format) {
 		super();
-		this.dateFormat = format;
+		dateFormat = format;
 	}
 
 	public String now() {

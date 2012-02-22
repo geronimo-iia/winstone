@@ -21,12 +21,12 @@ public class Names implements NamingEnumeration<NameClassPair> {
 
 	public Names(final Map<String, Object> bindings) {
 		super();
-		this.iterator = bindings.entrySet().iterator();
+		iterator = bindings.entrySet().iterator();
 	}
 
 	@Override
 	public void close() throws NamingException {
-		this.iterator = null;
+		iterator = null;
 	}
 
 	@Override
