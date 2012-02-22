@@ -3,6 +3,49 @@
 
 =Change Log=
 
+==v1.0.3-SNAPSHOT ==
+ * Add better consistency check between war and exploded dir
+ * Fix XSS vulnerability in default error pages: http://www.cloudbees.com/jenkins-advisory/jenkins-security-advisory-2011-11-08.cb
+ * FIX HUDSON-728
+ * update of command line argument list
+ * don't mask all the errors on HostConfiguration
+ * Fix path separator on HostConfiguration
+ * Update ObjectPool in order to avoir memory leak
+ * made the usage screen customizable
+ * Fix AJP13Listener 
+ * ignore IOException caused by browsers terminating connections abruptly
+ * detect nested exceptions in RequestHandlerThread
+ * sessions
+ * performance improvement on WinstoneInputStream
+ * FIX HUDSON-4804
+ * FIXED HUDSON-5119: finite default session timeout
+ * if --httpsPort is given without the key store, run with a self-signed
+certificate.
+ * added --httpsCertificate and --httpsPrivateKey options to support
+  OpenSSL style key formats.
+ * Added an explicit switch to enable SSL client auth, as the "optional"
+ * Fixed a bug in AJP packet parsing
+ * Added the canonicalization of the URI path.
+ * Fixed a possible memory leak. A large number of
+sessions whose isNew flag is left to true. It seem to me that for the sake of session eviction, the timestamp should be enough.
+ * Add shutdown message
+ * FIX AJP13Listener  "shutdown OK" will be reported even for an error case.
+ * fixed a error recovery behaviour on HttpListener
+ * Carry forward the request URI in the error dispatching.
+ * write response headers with buffering. 
+ * allow the session cookie name to be modified
+ * Failing to launch a listener is a fatal error.
+ * HTTPS certificate generation so long as HTTPS listener is off
+ * escape error messages which are supposed be plain text and not markup
+ * Compliance for IPv6 HTTP requests
+ * Winstone does not parse the query string if the POST request has any  content. This would be the correct behavior for forms, but not for normal requests, specially when we want to send POST requests for executing tasks, such as createItem.
+ * Fixed the bogus "URI must start with a slash" problem
+ * do not report ClientSocketException caused by the client aborting the connection.
+ * eliminated a pointless use of a variable in RequestHandlerThread
+ * ClassNotFoundException resulting from the user error be reported to the user
+ * change to StringBuilder usage
+
+
 ==v1.0.2 ==
  * Add log4jConfiguration
  * Fix startup problem
