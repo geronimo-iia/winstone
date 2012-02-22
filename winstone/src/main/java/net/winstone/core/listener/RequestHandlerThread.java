@@ -207,7 +207,7 @@ public class RequestHandlerThread implements Runnable {
 				}
 
 			}
-
+			socket = null;
 			objectPool.releaseRequestHandler(this);
 
 			// Suspend this thread until we get assigned and woken up
@@ -286,13 +286,11 @@ public class RequestHandlerThread implements Runnable {
 	/**
 	 * Assign a socket to the handler
 	 */
-	public void commenceRequestHandling(final Socket socket, final Listener listener) {
+	public synchronized void commenceRequestHandling(final Socket socket, final Listener listener) {
 		this.listener = listener;
 		this.socket = socket;
 		if (thread.isAlive()) {
-			synchronized (this) {
-				notifyAll();
-			}
+			notifyAll();
 		} else {
 			thread.start();
 		}
