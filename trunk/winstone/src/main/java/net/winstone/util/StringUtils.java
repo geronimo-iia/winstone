@@ -166,10 +166,10 @@ public class StringUtils {
 	 * Performs necessary escaping to render arbitrary plain text as plain text
 	 * without any markup.
 	 */
-	public static String htmlEscapeBasicMarkup(String text) {
-		StringBuilder buf = new StringBuilder(text.length() + 64);
+	public static String htmlEscapeBasicMarkup(final String text) {
+		final StringBuilder buf = new StringBuilder(text.length() + 64);
 		for (int i = 0; i < text.length(); i++) {
-			char ch = text.charAt(i);
+			final char ch = text.charAt(i);
 			switch (ch) {
 			case '<':
 				buf.append("&lt;");
@@ -193,11 +193,12 @@ public class StringUtils {
 	 * any string that looks like an URI, this method preserves the leading and
 	 * trailing '/'.
 	 */
-	public static String canonicalPath(String path) {
-		List<String> r = new ArrayList<String>(Arrays.asList(path.split("/+")));
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static String canonicalPath(final String path) {
+		final List r = new ArrayList(Arrays.asList(path.split("/+")));
 		for (int i = 0; i < r.size();) {
-			String cur = (String) r.get(i);
-			if (cur.length() == 0 || cur.equals(".")) {
+			final String cur = (String) r.get(i);
+			if ((cur.length() == 0) || cur.equals(".")) {
 				// empty token occurs for example, "".split("/+") is [""]
 				r.remove(i);
 			} else if (cur.equals("..")) {
@@ -212,21 +213,24 @@ public class StringUtils {
 			}
 		}
 
-		StringBuilder buf = new StringBuilder();
-		if (path.startsWith("/"))
+		final StringBuilder buf = new StringBuilder();
+		if (path.startsWith("/")) {
 			buf.append('/');
+		}
 		boolean first = true;
-		for (Object aR : r) {
-			String token = (String) aR;
-			if (!first)
+		for (final Object aR : r) {
+			final String token = (String) aR;
+			if (!first) {
 				buf.append('/');
-			else
+			} else {
 				first = false;
+			}
 			buf.append(token);
 		}
 		// translation: if (path.endsWith("/") && !buf.endsWith("/"))
-		if (path.endsWith("/") && (buf.length() == 0 || buf.charAt(buf.length() - 1) != '/'))
+		if (path.endsWith("/") && ((buf.length() == 0) || (buf.charAt(buf.length() - 1) != '/'))) {
 			buf.append('/');
+		}
 		return buf.toString();
 	}
 }
