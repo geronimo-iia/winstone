@@ -49,7 +49,7 @@ public class WinstoneSession implements HttpSession, Serializable {
 	protected static org.slf4j.Logger logger = LoggerFactory.getLogger(WinstoneSession.class);
 	/** Generated serial Version UID */
 	private static final long serialVersionUID = 6106594480472753553L;
-	public static final String SESSION_COOKIE_NAME = "JSESSIONID";
+	public static String SESSION_COOKIE_NAME = "JSESSIONID";
 	private String sessionId;
 	private WebAppConfiguration webAppConfig;
 	private Map<String, Object> sessionData;
@@ -492,7 +492,7 @@ public class WinstoneSession implements HttpSession, Serializable {
 
 		// Read the map
 		sessionData = new Hashtable<String, Object>();
-		requestsUsingMe =Collections.synchronizedSet(new HashSet<WinstoneRequest>());
+		requestsUsingMe = Collections.synchronizedSet(new HashSet<WinstoneRequest>());
 		final int entryCount = in.readInt();
 		for (int n = 0; n < entryCount; n++) {
 			final String key = in.readUTF();
