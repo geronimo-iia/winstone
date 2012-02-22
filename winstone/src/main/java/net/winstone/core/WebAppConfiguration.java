@@ -1236,7 +1236,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 
 		for (int n = 0; n < allSessions.length; n++) {
 			final WinstoneSession session = (WinstoneSession) allSessions[n];
-			if (!session.isNew() && session.isUnusedByRequests() && session.isExpired()) {
+			if (/* !session.isNew() && */session.isUnusedByRequests() && session.isExpired()) {
 				session.invalidate();
 				expiredCount++;
 			}
