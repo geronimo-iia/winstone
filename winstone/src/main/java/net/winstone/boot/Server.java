@@ -160,7 +160,8 @@ public class Server implements LifeCycle {
 
 	/**
 	 * Instanciate listener.
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 	private void initializeListener() throws IOException {
 		// TODO create a parameters for this list
@@ -192,8 +193,6 @@ public class Server implements LifeCycle {
 					final Class<?> clusterClass = Class.forName(clusterClassName);
 					final Constructor<?> clusterConstructor = clusterClass.getConstructor(new Class[] { Map.class, Integer.class });
 					cluster = (Cluster) clusterConstructor.newInstance(new Object[] { args, new Integer(controlPort) });
-				} catch (final ClassNotFoundException err) {
-					Server.logger.debug("Clustering disabled - cluster implementation class not found");
 				} catch (final Throwable err) {
 					Server.logger.error("WARNING: Error during startup of cluster implementation - ignoring", err);
 				}
@@ -217,6 +216,7 @@ public class Server implements LifeCycle {
 					System.setProperty("java.naming.factory.url.pkgs", "net.winstone.jndi");
 				}
 			} catch (final ClassNotFoundException err) {
+				Server.logger.error("JNDI Error ", err);
 			}
 			// instanciate Jndi Manager
 			final String jndiMgrClassName = StringUtils.stringArg(args, "containerJndiClassName", JndiManager.class.getName()).trim();
@@ -227,7 +227,7 @@ public class Server implements LifeCycle {
 				globalJndiManager.initialize();
 				Server.logger.info("JNDI Started {}", jndiMgrClass.getName());
 			} catch (final ClassNotFoundException err) {
-				Server.logger.debug("JNDI disabled at container level - can't find JNDI Manager class");
+				Server.logger.error("JNDI disabled at container level - can't find JNDI Manager class");
 			} catch (final Throwable err) {
 				Server.logger.error("JNDI disabled at container level - couldn't load JNDI Manager: " + jndiMgrClassName, err);
 			}
@@ -309,7 +309,8 @@ public class Server implements LifeCycle {
 	 * is interpreted as the listener being disabled, so don't do anything too
 	 * adventurous in the constructor, or if you do, catch and log any errors
 	 * locally before rethrowing.
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 	protected final void spawnListener(final String listenerClassName) throws IOException {
 		try {
@@ -323,7 +324,7 @@ public class Server implements LifeCycle {
 			Server.logger.info("Listener {} not found / disabled - ignoring", listenerClassName);
 		} catch (final Throwable err) {
 			Server.logger.error("Error during listener startup " + listenerClassName, err);
-			 throw (IOException)new IOException("Failed to start a listener: "+listenerClassName).initCause(err);
+			throw (IOException) new IOException("Failed to start a listener: " + listenerClassName).initCause(err);
 		}
 	}
 
