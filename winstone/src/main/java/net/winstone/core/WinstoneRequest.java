@@ -1036,7 +1036,9 @@ public class WinstoneRequest implements HttpServletRequest {
 				WinstoneRequest.logger.warn("Called getInputStream after getParameter ... error");
 			}
 		}
-		parsedParameters = Boolean.FALSE;
+		if (method.equals(WinstoneConstant.METHOD_POST) && WinstoneConstant.POST_PARAMETERS.equals(contentType)) {
+			this.parsedParameters = new Boolean(false);
+		}
 		return inputData;
 	}
 
