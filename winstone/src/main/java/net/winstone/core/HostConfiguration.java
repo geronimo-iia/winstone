@@ -111,7 +111,7 @@ public class HostConfiguration implements Runnable {
 			try {
 				final WebAppConfiguration webAppConfiguration = initWebApp(prefix, getWebRoot(webroot, warfile), "webapp");
 				webapps.put(webAppConfiguration.getContextPath(), webAppConfiguration);
-			} catch (final Throwable err) {
+			} catch (final IOException err) {
 				HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", err);
 			}
 		} // Otherwise multi-webapp mode
