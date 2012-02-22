@@ -1,5 +1,6 @@
 package net.winstone.util;
 
+import java.io.File;
 import java.util.Map;
 
 /**
@@ -8,6 +9,17 @@ import java.util.Map;
  * @author Jerome Guibert
  */
 public class StringUtils {
+
+	/**
+	 * @param args
+	 * @param name
+	 * @return a file instance for specified name argument, null if none is
+	 *         found.
+	 */
+	public static File fileArg(final Map<String, String> args, final String name) {
+		final String value = args.get(name);
+		return value != null ? new File(value) : null;
+	}
 
 	public static boolean booleanArg(final Map<String, String> args, final String name, final boolean defaultTrue) {
 		final String value = args.get(name);
