@@ -7,6 +7,7 @@
 package net.winstone.core;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -428,36 +429,81 @@ public class WinstoneRequest implements HttpServletRequest {
 	}
 
 	/**
-	 * For decoding the URL encoding used on query strings
+	 * For decoding the URL encoding used on query strings.
+	 * 
+	 * @param in
+	 *            input string
+	 * @return decoded string
 	 */
-	public static String decodeURLToken(final String in) {
-		final int len = in.length();
-		final StringBuilder workspace = new StringBuilder(len);
-		for (int n = 0; n < len; n++) {
-			final char thisChar = in.charAt(n);
-			if (thisChar == '+') {
-				workspace.append(' ');
-			} else if (thisChar == '%') {
-				String token = "";
-				int inc = 2, beg = 1, end = 3;
-				if (((n + 1) < len) && (in.charAt(n + 1) == 'u')) {
-					beg = 2;
-					end = 6;
-					inc = 5;
-				}
-				token = in.substring(Math.min(n + beg, len), Math.min(n + end, len));
-				try {
-					workspace.append((char) (Integer.parseInt(token, 16)));
-					n += inc;
-				} catch (final RuntimeException err) {
-					WinstoneRequest.logger.warn("Found an invalid character %{} in url parameter. Echoing through in escaped form", token);
-					workspace.append(thisChar);
-				}
-			} else {
-				workspace.append(thisChar);
-			}
+	public static String decodeURLToken(String in) {
+		return decodeURLToken(in, true);
+	}
+
+	/**
+	 * For decoding the URL encoding used on query strings
+	 * 
+	 * @param in
+	 *            input string
+	 * @param encoding
+	 *            encoding
+	 * @return decoded string
+	 * @throws UnsupportedEncodingException
+	 */
+	public static String decodeURLToken(String in, String encoding) throws UnsupportedEncodingException {
+		return decodeURLToken(in, encoding, true);
+	}
+
+	/**
+	 * For decoding the URL encoding used on query strings (using UTF-8)
+	 * 
+	 * @param in
+	 *            in input string
+	 * @param isQueryString
+	 *            Decode query string, where '+' is an escape for ' '. Otherwise
+	 *            decode as path token, where '+' is not an escape character.
+	 * @return decoded string
+	 */
+	public static String decodeURLToken(String in, boolean isQueryString) {
+		try {
+			return decodeURLToken(in, "UTF-8", isQueryString);
+		} catch (UnsupportedEncodingException e) {
+			throw new AssertionError(); // impossible
 		}
-		return workspace.toString();
+	}
+
+	/**
+	 * For decoding the URL encoding.
+	 * 
+	 * @param in
+	 *            in input string
+	 * @param encoding
+	 *            encoding
+	 * @param isQueryString
+	 *            Decode query string, where '+' is an escape for ' '. Otherwise
+	 *            decode as path token, where '+' is not an escape character.
+	 * @return decoded string
+	 * @throws UnsupportedEncodingException
+	 */
+	public static String decodeURLToken(String in, String encoding, boolean isQueryString) throws UnsupportedEncodingException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		for (int n = 0; n < in.length(); n++) {
+			char thisChar = in.charAt(n);
+			if (thisChar == '+' && isQueryString)
+				baos.write(' ');
+			else if (thisChar == '%') {
+				String token = in.substring(Math.min(n + 1, in.length()), Math.min(n + 3, in.length()));
+				try {
+					int decoded = Integer.parseInt(token, 16);
+					baos.write(decoded);
+					n += 2;
+				} catch (RuntimeException err) {
+					WinstoneRequest.logger.warn("Found an invalid character %{} in url parameter. Echoing through in escaped form", token);
+					baos.write(thisChar);
+				}
+			} else
+				baos.write(thisChar);
+		}
+		return new String(baos.toByteArray(), encoding);
 	}
 
 	public void discardRequestBody() {

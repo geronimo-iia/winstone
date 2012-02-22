@@ -1142,7 +1142,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 		final String exact = exactServletMatchMounts.get(path);
 		if (exact != null) {
 			if (servletInstances.get(exact) != null) {
-				servletPath.append(WinstoneRequest.decodeURLToken(path));
+				servletPath.append(WinstoneRequest.decodeURLToken(path, false));
 				// pathInfo.append(""); // a hack - empty becomes null later
 				return servletInstances.get(exact);
 			}
@@ -1162,7 +1162,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 			throw new WinstoneException("Matched URL to a servlet that doesn't exist: " + defaultServletName);
 		}
 		// pathInfo.append(path);
-		servletPath.append(WinstoneRequest.decodeURLToken(path));
+		servletPath.append(WinstoneRequest.decodeURLToken(path, false));
 		return servletInstances.get(defaultServletName);
 	}
 
