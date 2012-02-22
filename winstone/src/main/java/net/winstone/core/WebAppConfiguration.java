@@ -1666,7 +1666,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 		} else if (!path.equals("/") && path.endsWith("/")) {
 			path = path.substring(0, path.length() - 1);
 		}
-		final File res = new File(webRoot, path.substring(1));
+		File res = new File(webRoot, StringUtils.canonicalPath(path));
 		return (res != null) && res.exists() ? res.toURI().toURL() : null;
 	}
 
