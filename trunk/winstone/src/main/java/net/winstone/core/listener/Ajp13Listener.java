@@ -7,6 +7,7 @@
 package net.winstone.core.listener;
 
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -20,7 +21,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Map;
 
 import net.winstone.WinstoneException;
@@ -30,7 +30,6 @@ import net.winstone.core.WinstoneInputStream;
 import net.winstone.core.WinstoneOutputStream;
 import net.winstone.core.WinstoneRequest;
 import net.winstone.core.WinstoneResponse;
-import net.winstone.core.authentication.AuthenticationPrincipal;
 import net.winstone.util.StringUtils;
 
 import org.slf4j.Logger;
@@ -51,7 +50,7 @@ public class Ajp13Listener implements Listener, Runnable {
 	private final static int DEFAULT_PORT = 8009;
 	private final static int CONNECTION_TIMEOUT = 60000;
 	private final static int BACKLOG_COUNT = 1000;
-	// private final static int KEEP_ALIVE_TIMEOUT = -1;
+	private final static int KEEP_ALIVE_TIMEOUT = -1;
 	// private final static int KEEP_ALIVE_SLEEP = 50;
 	// private final static int KEEP_ALIVE_SLEEP_MAX = 500;
 	private final static String TEMPORARY_URL_STASH = "winstone.ajp13.TemporaryURLAttribute";
@@ -60,30 +59,49 @@ public class Ajp13Listener implements Listener, Runnable {
 	private final int listenPort;
 	private boolean interrupted;
 	private final String listenAddress;
+	private ServerSocket serverSocket;
 
 	/**
-	 * Constructor
+	 * 
+	 * Build a new instance of Ajp13Listener.
+	 * 
+	 * @param args
+	 *            args
+	 * @param objectPool
+	 *            objectPool instance
+	 * @param hostGroup
+	 *            hostGroup instance
 	 */
 	public Ajp13Listener(final Map<String, String> args, final ObjectPool objectPool, final HostGroup hostGroup) {
 		// Load resources
 		this.hostGroup = hostGroup;
 		this.objectPool = objectPool;
-
-		listenPort = Integer.parseInt(StringUtils.stringArg(args, "ajp13Port", "" + Ajp13Listener.DEFAULT_PORT));
+		listenPort = StringUtils.intArg(args, "ajp13Port", Ajp13Listener.DEFAULT_PORT);
 		listenAddress = StringUtils.stringArg(args, "ajp13ListenAddress", null);
 	}
 
 	@Override
-	public boolean start() {
+	public boolean start() throws IOException {
 		if (listenPort < 0) {
 			return false;
 		} else {
+			ServerSocket ss = null;
+			try {
+				ss = listenAddress == null ? new ServerSocket(listenPort, Ajp13Listener.BACKLOG_COUNT) : new ServerSocket(listenPort, Ajp13Listener.BACKLOG_COUNT, InetAddress.getByName(listenAddress));
+			} catch (final IOException e) {
+				throw (IOException) new IOException("Failed to listen on port " + listenPort).initCause(e);
+			}
+			ss.setSoTimeout(Ajp13Listener.LISTENER_TIMEOUT);
+			Ajp13Listener.logger.info("AJP13 Listener started: port={}", listenPort + "");
+			serverSocket = ss;
+
 			interrupted = false;
 			final Thread thread = new Thread(this, StringUtils.replaceToken("ConnectorThread:ajp13-[#0]", Integer.toString(listenPort)));
 			thread.setDaemon(true);
 			thread.start();
 			return true;
 		}
+
 	}
 
 	/**
@@ -92,34 +110,28 @@ public class Ajp13Listener implements Listener, Runnable {
 	@Override
 	public void run() {
 		try {
-			final ServerSocket ss = listenAddress == null ? new ServerSocket(listenPort, Ajp13Listener.BACKLOG_COUNT) : new ServerSocket(listenPort, Ajp13Listener.BACKLOG_COUNT, InetAddress.getByName(listenAddress));
-			ss.setSoTimeout(Ajp13Listener.LISTENER_TIMEOUT);
-			Ajp13Listener.logger.info("AJP13 Listener started: port={}", listenPort + "");
-
 			// Enter the main loop
 			while (!interrupted) {
 				// Get the listener
 				Socket s = null;
 				try {
-					s = ss.accept();
+					s = serverSocket.accept();
 				} catch (final java.io.InterruptedIOException err) {
 					s = null;
 				}
-
 				// if we actually got a socket, process it. Otherwise go around
 				// again
 				if (s != null) {
 					objectPool.handleRequest(s, this);
 				}
 			}
-
 			// Close server socket
-			ss.close();
+			serverSocket.close();
+			serverSocket = null;
+			Ajp13Listener.logger.info("AJP13 Listener shutdown successfully");
 		} catch (final Throwable err) {
 			Ajp13Listener.logger.error("Error during AJP13 listener init or shutdown", err);
 		}
-
-		Ajp13Listener.logger.info("AJP13 Listener shutdown successfully");
 	}
 
 	/**
@@ -145,39 +157,28 @@ public class Ajp13Listener implements Listener, Runnable {
 		response.setRequest(request);
 		request.setHostGroup(hostGroup);
 		// rsp.updateContentTypeHeader("text/html");
-		handler.setRequest(request);
-		handler.setResponse(response);
-
 		if (iAmFirst) {
 			socket.setSoTimeout(Ajp13Listener.CONNECTION_TIMEOUT);
+		} else {
+			socket.setSoTimeout(Ajp13Listener.KEEP_ALIVE_TIMEOUT);
 		}
-		// Dead Code
-		// else {
-		// deallocateRequestResponse(handler, request, response, null, null);
-		// }
-		// else
-		// socket.setSoTimeout(KEEP_ALIVE_TIMEOUT);
 		Ajp13IncomingPacket headers = null;
 		try {
 			headers = new Ajp13IncomingPacket(inSocket, handler);
 		} catch (final InterruptedIOException err) {
-			deallocateRequestResponse(handler, request, response, null, null);
 			// keep alive timeout ? ignore if not first
 			if (iAmFirst) {
 				throw err;
 			} else {
+				deallocateRequestResponse(handler, request, response, null, null);
 				return;
 			}
-		} catch (final WinstoneException err) {
-			deallocateRequestResponse(handler, request, response, null, null);
-			throw err;
 		} finally {
 			try {
 				socket.setSoTimeout(Ajp13Listener.CONNECTION_TIMEOUT);
 			} catch (final Throwable err) {
 			}
 		}
-
 		if (headers.getPacketLength() > 0) {
 			headers.parsePacket("8859_1");
 			parseSocketInfo(headers, request);
@@ -187,7 +188,7 @@ public class Ajp13Listener implements Listener, Runnable {
 
 			// If content-length present and non-zero, download the other
 			// packets
-			WinstoneInputStream inData = null;
+			WinstoneInputStream inData;
 			final int contentLength = request.getContentLength();
 			if (contentLength > 0) {
 				final byte bodyContent[] = new byte[contentLength];
@@ -211,12 +212,12 @@ public class Ajp13Listener implements Listener, Runnable {
 			response.setOutputStream(outData);
 
 			// Set the handler's member variables so it can execute the servlet
+			handler.setRequest(request);
+			handler.setResponse(response);
 			handler.setInStream(inData);
 			handler.setOutStream(outData);
-		} else {
-			// deallocates response/request if the headers packet length is 0
-			deallocateRequestResponse(handler, request, response, null, null);
 		}
+
 	}
 
 	/**
@@ -257,8 +258,6 @@ public class Ajp13Listener implements Listener, Runnable {
 	 */
 	@Override
 	public void releaseSocket(final Socket socket, final InputStream inSocket, final OutputStream outSocket) throws IOException {
-		// Logger.log(Logger.FULL_DEBUG, "Releasing socket: " +
-		// Thread.currentThread().getName());
 		inSocket.close();
 		outSocket.close();
 		socket.close();
@@ -284,24 +283,20 @@ public class Ajp13Listener implements Listener, Runnable {
 		req.setIsSecure(headers.isSSL());
 	}
 
-	/**
-	 * Extract the header details relating to protocol, uri, etc from the ajp13
-	 * header packet
-	 */
-	private String parseURILine(final Ajp13IncomingPacket headers, final WinstoneRequest req, final WinstoneResponse rsp) throws UnsupportedEncodingException {
-		req.setMethod(headers.getMethod());
-		req.setProtocol(headers.getProtocol());
-		rsp.setProtocol(headers.getProtocol());
-		rsp.extractRequestKeepAliveHeader(req);
+	private String parseURILine(final Ajp13IncomingPacket headers, final WinstoneRequest request, final WinstoneResponse response) throws UnsupportedEncodingException {
+		request.setMethod(headers.getMethod());
+		request.setProtocol(headers.getProtocol());
+		response.setProtocol(headers.getProtocol());
+		response.extractRequestKeepAliveHeader(request);
 		// req.setServletPath(headers.getURI());
 		// req.setRequestURI(headers.getURI());
 
 		// Get query string if supplied
-		for (final Iterator<String> i = headers.getAttributes().keySet().iterator(); i.hasNext();) {
-			final String attName = i.next();
+		for (final Object o : headers.getAttributes().keySet()) {
+			final String attName = (String) o;
 			if (attName.equals("query_string")) {
 				final String qs = headers.getAttributes().get("query_string");
-				req.setQueryString(qs);
+				request.setQueryString(qs);
 				// req.getParameters().putAll(WinstoneRequest.extractParameters(qs,
 				// req.getEncoding(), mainResources));
 				// req.setRequestURI(headers.getURI() + "?" + qs);
@@ -314,47 +309,40 @@ public class Ajp13Listener implements Listener, Runnable {
 				} catch (final CertificateException err) {
 					Ajp13Listener.logger.debug("Skipping invalid SSL certificate: {}", certValue);
 				}
-				req.setAttribute("javax.servlet.request.X509Certificate", certificateArray);
-				req.setIsSecure(true);
+				request.setAttribute("javax.servlet.request.X509Certificate", certificateArray);
+				request.setIsSecure(true);
 			} else if (attName.equals("ssl_cipher")) {
 				final String cipher = headers.getAttributes().get("ssl_cipher");
-				req.setAttribute("javax.servlet.request.cipher_suite", cipher);
-				req.setAttribute("javax.servlet.request.key_size", getKeySize(cipher));
-				req.setIsSecure(true);
+				request.setAttribute("javax.servlet.request.cipher_suite", cipher);
+				request.setAttribute("javax.servlet.request.key_size", getKeySize(cipher));
+				request.setIsSecure(true);
 			} else if (attName.equals("ssl_session")) {
-				req.setAttribute("javax.servlet.request.ssl_session", headers.getAttributes().get("ssl_session"));
-				req.setIsSecure(true);
-			} else if (attName.equals("remote_user")) {
-				final String username = headers.getAttributes().get(attName);
-				final String authType = headers.getAttributes().get("auth_type");
-				final AuthenticationPrincipal principal = new AuthenticationPrincipal(username, null, null);
-				principal.setAuthType(authType);
-				req.setRemoteUser(principal);
+				request.setAttribute("javax.servlet.request.ssl_session", headers.getAttributes().get("ssl_session"));
+				request.setIsSecure(true);
 			} else {
 				Ajp13Listener.logger.debug("Unknown request attribute ignored: {}={}", attName, "" + headers.getAttributes().get(attName));
 			}
 		}
 		return headers.getURI();
-
 	}
 
 	private Integer getKeySize(final String cipherSuite) {
 		if (cipherSuite.indexOf("_WITH_NULL_") != -1) {
-			return new Integer(0);
+			return 0;
 		} else if (cipherSuite.indexOf("_WITH_IDEA_CBC_") != -1) {
-			return new Integer(128);
+			return 128;
 		} else if (cipherSuite.indexOf("_WITH_RC2_CBC_40_") != -1) {
-			return new Integer(40);
+			return 40;
 		} else if (cipherSuite.indexOf("_WITH_RC4_40_") != -1) {
-			return new Integer(40);
+			return 40;
 		} else if (cipherSuite.indexOf("_WITH_RC4_128_") != -1) {
-			return new Integer(128);
+			return 128;
 		} else if (cipherSuite.indexOf("_WITH_DES40_CBC_") != -1) {
-			return new Integer(40);
+			return 40;
 		} else if (cipherSuite.indexOf("_WITH_DES_CBC_") != -1) {
-			return new Integer(56);
+			return 56;
 		} else if (cipherSuite.indexOf("_WITH_3DES_EDE_CBC_") != -1) {
-			return new Integer(168);
+			return 168;
 		} else {
 			return null;
 		}
@@ -386,12 +374,11 @@ public class Ajp13Listener implements Listener, Runnable {
 	 * place.
 	 */
 	private int getBodyResponsePacket(final InputStream in, final byte buffer[], final int offset) throws IOException {
+		final DataInputStream din = new DataInputStream(in);
 		// Get the incoming packet flag
 		final byte headerBuffer[] = new byte[4];
-		final int headerBytesRead = in.read(headerBuffer);
-		if (headerBytesRead != 4) {
-			throw new WinstoneException("Invalid AJP header");
-		} else if ((headerBuffer[0] != 0x12) || (headerBuffer[1] != 0x34)) {
+		din.readFully(headerBuffer);
+		if ((headerBuffer[0] != 0x12) || (headerBuffer[1] != 0x34)) {
 			throw new WinstoneException("Invalid AJP header");
 		}
 
@@ -403,35 +390,31 @@ public class Ajp13Listener implements Listener, Runnable {
 
 		// Look for packet length
 		final byte bodyLengthBuffer[] = new byte[2];
-		in.read(bodyLengthBuffer);
+		din.readFully(bodyLengthBuffer);
 		final int bodyLength = ((bodyLengthBuffer[0] & 0xFF) << 8) + (bodyLengthBuffer[1] & 0xFF);
-		final int packetBytesRead = in.read(buffer, offset, bodyLength);
+		din.readFully(buffer, offset, bodyLength);
 
-		if (packetBytesRead < bodyLength) {
-			throw new WinstoneException("Short AJP packet");
-		} else {
-			return packetBytesRead + offset;
-		}
+		return bodyLength + offset;
 	}
-	//
-	// /**
-	// * Useful method for dumping out the contents of a packet in hex form
-	// */
-	// public static void packetDump(byte packetBytes[], int packetLength) {
-	// String dump = "";
-	// for (int n = 0; n < packetLength; n+=16) {
-	// String line = Integer.toHexString((n >> 4) & 0xF) + "0:";
-	// for (int j = 0; j < Math.min(packetLength - n, 16); j++)
-	// line = line + " " + ((packetBytes[n + j] & 0xFF) < 16 ? "0" : "") +
-	// Integer.toHexString(packetBytes[n + j] & 0xFF);
-	//
-	// line = line + "    ";
-	// for (int j = 0; j < Math.min(packetLength - n, 16); j++) {
-	// byte me = (byte) (packetBytes[n + j] & 0xFF);
-	// line = line + (((me > 32) && (me < 123)) ? (char) me : '.');
-	// }
-	// dump = dump + line + "\r\n";
-	// }
-	// System.out.println(dump);
-	// }
+
+	/**
+	 * Useful method for dumping out the contents of a packet in hex form
+	 */
+	public static void packetDump(final byte packetBytes[], final int packetLength) {
+		String dump = "";
+		for (int n = 0; n < packetLength; n += 16) {
+			String line = Integer.toHexString((n >> 4) & 0xF) + "0:";
+			for (int j = 0; j < Math.min(packetLength - n, 16); j++) {
+				line = line + " " + ((packetBytes[n + j] & 0xFF) < 16 ? "0" : "") + Integer.toHexString(packetBytes[n + j] & 0xFF);
+			}
+
+			line = line + "    ";
+			for (int j = 0; j < Math.min(packetLength - n, 16); j++) {
+				final byte me = (byte) (packetBytes[n + j] & 0xFF);
+				line = line + (((me > 32) && (me < 123)) ? (char) me : '.');
+			}
+			dump = dump + line + "\r\n";
+		}
+		System.out.println(dump);
+	}
 }
