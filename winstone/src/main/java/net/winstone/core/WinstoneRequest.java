@@ -556,7 +556,7 @@ public class WinstoneRequest implements HttpServletRequest {
 
 					// Parse params
 					final byte paramBuffer[] = new byte[contentLength];
-					final int readCount = inputData.read(paramBuffer);
+					int readCount = this.inputData.readAsMuchAsPossible(paramBuffer, 0, contentLength);
 					if (readCount != contentLength) {
 						WinstoneRequest.logger.warn("Content-length said {}, actual length was {}", Integer.toString(contentLength), Integer.toString(readCount));
 					}
