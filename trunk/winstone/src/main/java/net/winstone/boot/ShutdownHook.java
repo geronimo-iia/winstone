@@ -24,6 +24,7 @@ public class ShutdownHook extends Thread {
 	@Override
 	public void run() {
 		if (server != null) {
+			server.info("JVM is terminating. Shutting down Winstone");
 			server.shutdown();
 			server = null;
 		}
