@@ -57,7 +57,7 @@ public class Server implements LifeCycle {
 	// object pool
 	private ObjectPool objectPool = null;
 	// listener
-	private List<Listener> listeners = null;
+	private final List<Listener> listeners = new ArrayList<Listener>();
 	// jndi manager
 	private JndiManager globalJndiManager = null;
 
@@ -116,11 +116,10 @@ public class Server implements LifeCycle {
 	public void destroy() {
 		// Release all listeners/pools/webapps
 		if (listeners != null) {
-			for (final Iterator<Listener> i = listeners.iterator(); i.hasNext();) {
-				i.next().destroy();
+			for (final Listener listener : listeners) {
+				listener.destroy();
 			}
 			listeners.clear();
-			listeners = null;
 		}
 		if (objectPool != null) {
 			objectPool.destroy();
@@ -166,7 +165,6 @@ public class Server implements LifeCycle {
 	private void initializeListener() throws IOException {
 		// TODO create a parameters for this list
 		// Create connectors (http, https and ajp)
-		listeners = new ArrayList<Listener>();
 		spawnListener(HttpListener.class.getName());
 		spawnListener(Ajp13Listener.class.getName());
 		try {
