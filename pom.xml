@@ -251,8 +251,8 @@
 		<module>winstone</module>
 		<module>winstone-jsp</module>
 		<module>test-webapp</module>
-		<module>test-logic</module>
 		<module>test-jsp</module>
-		<module>test-webapp-spring</module>
+		<module>test-webapp-spring</module>		
+		<module>test-logic</module>
 	</modules>
 </project>
