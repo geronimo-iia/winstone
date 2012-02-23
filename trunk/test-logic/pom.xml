@@ -27,6 +27,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>net.winstone</groupId>
+            <artifactId>test-webapp-spring</artifactId>
+            <version>1.0.3-SNAPSHOT</version>
+            <type>war</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>httpunit</groupId>
             <artifactId>httpunit</artifactId>
             <scope>compile</scope>
