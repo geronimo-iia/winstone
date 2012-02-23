@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -134,7 +135,7 @@ public class HostConfiguration {
 				}
 			}
 		} else {
-			//one directory with multiple webapp
+			// one directory with multiple webapp
 			final File webappsDir = new File(webappsDirName);
 			if (!webappsDir.exists()) {
 				throw new WinstoneException("Webapps dir " + webappsDirName + " not found");
@@ -312,7 +313,8 @@ public class HostConfiguration {
 	 * Destroy all webapplication.
 	 */
 	public void destroy() {
-		for (String prefixe : webapps.keySet()) {
+		Set<String> prefixes = new HashSet<String>(webapps.keySet());
+		for (String prefixe : prefixes) {
 			destroyWebApp(prefixe);
 		}
 		if (thread != null) {
