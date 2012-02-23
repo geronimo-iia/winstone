@@ -3,3 +3,9 @@ Utility in order to build and test quickly
 
 mvn clean install && java -jar target\winstone-1.0.2-SNAPSHOT-boot.jar --warfile=..\test-webapp\target\test-webapp.war
 
+mvn clean install && java -jar target\winstone-1.0.3-SNAPSHOT-boot.jar --webroots=..\test-webapp\target\test-webapp.war;..\test-jsp\target\test-jsp
+
+with jsp support
+mvn clean install && java -jar target\winstone-jsp-1.0.3-SNAPSHOT-boot.jar --webroots=..\test-webapp\target\test-webapp.war;..\test-jsp\target\test-jsp
+
+
