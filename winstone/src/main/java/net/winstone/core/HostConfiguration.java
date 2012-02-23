@@ -121,7 +121,7 @@ public class HostConfiguration implements Runnable {
 		HostConfiguration.logger.debug("Initialized {} webapps: prefixes - {}", webapps.size() + "", webapps.keySet() + "");
 
 		thread = new Thread(this, "WinstoneHostConfigurationMgmt:" + this.hostname);
-		thread.setDaemon(true);
+		thread.setDaemon(Boolean.TRUE);
 		thread.start();
 	}
 
@@ -231,13 +231,13 @@ public class HostConfiguration implements Runnable {
 	 */
 	@Override
 	public void run() {
-		boolean interrupted = false;
+		boolean interrupted = Boolean.FALSE;
 		while (!interrupted) {
 			try {
 				Thread.sleep(HostConfiguration.FLUSH_PERIOD);
 				invalidateExpiredSessions();
 			} catch (final InterruptedException err) {
-				interrupted = true;
+				interrupted = Boolean.TRUE;
 			}
 		}
 		thread = null;
@@ -433,7 +433,7 @@ public class HostConfiguration implements Runnable {
 	 */
 	public WebAppConfiguration getWebAppBySessionKey(final String sessionKey) {
 		for (WebAppConfiguration webAppConfiguration : webapps.values()) {
-			final WinstoneSession session = webAppConfiguration.getSessionById(sessionKey, false);
+			final WinstoneSession session = webAppConfiguration.getSessionById(sessionKey, Boolean.FALSE);
 			if (session != null) {
 				return webAppConfiguration;
 			}

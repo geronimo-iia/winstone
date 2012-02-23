@@ -221,7 +221,7 @@ public class StaticResourceServlet extends HttpServlet {
 			final InputStream resStream = new FileInputStream(res);
 
 			final List<String> ranges = new ArrayList<String>();
-			final StringTokenizer st = new StringTokenizer(request.getHeader(StaticResourceServlet.RANGE_HEADER).substring(6).trim(), ",", false);
+			final StringTokenizer st = new StringTokenizer(request.getHeader(StaticResourceServlet.RANGE_HEADER).substring(6).trim(), ",", Boolean.FALSE);
 			int totalSent = 0;
 			String rangeText = "";
 			while (st.hasMoreTokens()) {
@@ -316,13 +316,13 @@ public class StaticResourceServlet extends HttpServlet {
 
 	public static boolean isDescendant(final File parent, final File child, final File commonBase) throws IOException {
 		if (child.equals(parent)) {
-			return true;
+			return Boolean.TRUE;
 		} else {
 			// Start by checking canonicals
 			final String canonicalParent = parent.getAbsoluteFile().getCanonicalPath();
 			final String canonicalChild = child.getAbsoluteFile().getCanonicalPath();
 			if (canonicalChild.startsWith(canonicalParent)) {
-				return true;
+				return Boolean.TRUE;
 			}
 
 			// If canonicals don't match, we're dealing with symlinked files, so

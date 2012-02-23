@@ -153,7 +153,7 @@ public class BootStrap {
 			if (toolsJar.exists()) {
 				jspClasspaths.add(toolsJar);
 				BootStrap.logger.debug("Adding {} to common classpath", toolsJar.getName());
-			} else if (StringUtils.booleanArg(args, "useJasper", false)) {
+			} else if (StringUtils.booleanArg(args, "useJasper", Boolean.FALSE)) {
 				BootStrap.logger.warn("WARNING: Tools.jar was not found - jsp compilation will cause errors. Maybe you should set JAVA_HOME using --javaHome");
 			}
 
@@ -222,7 +222,7 @@ public class BootStrap {
 				if (equalPos != -1) {
 					args.put(paramName, option.substring(equalPos + 1));
 				} else {
-					args.put(paramName, "true");
+					args.put(paramName, "Boolean.TRUE");
 				}
 				if (paramName.equals("config")) {
 					configFilename = args.get(paramName);
@@ -274,10 +274,10 @@ public class BootStrap {
 	 * Test and deploy embedded war file if exixts.
 	 * 
 	 * @param args
-	 * @return true if one is found, false otherwise.
+	 * @return Boolean.TRUE if one is found, Boolean.FALSE otherwise.
 	 */
 	protected boolean deployEmbeddedWarfile(final Map<String, String> args) {
-		boolean result = false;
+		boolean result = Boolean.FALSE;
 		final InputStream embeddedWarfile = BootStrap.class.getResourceAsStream(BootStrap.EMBEDDED_WAR);
 		if (embeddedWarfile != null) {
 			try {
@@ -289,7 +289,7 @@ public class BootStrap {
 				final File tempWebroot = new File(tempWarfile.getParentFile(), BootStrap.WS_EMBEDDED_WAR);
 				tempWebroot.mkdirs();
 				BootStrap.logger.debug("Extracting embedded warfile to {}", tempWarfile.getAbsolutePath());
-				final OutputStream out = new FileOutputStream(tempWarfile, true);
+				final OutputStream out = new FileOutputStream(tempWarfile, Boolean.TRUE);
 				int read = 0;
 				final byte buffer[] = new byte[2048];
 				while ((read = embeddedWarfile.read(buffer)) != -1) {
@@ -302,7 +302,7 @@ public class BootStrap {
 				args.put("webroot", tempWebroot.getAbsolutePath());
 				args.remove("webappsDir");
 				args.remove("hostsDir");
-				result = true;
+				result = Boolean.TRUE;
 			} catch (final IOException e) {
 				BootStrap.logger.error("deployEmbeddedWarfile", e);
 			}

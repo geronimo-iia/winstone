@@ -56,9 +56,9 @@ public class AuthenticationPrincipal implements Principal, Serializable {
 	 */
 	public boolean isUserIsInRole(final String role) {
 		if (roles == null) {
-			return false;
+			return Boolean.FALSE;
 		} else if (role == null) {
-			return false;
+			return Boolean.FALSE;
 		} else {
 			return roles.contains(role);
 		}

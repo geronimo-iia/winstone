@@ -85,7 +85,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 		// try to init driver
 		try {
 			if (config.getDriverClassName() != null) {
-				final Class<?> driverClass = Class.forName(config.getDriverClassName().trim(), true, loader);
+				final Class<?> driverClass = Class.forName(config.getDriverClassName().trim(), Boolean.TRUE, loader);
 				driver = (Driver) driverClass.newInstance();
 			} else {
 				driver = DriverManager.getDriver(config.getUrl());
@@ -282,7 +282,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 	 * 
 	 * @param connection
 	 *            the specified connection to validate.
-	 * @return true if connection is valid.
+	 * @return Boolean.TRUE if connection is valid.
 	 */
 	private boolean validate(final Connection connection) {
 		try {
@@ -292,7 +292,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 				} catch (final Exception e) {
 				}
 			} else if ("isClosed".equals(validationQuery)) {
-				return (connection.isClosed() == false);
+				return (connection.isClosed() == Boolean.FALSE);
 			} else {
 				// validation task
 				final FutureTask<Boolean> futureTask = new FutureTask<Boolean>(new Runnable() {
@@ -326,7 +326,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 		} catch (final SQLException e) {
 			log("Discarding connection %s because %s%n", null, connection, e);
 		}
-		return false;
+		return Boolean.FALSE;
 	}
 
 	/**
@@ -370,7 +370,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 			}
 			// close wrap
 			if (method.getName().equals("close")) {
-				if (connection.getAutoCommit() == false) {
+				if (connection.getAutoCommit() == Boolean.FALSE) {
 					try {
 						connection.rollback();
 					} catch (final SQLException se) {
@@ -391,7 +391,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 			} else {
 				try {
 					final Object realStmt = method.invoke(connection, args);
-					if ((realStmt instanceof Statement) == false) {
+					if ((realStmt instanceof Statement) == Boolean.FALSE) {
 						return realStmt;
 					}
 				} catch (final InvocationTargetException exception) {

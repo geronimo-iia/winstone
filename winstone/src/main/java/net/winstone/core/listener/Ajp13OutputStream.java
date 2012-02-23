@@ -65,7 +65,7 @@ public class Ajp13OutputStream extends WinstoneOutputStream {
 	 * @param headerEncoding
 	 */
 	public Ajp13OutputStream(final OutputStream outStream, final String headerEncoding) {
-		super(outStream, false);
+		super(outStream, Boolean.FALSE);
 		this.headerEncoding = headerEncoding;
 	}
 
@@ -76,7 +76,7 @@ public class Ajp13OutputStream extends WinstoneOutputStream {
 		// If we haven't written the headers yet, write them out
 		if (!committed) {
 			owner.validateHeaders();
-			committed = true;
+			committed = Boolean.TRUE;
 			final ByteArrayOutputStream headerArrayStream = new ByteArrayOutputStream();
 
 			for (final String header : owner.getHeaders()) {

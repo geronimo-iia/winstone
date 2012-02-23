@@ -34,7 +34,7 @@ public class WinstoneResponseWriter extends PrintWriter {
 	private int bytesBuffered;
 
 	public WinstoneResponseWriter(final WinstoneOutputStream out, final WinstoneResponse response) throws UnsupportedEncodingException {
-		super(new OutputStreamWriter(out, response.getCharacterEncoding()), false);
+		super(new OutputStreamWriter(out, response.getCharacterEncoding()), Boolean.FALSE);
 		outputStream = out;
 		this.response = response;
 		bytesBuffered = 0;

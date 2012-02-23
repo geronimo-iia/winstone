@@ -62,18 +62,18 @@ public final class DigestAuthenticationHandler extends BaseAuthenticationHandler
 	/**
 	 * Handling the (possible) response
 	 * 
-	 * @return True if the request should continue, or false if we have
+	 * @return True if the request should continue, or Boolean.FALSE if we have
 	 *         intercepted it
 	 */
 	@Override
 	protected boolean validatePossibleAuthenticationResponse(final HttpServletRequest request, final HttpServletResponse response, final String pathRequested) throws IOException {
 		final String authorization = request.getHeader("Authorization");
 		if (authorization == null) {
-			return true;
+			return Boolean.TRUE;
 		}
 		// Logger.log(Logger.FULL_DEBUG, "Authorization: " + authorization);
 		if (!authorization.startsWith("Digest")) {
-			return true;
+			return Boolean.TRUE;
 		}
 
 		// Extract tokens from auth string
@@ -115,15 +115,15 @@ public final class DigestAuthenticationHandler extends BaseAuthenticationHandler
 
 		// Throw out bad attempts
 		if ((userName == null) || (realm == null) || (qop == null) || (uri == null) || (nOnce == null) || (nc == null) || (cnOnce == null) || (clientResponseDigest == null)) {
-			return true;
+			return Boolean.TRUE;
 		} else if ((algorithm != null) && !algorithm.equals("MD5")) {
-			return true;
+			return Boolean.TRUE;
 		}
 
 		// Get a user matching the username
 		final AuthenticationPrincipal principal = this.realm.retrieveUser(userName);
 		if (principal == null) {
-			return true;
+			return Boolean.TRUE;
 		}
 
 		// Compute the 2 digests and compare
@@ -145,7 +145,7 @@ public final class DigestAuthenticationHandler extends BaseAuthenticationHandler
 				DigestAuthenticationHandler.logger.warn("Request type invalid - can't set authenticated user in request class: {}", request.getClass().getName());
 			}
 		}
-		return true;
+		return Boolean.TRUE;
 	}
 
 	/**

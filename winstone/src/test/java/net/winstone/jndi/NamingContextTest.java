@@ -73,18 +73,18 @@ public class NamingContextTest extends AbstractJndiTestCase {
 		Assert.assertTrue("LookupLink on java:/comp/env/linka must be a String", target instanceof String);
 		Assert.assertEquals("LookupLink on java:/comp/env/linka must be 'data of a' ", target, "data of a");
 		jndiManager.getInitialContext().unbind("aaaa");
-		boolean raised = false;
+		boolean raised = Boolean.FALSE;
 		try {
 			jndiManager.getInitialContext().lookup("aaaa");
 		} catch (final NamingException e) {
-			raised = true;
+			raised = Boolean.TRUE;
 		}
 		Assert.assertTrue("Lookup on java:/comp/env/aaaa must be null", raised);
-		raised = false;
+		raised = Boolean.FALSE;
 		try {
 			jndiManager.getInitialContext().lookupLink("linka");
 		} catch (final NamingException e) {
-			raised = true;
+			raised = Boolean.TRUE;
 		}
 		Assert.assertTrue("LookupLink on java:/comp/env/linka must be null", raised);
 	}

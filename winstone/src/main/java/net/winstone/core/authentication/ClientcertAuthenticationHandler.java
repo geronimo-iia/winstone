@@ -58,12 +58,12 @@ public final class ClientcertAuthenticationHandler extends BaseAuthenticationHan
 																																													// attributes
 		final X509Certificate certificateArray[] = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
 		if ((certificateArray != null) && (certificateArray.length > 0)) {
-			boolean failed = false;
+			boolean failed = Boolean.FALSE;
 			for (int n = 0; n < certificateArray.length; n++) {
 				try {
 					certificateArray[n].checkValidity();
 				} catch (final Throwable err) {
-					failed = true;
+					failed = Boolean.TRUE;
 				}
 			}
 			if (!failed) {
@@ -85,6 +85,6 @@ public final class ClientcertAuthenticationHandler extends BaseAuthenticationHan
 				}
 			}
 		}
-		return true;
+		return Boolean.TRUE;
 	}
 }

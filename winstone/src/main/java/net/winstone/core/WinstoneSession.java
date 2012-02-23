@@ -308,7 +308,7 @@ public class WinstoneSession implements HttpSession, Serializable {
 		synchronized (sessionMonitor) {
 			sessionData.clear();
 		}
-		isInvalidated = true;
+		isInvalidated = Boolean.TRUE;
 		webAppConfig.removeSessionById(sessionId);
 	}
 
@@ -361,7 +361,7 @@ public class WinstoneSession implements HttpSession, Serializable {
 			ObjectOutputStream objOut = null;
 			try {
 				final File toFile = new File(toDir, sessionId + ".ser");
-				out = new FileOutputStream(toFile, false);
+				out = new FileOutputStream(toFile, Boolean.FALSE);
 				objOut = new ObjectOutputStream(out);
 				objOut.writeObject(this);
 			} catch (final IOException err) {
@@ -558,23 +558,23 @@ public class WinstoneSession implements HttpSession, Serializable {
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {
-			return true;
+			return Boolean.TRUE;
 		}
 		if (obj == null) {
-			return false;
+			return Boolean.FALSE;
 		}
 		if (getClass() != obj.getClass()) {
-			return false;
+			return Boolean.FALSE;
 		}
 		final WinstoneSession other = (WinstoneSession) obj;
 		if (sessionId == null) {
 			if (other.sessionId != null) {
-				return false;
+				return Boolean.FALSE;
 			}
 		} else if (!sessionId.equals(other.sessionId)) {
-			return false;
+			return Boolean.FALSE;
 		}
-		return true;
+		return Boolean.TRUE;
 	}
 
 	@Override

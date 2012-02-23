@@ -117,7 +117,7 @@ public class TreePath {
 		TreeNode cur_node = root;
 		int p0 = 0, lm = 0; // last match
 		result[0] = cur_node.value;
-		boolean div_state = true;
+		boolean div_state = Boolean.TRUE;
 		for (int i = 0; i < ps.length; i++) {
 			if ((ps[i] == '/') || (ps[i] == '\\')) {
 				if (div_state) {
@@ -133,11 +133,11 @@ public class TreePath {
 					lm = i;
 				}
 				cur_node = node;
-				div_state = true;
+				div_state = Boolean.TRUE;
 			} else {
 				if (div_state) {
 					p0 = i;
-					div_state = false;
+					div_state = Boolean.FALSE;
 				}
 			}
 		}

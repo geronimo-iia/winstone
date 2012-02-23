@@ -125,7 +125,7 @@ public class FilterConfiguration implements javax.servlet.FilterConfig {
 					final ClassLoader cl = Thread.currentThread().getContextClassLoader();
 					Thread.currentThread().setContextClassLoader(loader);
 
-					final Class<?> filterClass = Class.forName(classFile, true, loader);
+					final Class<?> filterClass = Class.forName(classFile, Boolean.TRUE, loader);
 					final Object object = filterClass.newInstance();
 					FilterConfiguration.logger.debug("{}: assignable {}", filterClass.getName(), Filter.class.isAssignableFrom(object.getClass()));
 					instance = (Filter) object;
@@ -171,7 +171,7 @@ public class FilterConfiguration implements javax.servlet.FilterConfig {
 	}
 
 	protected void setUnavailable() {
-		unavailableException = true;
+		unavailableException = Boolean.TRUE;
 		if (instance != null) {
 			FilterConfiguration.logger.debug("{}: destroy", filterName);
 			final ClassLoader cl = Thread.currentThread().getContextClassLoader();
@@ -206,22 +206,22 @@ public class FilterConfiguration implements javax.servlet.FilterConfig {
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {
-			return true;
+			return Boolean.TRUE;
 		}
 		if (obj == null) {
-			return false;
+			return Boolean.FALSE;
 		}
 		if (getClass() != obj.getClass()) {
-			return false;
+			return Boolean.FALSE;
 		}
 		final FilterConfiguration other = (FilterConfiguration) obj;
 		if (filterName == null) {
 			if (other.filterName != null) {
-				return false;
+				return Boolean.FALSE;
 			}
 		} else if (!filterName.equals(other.filterName)) {
-			return false;
+			return Boolean.FALSE;
 		}
-		return true;
+		return Boolean.TRUE;
 	}
 }

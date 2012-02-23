@@ -67,7 +67,7 @@ public class RequestHandlerThread implements Runnable {
 
 		// allocate a thread to run on this object
 		thread = new Thread(this, threadName);
-		thread.setDaemon(true);
+		thread.setDaemon(Boolean.TRUE);
 	}
 
 	/**
@@ -76,11 +76,11 @@ public class RequestHandlerThread implements Runnable {
 	@Override
 	public void run() {
 
-		while (true) {
+		while (Boolean.TRUE) {
 			// Start request processing
 			InputStream inSocket = null;
 			OutputStream outSocket = null;
-			boolean iAmFirst = true;
+			boolean iAmFirst = Boolean.TRUE;
 			try {
 				// Get input/output streams
 				inSocket = socket.getInputStream();
@@ -88,7 +88,7 @@ public class RequestHandlerThread implements Runnable {
 
 				// The keep alive loop - exiting from here means the connection
 				// has closed
-				boolean continueFlag = true;
+				boolean continueFlag = Boolean.TRUE;
 				while (continueFlag) {
 					try {
 						final long requestId = System.currentTimeMillis();
@@ -106,7 +106,7 @@ public class RequestHandlerThread implements Runnable {
 							// Keep alive timed out - deallocate and go into
 							// wait state
 							listener.deallocateRequestResponse(this, req, rsp, inData, outData);
-							continueFlag = false;
+							continueFlag = Boolean.FALSE;
 							continue;
 						}
 
@@ -114,7 +114,7 @@ public class RequestHandlerThread implements Runnable {
 							req.setAttribute("UNIQUE_ID", "" + requestId);
 						}
 						final long headerParseTime = getRequestProcessTime();
-						iAmFirst = false;
+						iAmFirst = Boolean.FALSE;
 
 						final HostConfiguration hostConfig = req.getHostGroup().getHostByName(req.getServerName());
 						RequestHandlerThread.logger.debug("Starting request on host:[{}] with id: {}", "" + requestId, hostConfig.getHostname());
@@ -182,10 +182,10 @@ public class RequestHandlerThread implements Runnable {
 						listener.deallocateRequestResponse(this, req, rsp, inData, outData);
 						RequestHandlerThread.logger.debug("Processed complete request: headerParseTime={}ms totalTime={}ms path={}", new Object[] { "" + headerParseTime, "" + getRequestProcessTime(), servletURI });
 					} catch (final InterruptedIOException errIO) {
-						continueFlag = false;
+						continueFlag = Boolean.FALSE;
 						RequestHandlerThread.logger.error("Socket read timed out - exiting request handler thread", errIO);
 					} catch (final SocketException errIO) {
-						continueFlag = false;
+						continueFlag = Boolean.FALSE;
 					}
 				}
 				listener.deallocateRequestResponse(this, req, rsp, inData, outData);
@@ -249,10 +249,10 @@ public class RequestHandlerThread implements Runnable {
 			// ignore this error. caused by a browser shutting down the
 			// connection
 		} catch (final Throwable err) {
-			boolean ignore = false;
+			boolean ignore = Boolean.FALSE;
 			for (Throwable t = err; t != null; t = t.getCause()) {
 				if (t instanceof ClientSocketException) {
-					ignore = true;
+					ignore = Boolean.TRUE;
 					break;
 				}
 			}
@@ -278,7 +278,7 @@ public class RequestHandlerThread implements Runnable {
 			// null);
 		}
 		rsp.flushBuffer();
-		rsp.getWinstoneOutputStream().setClosed(true);
+		rsp.getWinstoneOutputStream().setClosed(Boolean.TRUE);
 		req.discardRequestBody();
 	}
 

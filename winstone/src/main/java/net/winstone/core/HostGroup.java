@@ -32,13 +32,29 @@ public class HostGroup {
 
 	protected static org.slf4j.Logger logger = LoggerFactory.getLogger(HostGroup.class);
 	private final static transient String DEFAULT_HOSTNAME = "default";
-	/** map of host configuration */
+	/**
+	 * map of host configuration
+	 * */
 	private final Map<String, HostConfiguration> hostConfigs;
-	/** default host name if host mode is on */
+	/**
+	 * default host name if host mode is on
+	 * */
 	private String defaultHostName;
-	// jndi manager
+	/**
+	 * jndi manager
+	 */
 	private final JndiManager jndiManager;
 
+	/**
+	 * Build a new instance of HostGroup.
+	 * 
+	 * @param cluster
+	 * @param objectPool
+	 * @param jndiManager
+	 * @param commonLibCL
+	 * @param args
+	 * @throws IOException
+	 */
 	public HostGroup(final Cluster cluster, final ObjectPool objectPool, final JndiManager jndiManager, final ClassLoader commonLibCL, final Map<String, String> args) throws IOException {
 		super();
 		hostConfigs = new HashMap<String, HostConfiguration>();
@@ -59,11 +75,19 @@ public class HostGroup {
 		}
 	}
 
+	/**
+	 * @param hostname
+	 * @return HostConfiguration for specified hostname. if not found lookup for
+	 *         defaultHostName.
+	 */
 	public HostConfiguration getHostByName(final String hostname) {
 		final HostConfiguration host = hostConfigs.get(hostname);
 		return host != null ? host : hostConfigs.get(defaultHostName);
 	}
 
+	/**
+	 * Destroy HostGroup instance.
+	 */
 	public void destroy() {
 		if (hostConfigs != null) {
 			// obtain a copy of name

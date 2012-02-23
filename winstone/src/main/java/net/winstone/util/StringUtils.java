@@ -80,7 +80,7 @@ public class StringUtils {
 	 * @param path
 	 *            path to extract from
 	 * @param query
-	 *            true if extract query
+	 *            Boolean.TRUE if extract query
 	 * @return extraction or null
 	 */
 	public static String extractQueryAnchor(final String path, final boolean query) {
@@ -248,13 +248,13 @@ public class StringUtils {
 		if (path.startsWith("/")) {
 			buf.append('/');
 		}
-		boolean first = true;
+		boolean first = Boolean.TRUE;
 		for (final Object aR : r) {
 			final String token = (String) aR;
 			if (!first) {
 				buf.append('/');
 			} else {
-				first = false;
+				first = Boolean.FALSE;
 			}
 			buf.append(token);
 		}

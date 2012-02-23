@@ -51,7 +51,7 @@ public final class SecurityConstraint {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public SecurityConstraint(final Node elm, final Set rolesAllowed, final int counter) {
 		super();
-		needsSSL = false;
+		needsSSL = Boolean.FALSE;
 		final Set localUrlPatternList = new HashSet();
 		final Set localMethodSetList = new HashSet();
 		final Set localRolesAllowed = new HashSet();
@@ -120,11 +120,11 @@ public final class SecurityConstraint {
 		for (int n = 0; n < rolesAllowed.length; n++) {
 			if (request.isUserInRole(rolesAllowed[n])) {
 				SecurityConstraint.logger.debug("Passed security constraint: {} role: {}", displayName, rolesAllowed[n]);
-				return true;
+				return Boolean.TRUE;
 			}
 		}
 		SecurityConstraint.logger.debug("Failed security constraint: {}", displayName);
-		return false;
+		return Boolean.FALSE;
 	}
 
 	/**
@@ -134,11 +134,11 @@ public final class SecurityConstraint {
 	public boolean isApplicable(final String url, final String method) {
 		for (int n = 0; n < urlPatterns.length; n++) {
 			if (urlPatterns[n].match(url, null, null) && methodCheck(method, methodSets[n])) {
-				return true;
+				return Boolean.TRUE;
 			}
 		}
 
-		return false;
+		return Boolean.FALSE;
 	}
 
 	private boolean methodCheck(final String protocol, final String methodSet) {

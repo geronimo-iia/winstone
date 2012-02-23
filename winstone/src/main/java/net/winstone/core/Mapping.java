@@ -83,12 +83,12 @@ public class Mapping implements java.util.Comparator<Mapping> {
 		else if (firstStarPos == 0) {
 			me.urlPattern = pattern.substring(Mapping.STAR.length());
 			me.patternType = Mapping.EXTENSION_PATTERN;
-			me.isPatternFirst = false;
+			me.isPatternFirst = Boolean.FALSE;
 		} // check for extension match at the end (eg blah*)
 		else if (firstStarPos == (patternLength - Mapping.STAR.length())) {
 			me.urlPattern = pattern.substring(0, patternLength - Mapping.STAR.length());
 			me.patternType = Mapping.EXTENSION_PATTERN;
-			me.isPatternFirst = true;
+			me.isPatternFirst = Boolean.TRUE;
 		} else {
 			throw new WinstoneException("WebAppConfig: Invalid pattern mount for " + mappedTo + " pattern " + pattern + " - ignoring");
 		}
@@ -136,57 +136,57 @@ public class Mapping implements java.util.Comparator<Mapping> {
 	 *            match
 	 * @param pathInfo
 	 *            An empty StringBuilder for the pathInfo of a successful match
-	 * @return true if the match is successful
+	 * @return Boolean.TRUE if the match is successful
 	 */
 	public boolean match(final String inputPattern, final StringBuilder servletPath, final StringBuilder pathInfo) {
 		switch (patternType) {
 		case FOLDER_PATTERN:
 			if (inputPattern.startsWith(urlPattern + '/') || inputPattern.equals(urlPattern)) {
 				if (servletPath != null) {
-					servletPath.append(WinstoneRequest.decodeURLToken(urlPattern, false));
+					servletPath.append(WinstoneRequest.decodeURLToken(urlPattern, Boolean.FALSE));
 				}
 				if (pathInfo != null) {
 					pathInfo.append(WinstoneRequest.decodeURLToken(inputPattern.substring(urlPattern.length())));
 				}
-				return true;
+				return Boolean.TRUE;
 			} else {
-				return false;
+				return Boolean.FALSE;
 			}
 
 		case EXTENSION_PATTERN:
 			// Strip down to the last item in the path
 			final int slashPos = inputPattern.lastIndexOf(Mapping.SLASH);
 			if ((slashPos == -1) || (slashPos == (inputPattern.length() - 1))) {
-				return false;
+				return Boolean.FALSE;
 			}
 			final String fileName = inputPattern.substring(slashPos + 1);
 			if ((isPatternFirst && fileName.startsWith(urlPattern)) || (!isPatternFirst && fileName.endsWith(urlPattern))) {
 				if (servletPath != null) {
-					servletPath.append(WinstoneRequest.decodeURLToken(inputPattern, false));
+					servletPath.append(WinstoneRequest.decodeURLToken(inputPattern, Boolean.FALSE));
 				}
-				return true;
+				return Boolean.TRUE;
 			} else {
-				return false;
+				return Boolean.FALSE;
 			}
 
 		case EXACT_PATTERN:
 			if (inputPattern.equals(urlPattern)) {
 				if (servletPath != null) {
-					servletPath.append(WinstoneRequest.decodeURLToken(inputPattern, false));
+					servletPath.append(WinstoneRequest.decodeURLToken(inputPattern, Boolean.FALSE));
 				}
-				return true;
+				return Boolean.TRUE;
 			} else {
-				return false;
+				return Boolean.FALSE;
 			}
 
 		case DEFAULT_SERVLET:
 			if (servletPath != null) {
-				servletPath.append(WinstoneRequest.decodeURLToken(inputPattern, false));
+				servletPath.append(WinstoneRequest.decodeURLToken(inputPattern, Boolean.FALSE));
 			}
-			return true;
+			return Boolean.TRUE;
 
 		default:
-			return false;
+			return Boolean.FALSE;
 		}
 	}
 

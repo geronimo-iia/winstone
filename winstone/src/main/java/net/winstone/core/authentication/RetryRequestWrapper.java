@@ -364,13 +364,13 @@ public final class RetryRequestWrapper extends HttpServletRequestWrapper {
 			try {
 				// Parse query string from request
 				if ((method.equals(RetryRequestWrapper.METHOD_GET) || method.equals(RetryRequestWrapper.METHOD_HEAD) || method.equals(RetryRequestWrapper.METHOD_POST)) && (queryString != null)) {
-					WinstoneRequest.extractParameters(queryString, encoding, workingParameters, false);
+					WinstoneRequest.extractParameters(queryString, encoding, workingParameters, Boolean.FALSE);
 				}
 
 				if (method.equals(RetryRequestWrapper.METHOD_POST) && (contentType != null) && (contentType.equals(RetryRequestWrapper.POST_PARAMETERS) || contentType.startsWith(RetryRequestWrapper.POST_PARAMETERS + ";"))) {
 					// Parse params
 					final String paramLine = (encoding == null ? new String(oldRequest.getBodyContent()) : new String(oldRequest.getBodyContent(), encoding));
-					WinstoneRequest.extractParameters(paramLine.trim(), encoding, workingParameters, false);
+					WinstoneRequest.extractParameters(paramLine.trim(), encoding, workingParameters, Boolean.FALSE);
 				}
 
 				parsedParams = workingParameters;

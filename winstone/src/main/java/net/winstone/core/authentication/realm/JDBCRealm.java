@@ -157,20 +157,20 @@ public class JDBCRealm implements AuthenticationRealm {
 	 * Authenticate the user - do we know them ? Return a distinct id once we
 	 * know them.
 	 * 
-	 * @return <code>getPrincipal(userName, password, true);</code>
+	 * @return <code>getPrincipal(userName, password, Boolean.TRUE);</code>
 	 */
 	@Override
 	public AuthenticationPrincipal authenticateByUsernamePassword(final String userName, final String password) {
-		return getPrincipal(userName, password, true);
+		return getPrincipal(userName, password, Boolean.TRUE);
 	}
 
 	/**
 	 * Retrieve an authenticated user
 	 * 
-	 * @return <code>getPrincipal(userName, password, false);</code>
+	 * @return <code>getPrincipal(userName, password, Boolean.FALSE);</code>
 	 */
 	@Override
 	public AuthenticationPrincipal retrieveUser(final String userName) {
-		return getPrincipal(userName, null, false);
+		return getPrincipal(userName, null, Boolean.FALSE);
 	}
 }

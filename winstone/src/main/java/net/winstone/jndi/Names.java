@@ -51,7 +51,7 @@ public class Names implements NamingEnumeration<NameClassPair> {
 		try {
 			return hasMore();
 		} catch (final NamingException err) {
-			return false;
+			return Boolean.FALSE;
 		}
 	}
 

@@ -115,12 +115,12 @@ public class FileRealm implements AuthenticationRealm {
 		try {
 			// Use JAXP to create a document builder
 			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			factory.setExpandEntityReferences(false);
-			factory.setValidating(false);
-			factory.setNamespaceAware(false);
-			factory.setIgnoringComments(true);
-			factory.setCoalescing(true);
-			factory.setIgnoringElementContentWhitespace(true);
+			factory.setExpandEntityReferences(Boolean.FALSE);
+			factory.setValidating(Boolean.FALSE);
+			factory.setNamespaceAware(Boolean.FALSE);
+			factory.setIgnoringComments(Boolean.TRUE);
+			factory.setCoalescing(Boolean.TRUE);
+			factory.setIgnoringElementContentWhitespace(Boolean.TRUE);
 			final DocumentBuilder builder = factory.newDocumentBuilder();
 			return builder.parse(in);
 		} catch (final Throwable errParser) {

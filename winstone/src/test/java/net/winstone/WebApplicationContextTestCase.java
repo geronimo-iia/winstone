@@ -27,9 +27,9 @@ public class WebApplicationContextTestCase extends TestCase {
 	protected boolean checkEquals(final Set<String> result, final String[] valid) {
 		for (int i = 0; i < valid.length; i++) {
 			if (!result.contains(valid[i])) {
-				return false;
+				return Boolean.FALSE;
 			}
 		}
-		return true;
+		return Boolean.TRUE;
 	}
 }

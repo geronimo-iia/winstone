@@ -91,11 +91,11 @@ public class WinstoneRequest implements HttpServletRequest {
 	protected String localName;
 	protected int localPort;
 	/**
-	 * If true, it indicates that the request body was already consumed because
+	 * If Boolean.TRUE, it indicates that the request body was already consumed because
 	 * of the call to {@link #getParameterMap()} (or its sibling), which
 	 * requires implicit form parameter parsing.
 	 * 
-	 * If false, it indicates that the request body shall not be consumed by the
+	 * If Boolean.FALSE, it indicates that the request body shall not be consumed by the
 	 * said method, because the application already called
 	 * {@link #getInputStream()} and showed the intent to parse the request body
 	 * on its own.
@@ -121,7 +121,10 @@ public class WinstoneRequest implements HttpServletRequest {
 	private final Set<WinstoneSession> usedSessions;
 
 	/**
-	 * InputStream factory method.
+	 * 
+	 * Build a new instance of WinstoneRequest.
+	 * 
+	 * @throws IOException
 	 */
 	public WinstoneRequest() throws IOException {
 		attributes = new HashMap<String, Object>();
@@ -134,7 +137,7 @@ public class WinstoneRequest implements HttpServletRequest {
 		currentSessionIds = new HashMap<String, String>();
 		usedSessions = new HashSet<WinstoneSession>();
 		contentLength = -1;
-		isSecure = false;
+		isSecure = Boolean.FALSE;
 		try {
 			md5Digester = MessageDigest.getInstance("MD5");
 		} catch (final NoSuchAlgorithmException err) {
@@ -185,7 +188,7 @@ public class WinstoneRequest implements HttpServletRequest {
 		deadRequestedSessionId = null;
 		locales.clear();
 		authorization = null;
-		isSecure = false;
+		isSecure = Boolean.FALSE;
 		authenticatedUser = null;
 	}
 
@@ -401,7 +404,7 @@ public class WinstoneRequest implements HttpServletRequest {
 	 */
 	public static void extractParameters(final String urlEncodedParams, final String encoding, final Map<String, String[]> outputParams, final boolean overwrite) {
 		WinstoneRequest.logger.debug("Parsing parameters: {} (using encoding {})", urlEncodedParams, encoding);
-		final StringTokenizer st = new StringTokenizer(urlEncodedParams, "&", false);
+		final StringTokenizer st = new StringTokenizer(urlEncodedParams, "&", Boolean.FALSE);
 		Set<String> overwrittenParamNames = null;
 		while (st.hasMoreTokens()) {
 			final String token = st.nextToken();
@@ -446,7 +449,7 @@ public class WinstoneRequest implements HttpServletRequest {
 	 * @return decoded string
 	 */
 	public static String decodeURLToken(String in) {
-		return decodeURLToken(in, true);
+		return decodeURLToken(in, Boolean.TRUE);
 	}
 
 	/**
@@ -460,7 +463,7 @@ public class WinstoneRequest implements HttpServletRequest {
 	 * @throws UnsupportedEncodingException
 	 */
 	public static String decodeURLToken(String in, String encoding) throws UnsupportedEncodingException {
-		return decodeURLToken(in, encoding, true);
+		return decodeURLToken(in, encoding, Boolean.TRUE);
 	}
 
 	/**
@@ -549,7 +552,7 @@ public class WinstoneRequest implements HttpServletRequest {
 				// ||
 				// method.equals(METHOD_POST)) &&
 				if (queryString != null) {
-					WinstoneRequest.extractParameters(queryString, encoding, workingParameters, false);
+					WinstoneRequest.extractParameters(queryString, encoding, workingParameters, Boolean.FALSE);
 					WinstoneRequest.logger.debug("Param line: " + workingParameters);
 				}
 
@@ -563,7 +566,7 @@ public class WinstoneRequest implements HttpServletRequest {
 						WinstoneRequest.logger.warn("Content-length said {}, actual length was {}", Integer.toString(contentLength), Integer.toString(readCount));
 					}
 					final String paramLine = (encoding == null ? new String(paramBuffer) : new String(paramBuffer, encoding));
-					WinstoneRequest.extractParameters(paramLine.trim(), encoding, workingParameters, false);
+					WinstoneRequest.extractParameters(paramLine.trim(), encoding, workingParameters, Boolean.FALSE);
 					WinstoneRequest.logger.debug("Param line: " + workingParameters.toString());
 				}
 
@@ -664,7 +667,7 @@ public class WinstoneRequest implements HttpServletRequest {
 	}
 
 	private void parseCookieLine(final String headerValue, final List<Cookie> cookieList) {
-		final StringTokenizer st = new StringTokenizer(headerValue, ";", false);
+		final StringTokenizer st = new StringTokenizer(headerValue, ";", Boolean.FALSE);
 		int version = 0;
 		String cookieLine = WinstoneRequest.nextToken(st);
 
@@ -747,7 +750,7 @@ public class WinstoneRequest implements HttpServletRequest {
 
 		// Tokenize by commas
 		final Map<Float, List<Locale>> localeEntries = new HashMap<Float, List<Locale>>();
-		final StringTokenizer commaTK = new StringTokenizer(lb.toString(), ",", false);
+		final StringTokenizer commaTK = new StringTokenizer(lb.toString(), ",", Boolean.FALSE);
 		for (; commaTK.hasMoreTokens();) {
 			String clause = commaTK.nextToken();
 
@@ -819,7 +822,7 @@ public class WinstoneRequest implements HttpServletRequest {
 		}
 		final Map<String, String[]> newQueryParams = new HashMap<String, String[]>();
 		if (queryString != null) {
-			WinstoneRequest.extractParameters(queryString, encoding, newQueryParams, false);
+			WinstoneRequest.extractParameters(queryString, encoding, newQueryParams, Boolean.FALSE);
 		}
 		lastParams.putAll(newQueryParams);
 		parametersStack.push(lastParams);
@@ -867,7 +870,7 @@ public class WinstoneRequest implements HttpServletRequest {
 
 			if (parsedParameters != null) {
 				WinstoneRequest.logger.debug("Parsing parameters: {} (using encoding {})", forwardQueryString, encoding);
-				WinstoneRequest.extractParameters(forwardQueryString, encoding, parameters, true);
+				WinstoneRequest.extractParameters(forwardQueryString, encoding, parameters, Boolean.TRUE);
 				WinstoneRequest.logger.debug("Param line: {}", parameters != null ? parameters.toString() : "");
 			}
 		}
@@ -1277,7 +1280,7 @@ public class WinstoneRequest implements HttpServletRequest {
 	@Override
 	public boolean isUserInRole(final String role) {
 		if (authenticatedUser == null) {
-			return false;
+			return Boolean.FALSE;
 		} else if (servletConfig.getSecurityRoleRefs() == null) {
 			return authenticatedUser.isUserIsInRole(role);
 		} else {
@@ -1303,28 +1306,22 @@ public class WinstoneRequest implements HttpServletRequest {
 
 	@Override
 	public boolean isRequestedSessionIdFromURL() {
-		return false;
+		return Boolean.FALSE;
 	}
 
 	@Override
 	public boolean isRequestedSessionIdValid() {
 		final String requestedId = getRequestedSessionId();
 		if (requestedId == null) {
-			return false;
+			return Boolean.FALSE;
 		}
-		final WinstoneSession ws = webappConfig.getSessionById(requestedId, false);
+		final WinstoneSession ws = webappConfig.getSessionById(requestedId, Boolean.FALSE);
 		return (ws != null);
-		// if (ws == null) {
-		// return false;
-		// } else {
-		// return (validationCheck(ws, System.currentTimeMillis(), false) !=
-		// null);
-		// }
 	}
 
 	@Override
 	public HttpSession getSession() {
-		return getSession(true);
+		return getSession(Boolean.TRUE);
 	}
 
 	@Override
@@ -1341,14 +1338,7 @@ public class WinstoneRequest implements HttpServletRequest {
 		}
 
 		// Now get the session object
-		WinstoneSession session = webappConfig.getSessionById(cookieValue, false);
-		if (session != null) {
-			// long nowDate = System.currentTimeMillis();
-			// session = validationCheck(session, nowDate, create);
-			// if (session == null) {
-			// this.currentSessionIds.remove(this.webappConfig.getContextPath());
-			// }
-		}
+		WinstoneSession session = webappConfig.getSessionById(cookieValue, Boolean.FALSE);
 		if (create && (session == null)) {
 			session = makeNewSession();
 		}

@@ -260,9 +260,9 @@ public class WinstoneResponse implements HttpServletResponse {
 			final String sessionId = req.getCurrentSessionIds().get(prefix);
 			final WebAppConfiguration ownerContext = hostConfig.getWebAppByURI(prefix);
 			if (ownerContext != null) {
-				final WinstoneSession session = ownerContext.getSessionById(sessionId, true);
+				final WinstoneSession session = ownerContext.getSessionById(sessionId, Boolean.TRUE);
 				if ((session != null) && session.isNew()) {
-					session.setIsNew(false);
+					session.setIsNew(Boolean.FALSE);
 					final Cookie cookie = new Cookie(WinstoneSession.SESSION_COOKIE_NAME, session.getId());
 					cookie.setMaxAge(-1);
 					cookie.setSecure(req.isSecure());
@@ -381,11 +381,11 @@ public class WinstoneResponse implements HttpServletResponse {
 		if (value.startsWith("\"") && value.endsWith("\"")) {
 			out.append(value);
 		} else {
-			boolean containsSpecial = false;
+			boolean containsSpecial = Boolean.FALSE;
 			for (int n = 0; n < value.length(); n++) {
 				final char thisChar = value.charAt(n);
 				if ((thisChar < 32) || (thisChar >= 127) || (WinstoneResponse.specialCharacters.indexOf(thisChar) != -1)) {
-					containsSpecial = true;
+					containsSpecial = Boolean.TRUE;
 					break;
 				}
 			}
@@ -408,15 +408,15 @@ public class WinstoneResponse implements HttpServletResponse {
 		final String outKeepAliveHeader = getHeader(WinstoneConstant.KEEP_ALIVE_HEADER);
 		final boolean hasContentLength = (getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER) != null);
 		if (protocol.startsWith("HTTP/0")) {
-			return true;
+			return Boolean.TRUE;
 		} else if ((inKeepAliveHeader == null) && (outKeepAliveHeader == null)) {
-			return protocol.equals("HTTP/1.0") ? true : !hasContentLength;
+			return protocol.equals("HTTP/1.0") ? Boolean.TRUE : !hasContentLength;
 		} else if (outKeepAliveHeader != null) {
 			return outKeepAliveHeader.equalsIgnoreCase(WinstoneConstant.KEEP_ALIVE_CLOSE) || !hasContentLength;
 		} else if (inKeepAliveHeader != null) {
 			return inKeepAliveHeader.equalsIgnoreCase(WinstoneConstant.KEEP_ALIVE_CLOSE) || !hasContentLength;
 		} else {
-			return false;
+			return Boolean.FALSE;
 		}
 	}
 
@@ -546,13 +546,13 @@ public class WinstoneResponse implements HttpServletResponse {
 			}
 
 			// Disregard any output temporarily while we flush
-			outputStream.setDisregardMode(true);
+			outputStream.setDisregardMode(Boolean.TRUE);
 
 			if (outputWriter != null) {
 				outputWriter.flush();
 			}
 
-			outputStream.setDisregardMode(false);
+			outputStream.setDisregardMode(Boolean.FALSE);
 			outputStream.reset();
 		}
 	}
@@ -578,10 +578,10 @@ public class WinstoneResponse implements HttpServletResponse {
 	public boolean containsHeader(final String name) {
 		for (int n = 0; n < headers.size(); n++) {
 			if (headers.get(n).startsWith(name)) {
-				return true;
+				return Boolean.TRUE;
 			}
 		}
-		return false;
+		return Boolean.FALSE;
 	}
 
 	@Override
@@ -631,7 +631,7 @@ public class WinstoneResponse implements HttpServletResponse {
 		} else if (isCommitted()) {
 			WinstoneResponse.logger.debug("Header ignored after response committed - {}: {} ", name, value);
 		} else {
-			boolean found = false;
+			boolean found = Boolean.FALSE;
 			for (int n = 0; (n < headers.size()); n++) {
 				final String header = headers.get(n);
 				if (header.startsWith(name + ": ")) {
@@ -656,7 +656,7 @@ public class WinstoneResponse implements HttpServletResponse {
 					} else {
 						headers.remove(n);
 					}
-					found = true;
+					found = Boolean.TRUE;
 				}
 			}
 			if (!found) {
@@ -666,11 +666,11 @@ public class WinstoneResponse implements HttpServletResponse {
 	}
 
 	private void forceHeader(final String name, final String value) {
-		boolean found = false;
+		boolean found = Boolean.FALSE;
 		for (int n = 0; (n < headers.size()); n++) {
 			final String header = headers.get(n);
 			if (header.startsWith(name + ": ")) {
-				found = true;
+				found = Boolean.TRUE;
 				headers.set(n, name + ": " + value);
 			}
 		}

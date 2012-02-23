@@ -78,7 +78,7 @@ public abstract class BaseAuthenticationHandler implements AuthenticationHandler
 
 		// Give previous attempts a chance to be validated
 		if (!validatePossibleAuthenticationResponse(request, response, pathRequested)) {
-			return false;
+			return Boolean.FALSE;
 		} else {
 			return doRoleCheck(request, response, pathRequested);
 		}
@@ -86,25 +86,25 @@ public abstract class BaseAuthenticationHandler implements AuthenticationHandler
 
 	protected boolean doRoleCheck(final HttpServletRequest request, final HttpServletResponse response, final String pathRequested) throws IOException, ServletException {
 		// Loop through constraints
-		boolean foundApplicable = false;
+		boolean foundApplicable = Boolean.FALSE;
 		for (int n = 0; (n < constraints.length) && !foundApplicable; n++) {
 			BaseAuthenticationHandler.logger.debug("Evaluating security constraint: {}", constraints[n].getName());
 
 			// Find one that applies, then
 			if (constraints[n].isApplicable(pathRequested, request.getMethod())) {
 				BaseAuthenticationHandler.logger.debug("Found applicable security constraint: {}", constraints[n].getName());
-				foundApplicable = true;
+				foundApplicable = Boolean.TRUE;
 
 				if (constraints[n].needsSSL() && !request.isSecure()) {
 					final String msg = "Security constraint requires SSL (failed): " + constraints[n].getName();
 					BaseAuthenticationHandler.logger.debug(msg);
 					response.sendError(HttpServletResponse.SC_FORBIDDEN, msg);
-					return false;
+					return Boolean.FALSE;
 				} else if (!constraints[n].isAllowed(request)) {
 					// Logger.log(Logger.FULL_DEBUG,
 					// "Not allowed - requesting auth");
 					requestAuthentication(request, response, pathRequested);
-					return false;
+					return Boolean.FALSE;
 				} else {
 					// Logger.log(Logger.FULL_DEBUG,
 					// "Allowed - authorization accepted");
@@ -117,7 +117,7 @@ public abstract class BaseAuthenticationHandler implements AuthenticationHandler
 		// If we made it this far without a check being run, there must be none
 		// applicable
 		BaseAuthenticationHandler.logger.debug("Passed authentication check");
-		return true;
+		return Boolean.TRUE;
 	}
 
 	protected void setNoCache(final HttpServletResponse response) {

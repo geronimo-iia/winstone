@@ -88,7 +88,7 @@ public class InvokerServlet extends HttpServlet {
 		if (sc == null) {
 			// If found, mount an instance
 			try {
-				// Class servletClass = Class.forName(servletName, true,
+				// Class servletClass = Class.forName(servletName, Boolean.TRUE,
 				// Thread.currentThread().getContextClassLoader());
 				sc = new ServletConfiguration((WebAppConfiguration) getServletContext(), getServletConfig().getServletName() + ":" + servletName, servletName, new HashMap<String, String>(), -1);
 				mountedInstances.put(servletName, sc);

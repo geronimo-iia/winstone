@@ -154,7 +154,7 @@ public class JndiManager implements LifeCycle {
 	 */
 	public void bindSmtpSession(final String name, final Properties properties, final ClassLoader loader) throws IllegalStateException, NamingException {
 		try {
-			final Class<?> smtpClass = Class.forName("javax.mail.Session", true, loader);
+			final Class<?> smtpClass = Class.forName("javax.mail.Session", Boolean.TRUE, loader);
 			final Method smtpMethod = smtpClass.getMethod("getInstance", new Class[] { Properties.class, Class.forName("javax.mail.Authenticator") });
 			// create object
 			final Object object = smtpMethod.invoke(null, new Object[] { properties, null });
@@ -197,7 +197,7 @@ public class JndiManager implements LifeCycle {
 		if (value != null) {
 			try {
 				// load class
-				final Class<?> objClass = Class.forName(className.trim(), true, loader);
+				final Class<?> objClass = Class.forName(className.trim(), Boolean.TRUE, loader);
 				// find constructor
 				final Constructor<?> objConstr = objClass.getConstructor(new Class[] { String.class });
 				// create object

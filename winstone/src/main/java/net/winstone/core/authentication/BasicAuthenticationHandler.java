@@ -85,6 +85,6 @@ public final class BasicAuthenticationHandler extends BaseAuthenticationHandler 
 				}
 			}
 		}
-		return true;
+		return Boolean.TRUE;
 	}
 }

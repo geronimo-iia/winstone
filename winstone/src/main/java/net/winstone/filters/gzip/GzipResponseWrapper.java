@@ -114,7 +114,7 @@ public class GzipResponseWrapper extends HttpServletResponseWrapper {
 			if (bufferStream == null) {
 				bufferStream = new ByteArrayServletOutputStream();
 			}
-			bufferWriter = new PrintWriter(new OutputStreamWriter(bufferStream, getCharacterEncoding()), true);
+			bufferWriter = new PrintWriter(new OutputStreamWriter(bufferStream, getCharacterEncoding()), Boolean.TRUE);
 			return bufferWriter;
 		}
 	}
