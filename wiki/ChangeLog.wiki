@@ -1,3 +1,4 @@
+#labels Featured,Phase-Support
 #List of done things since v0.3
 ----
 
@@ -9,6 +10,9 @@
  * WebApplicationConfiguration versus jdk5
  * Add shutdown message
  * change to StringBuilder usage
+ * Adding programmatic HostGroup, Cluster and JNDI access on Server instance.
+ * Start adding javadoc and comment
+ * Use Boolean singleton
  * From [https://github.com/jenkinsci/winstone jenkins winstone]
    * Add better consistency check between war and exploded dir
    * Fix XSS vulnerability in default error pages [http://www.cloudbees.com/jenkins-advisory/jenkins-security-advisory-2011-11-08.cb jenkins-advisory]
