@@ -178,10 +178,12 @@ public class ObjectPool {
 	 */
 	public void destroy() {
 		synchronized (requestHandlerSemaphore) {
-			for (final RequestHandlerThread handlerThread : usedRequestHandlerThreads) {
+			List<RequestHandlerThread> handlerThreads = new ArrayList<RequestHandlerThread>(usedRequestHandlerThreads);
+			for (final RequestHandlerThread handlerThread : handlerThreads) {
 				releaseRequestHandler(handlerThread);
 			}
-			for (final RequestHandlerThread handlerThread : unusedRequestHandlerThreads) {
+			handlerThreads = new ArrayList<RequestHandlerThread>(unusedRequestHandlerThreads);
+			for (final RequestHandlerThread handlerThread : handlerThreads) {
 				handlerThread.destroy();
 			}
 			unusedRequestHandlerThreads.clear();
