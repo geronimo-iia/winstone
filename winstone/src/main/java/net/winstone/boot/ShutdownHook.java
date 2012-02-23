@@ -15,8 +15,18 @@ package net.winstone.boot;
  */
 public class ShutdownHook extends Thread {
 
+	/**
+	 * Server instance.
+	 */
 	private Server server;
 
+	/**
+	 * 
+	 * Build a new instance of ShutdownHook.
+	 * 
+	 * @param server
+	 *            server instance to manage.
+	 */
 	public ShutdownHook(final Server server) {
 		this.server = server;
 	}
@@ -24,7 +34,9 @@ public class ShutdownHook extends Thread {
 	@Override
 	public void run() {
 		if (server != null) {
+			// add shutdown log
 			server.info("JVM is terminating. Shutting down Winstone");
+			// process
 			server.shutdown();
 			server = null;
 		}

@@ -3,7 +3,7 @@ package net.winstone.boot;
 /**
  * Command enumerate control code for manage life cycle of server.
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
 public enum Command {
 
