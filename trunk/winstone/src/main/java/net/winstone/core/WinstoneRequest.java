@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -44,6 +45,8 @@ import javax.servlet.http.HttpSession;
 
 import net.winstone.WinstoneException;
 import net.winstone.core.authentication.AuthenticationPrincipal;
+import net.winstone.util.SizeRestrictedHashMap;
+import net.winstone.util.SizeRestrictedHashtable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,12 +94,12 @@ public class WinstoneRequest implements HttpServletRequest {
 	protected String localName;
 	protected int localPort;
 	/**
-	 * If Boolean.TRUE, it indicates that the request body was already consumed because
-	 * of the call to {@link #getParameterMap()} (or its sibling), which
+	 * If Boolean.TRUE, it indicates that the request body was already consumed
+	 * because of the call to {@link #getParameterMap()} (or its sibling), which
 	 * requires implicit form parameter parsing.
 	 * 
-	 * If Boolean.FALSE, it indicates that the request body shall not be consumed by the
-	 * said method, because the application already called
+	 * If Boolean.FALSE, it indicates that the request body shall not be
+	 * consumed by the said method, because the application already called
 	 * {@link #getInputStream()} and showed the intent to parse the request body
 	 * on its own.
 	 * 
@@ -119,6 +122,10 @@ public class WinstoneRequest implements HttpServletRequest {
 	protected ServletRequestListener requestListeners[];
 	private MessageDigest md5Digester;
 	private final Set<WinstoneSession> usedSessions;
+	/**
+	 * max number of parameters allowed.
+	 */
+	private final int maxParamAllowed;
 
 	/**
 	 * 
@@ -126,9 +133,11 @@ public class WinstoneRequest implements HttpServletRequest {
 	 * 
 	 * @throws IOException
 	 */
-	public WinstoneRequest() throws IOException {
+	public WinstoneRequest(final int maxParamAllowed) throws IOException {
+		super();
+		this.maxParamAllowed = maxParamAllowed < 1 ? WinstoneConstant.DEFAULT_MAXIMUM_PARAMETER_ALLOWED : maxParamAllowed;
 		attributes = new HashMap<String, Object>();
-		parameters = new HashMap<String, String[]>();
+		parameters = new SizeRestrictedHashtable<String, String[]>(this.maxParamAllowed);
 		locales = new ArrayList<Locale>();
 		attributesStack = new Stack<Map<String, Object>>();
 		parametersStack = new Stack<Map<String, String[]>>();
@@ -545,7 +554,7 @@ public class WinstoneRequest implements HttpServletRequest {
 			WinstoneRequest.logger.warn("Called getInputStream after getParameter ... error");
 			parsedParameters = Boolean.TRUE;
 		} else if (parsedParameters == null) {
-			final Map<String, String[]> workingParameters = new HashMap<String, String[]>();
+			final Map<String, String[]> workingParameters = new SizeRestrictedHashMap<String, String[]>(maxParamAllowed);
 			try {
 				// Parse query string from request
 				// if ((method.equals(METHOD_GET) || method.equals(METHOD_HEAD)
@@ -749,7 +758,7 @@ public class WinstoneRequest implements HttpServletRequest {
 		}
 
 		// Tokenize by commas
-		final Map<Float, List<Locale>> localeEntries = new HashMap<Float, List<Locale>>();
+		final Map<Float, List<Locale>> localeEntries = new SizeRestrictedHashMap<Float, List<Locale>>(maxParamAllowed);
 		final StringTokenizer commaTK = new StringTokenizer(lb.toString(), ",", Boolean.FALSE);
 		for (; commaTK.hasMoreTokens();) {
 			String clause = commaTK.nextToken();
@@ -816,11 +825,11 @@ public class WinstoneRequest implements HttpServletRequest {
 	}
 
 	public void addIncludeQueryParameters(final String queryString) {
-		final Map<String, String[]> lastParams = new HashMap<String, String[]>();
+		final Map<String, String[]> lastParams = new SizeRestrictedHashtable<String, String[]>(maxParamAllowed);
 		if (!parametersStack.isEmpty()) {
 			lastParams.putAll(parametersStack.peek());
 		}
-		final Map<String, String[]> newQueryParams = new HashMap<String, String[]>();
+		final Map<String, String[]> newQueryParams = new SizeRestrictedHashMap<String, String[]>(maxParamAllowed);
 		if (queryString != null) {
 			WinstoneRequest.extractParameters(queryString, encoding, newQueryParams, Boolean.FALSE);
 		}
@@ -1100,7 +1109,7 @@ public class WinstoneRequest implements HttpServletRequest {
 
 	@Override
 	public Map<String, Object> getParameterMap() {
-		final Map<String, Object> paramMap = new HashMap<String, Object>();
+		final Hashtable<String, Object> paramMap = new SizeRestrictedHashtable<String, Object>(maxParamAllowed);
 		for (final Enumeration<String> names = getParameterNames(); names.hasMoreElements();) {
 			final String name = names.nextElement();
 			paramMap.put(name, getParameterValues(name));
