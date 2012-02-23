@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Bootloader prepare load of server.
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
 public class BootStrap {
 
