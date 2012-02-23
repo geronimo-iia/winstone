@@ -8,8 +8,8 @@ package net.winstone.testCase.load;
 
 import java.util.Map;
 
+import net.winstone.Server;
 import net.winstone.boot.BootStrap;
-import net.winstone.boot.Server;
 
 import org.slf4j.LoggerFactory;
 
