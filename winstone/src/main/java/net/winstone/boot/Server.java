@@ -11,6 +11,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -93,11 +94,15 @@ public class Server implements LifeCycle {
 	 * @param commonLibClassLoader
 	 *            class loader of common lib folder
 	 * @throws IllegalArgumentException
+	 *             if args or commonLibClassLoader is null.
 	 */
 	public Server(final Map<String, String> args, final ClassLoader commonLibClassLoader) throws IllegalArgumentException {
 		super();
 		if (args == null) {
 			throw new IllegalArgumentException("arg can not be null or empty");
+		}
+		if (commonLibClassLoader == null) {
+			throw new IllegalArgumentException("commonLibClassLoader can not be null");
 		}
 		this.args = args;
 		this.commonLibClassLoader = commonLibClassLoader;
@@ -132,6 +137,11 @@ public class Server implements LifeCycle {
 			}
 			Runtime.getRuntime().addShutdownHook(new ShutdownHook(this));
 		} catch (final IOException iOException) {
+			try {
+				destroy();
+			} catch (Throwable e) {
+				// IGNORE
+			}
 			throw new WinstoneException("Server.initialize", iOException);
 		}
 	}
@@ -167,6 +177,9 @@ public class Server implements LifeCycle {
 		}
 	}
 
+	/**
+	 * Shutdown this server.
+	 */
 	public void shutdown() {
 		Server.logger.info("Winstone shutdown...");
 		destroy();
@@ -477,6 +490,39 @@ public class Server implements LifeCycle {
 	}
 
 	/**
+	 * @return the controlPort
+	 */
+	public int getControlPort() {
+		return controlPort;
+	}
+
+	/**
+	 * @return the commonLibClassLoader
+	 */
+	public ClassLoader getCommonLibClassLoader() {
+		return commonLibClassLoader;
+	}
+
+	/**
+	 * @return the args
+	 */
+	public Map<String, String> getArgs() {
+		return args;
+	}
+
+	/**
+	 * @return the objectPool
+	 * @throws IllegalStateException
+	 *             if server is not started.
+	 */
+	public ObjectPool getObjectPool() throws IllegalStateException {
+		if (!isRunning()) {
+			throw new IllegalStateException("Server is not started");
+		}
+		return objectPool;
+	}
+
+	/**
 	 * @return the HostGroup instance
 	 * @throws IllegalStateException
 	 *             if server is not started.
@@ -494,7 +540,7 @@ public class Server implements LifeCycle {
 	 *             if server is not started.
 	 */
 	public JndiManager getJndiManager() throws IllegalStateException {
-		if (hostGroup == null) {
+		if (!isRunning()) {
 			throw new IllegalStateException("Server is not started");
 		}
 		return globalJndiManager;
@@ -506,10 +552,22 @@ public class Server implements LifeCycle {
 	 *             if server is not started.
 	 */
 	public Cluster getCluster() throws IllegalStateException {
-		if (cluster == null) {
+		if (!isRunning()) {
 			throw new IllegalStateException("Server is not started");
 		}
 		return cluster;
+	}
+
+	/**
+	 * @return a unmodifiable list of listener.
+	 * @throws IllegalStateException
+	 *             if server is not started.
+	 */
+	public List<Listener> getListeners() throws IllegalStateException {
+		if (!isRunning()) {
+			throw new IllegalStateException("Server is not started");
+		}
+		return Collections.unmodifiableList(listeners);
 	}
 
 	/**
