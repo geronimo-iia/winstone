@@ -1,0 +1,8 @@
+
+
+mvn clean install && java -jar target\winstone-1.0.3-SNAPSHOT-boot.jar --webroot=V:\workspace\w520\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\wtpwebapps\grc-webapp  --useJNDI=true --jndi.resource.jdbc/grcDatasource=javax.sql.DataSource  --jndi.param.jdbc/grcDatasource.url=jdbc:oracle:thin:@xao11:1521:GRCTST11SID --jndi.param.jdbc/grcDatasource.driverClassName=oracle.jdbc.OracleDriver --jndi.param.jdbc/grcDatasource.username=GRC520INT --jndi.param.jdbc/grcDatasource.password=mega 
+
+
+  
+ This fail:
+ java -jar target\winstone-1.0.3-SNAPSHOT-boot.jar --webroot=..\test-webapp-spring\target\test-webapp-spring s--useJNDI==true --jndi.resource.jdbc/testDatasource=javax.sql.DataSource --jndi.param.jdbc/testDatasource.url=jdbc:h2:~/test
