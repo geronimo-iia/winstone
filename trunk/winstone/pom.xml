@@ -76,6 +76,7 @@
 		</plugins>
 	</reporting>
 	<dependencies>
+		<!--  we did not add mail dependency in minimal system -->
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
@@ -87,12 +88,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<scope>runtime</scope>
+			<artifactId>slf4j-log4j12</artifactId> 
 		</dependency>
 	</dependencies>
 </project>
