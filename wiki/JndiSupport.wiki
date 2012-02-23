@@ -30,7 +30,13 @@ Configuration can be done in two ways:
 ==Datasource==
 Additionally, it includes a JDBC DataSource object which can be used as a wrapper around normal JDBC drivers. This is fairly simple for now, but it meets the requirements I mentioned above.
 
-Options are as follows:
+===Add your JDBC driver====
+
+  # Open winstone jar, and locate /lib folder.
+  # put your jdbc driver under this folder
+  # that's all
+
+===Datasource Options===
 
   # url (REQUIRED) - JDBC URL (jdbc:mysql://db.widgets.com/db) Connection URL to be passed to our JDBC driver. (For backwards compatibility, the property driverName is also recognized.)
   # driverClassName (REQUIRED) - JDBC Driver name (eg com.mysql.jdbc.Driver). Fully qualified Java class name of the JDBC driver to be used.
