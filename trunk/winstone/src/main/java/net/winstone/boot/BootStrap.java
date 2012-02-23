@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import net.winstone.Server;
 import net.winstone.WinstoneResourceBundle;
 import net.winstone.util.StringUtils;
 

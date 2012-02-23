@@ -17,6 +17,7 @@ import java.util.Set;
 import net.winstone.WinstoneException;
 import net.winstone.cluster.Cluster;
 import net.winstone.jndi.JndiManager;
+import net.winstone.util.StringUtils;
 
 import org.slf4j.LoggerFactory;
 
@@ -80,8 +81,8 @@ public class HostGroup {
 		this.commonLibCL = commonLibCL;
 		this.args = args;
 		// Is this the single or multiple configuration ? Check args
-		final String hostDirName = args.get("hostsDir");
-		final String webappsDirName = args.get("webappsDir");
+		final String hostDirName = StringUtils.stringArg(args, "hostsDir", null);
+		final String webappsDirName = StringUtils.stringArg(args, "webappsDir", null);
 
 		// If host mode
 		if (hostDirName == null) {
