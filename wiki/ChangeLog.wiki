@@ -24,13 +24,11 @@
    * FIX HUDSON-4804
    * FIXED HUDSON-5119: finite default session timeout
    * if --httpsPort is given without the key store, run with a self-signed certificate.
-   * added --httpsCertificate and --httpsPrivateKey options to support
-  OpenSSL style key formats.
+   * added httpsCertificate and httpsPrivateKey options to support OpenSSL style key formats.
    * Added an explicit switch to enable SSL client auth, as the "optional"
    * Fixed a bug in AJP packet parsing
    * Added the canonicalization of the URI path.
-   * Fixed a possible memory leak. A large number of
-sessions whose isNew flag is left to true. It seem to me that for the sake of session eviction, the timestamp should be enough.
+   * Fixed a possible memory leak. A large number of sessions whose isNew flag is left to true. It seem to me that for the sake of session eviction, the timestamp should be enough.
    * FIX AJP13Listener  "shutdown OK" will be reported even for an error case.
    * fixed a error recovery behaviour on HttpListener
    * Carry forward the request URI in the error dispatching.
