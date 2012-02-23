@@ -10,12 +10,8 @@
 		<param-value>classpath:webapp-context.xml</param-value>
 	</context-param>
 	<context-param>
-		<param-name>org.restlet.component</param-name>
-		<param-value>restletSpringComponent</param-value>
-	</context-param>
-	<context-param>
 		<param-name>log4jConfigLocation</param-name>
-		<param-value>log4j.properties</param-value>
+		<param-value>classpath:log4j.properties</param-value>
 	</context-param>
 	<context-param>
 		<param-name>log4jExposeWebAppRoot</param-name>
