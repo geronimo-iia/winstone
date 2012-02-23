@@ -92,7 +92,7 @@ public class UnWar {
 					OutputStream os = null;
 					InputStream is = null;
 					final File parentFile = outFile.getParentFile();
-					if (parentFile.exists() == false) {
+					if (parentFile.exists() == Boolean.FALSE) {
 						parentFile.mkdirs();
 					}
 					// let local modification in place

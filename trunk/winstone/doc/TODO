@@ -1,4 +1,6 @@
 
 Integrate
-https://github.com/jenkinsci/winstone/commits/master?page=1
-https://github.com/jenkinsci/winstone/commit/a21916c1bc796b970d1b9e6c59f76bc603e698d0
+
+
+
+Adding programmatic HostGroup, Cluster and JNDI access on Server instance.

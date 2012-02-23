@@ -67,30 +67,30 @@ public class Person {
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {
-			return true;
+			return Boolean.TRUE;
 		}
 		if (obj == null) {
-			return false;
+			return Boolean.FALSE;
 		}
 		if (getClass() != obj.getClass()) {
-			return false;
+			return Boolean.FALSE;
 		}
 		final Person other = (Person) obj;
 		if (firstName == null) {
 			if (other.firstName != null) {
-				return false;
+				return Boolean.FALSE;
 			}
 		} else if (!firstName.equals(other.firstName)) {
-			return false;
+			return Boolean.FALSE;
 		}
 		if (lastName == null) {
 			if (other.lastName != null) {
-				return false;
+				return Boolean.FALSE;
 			}
 		} else if (!lastName.equals(other.lastName)) {
-			return false;
+			return Boolean.FALSE;
 		}
-		return true;
+		return Boolean.TRUE;
 	}
 
 }

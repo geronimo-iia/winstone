@@ -83,7 +83,7 @@ public class Ajp13Listener implements Listener, Runnable {
 	@Override
 	public boolean start() throws IOException {
 		if (listenPort < 0) {
-			return false;
+			return Boolean.FALSE;
 		} else {
 			ServerSocket ss = null;
 			try {
@@ -95,11 +95,11 @@ public class Ajp13Listener implements Listener, Runnable {
 			Ajp13Listener.logger.info("AJP13 Listener started: port={}", listenPort + "");
 			serverSocket = ss;
 
-			interrupted = false;
+			interrupted = Boolean.FALSE;
 			final Thread thread = new Thread(this, StringUtils.replaceToken("ConnectorThread:ajp13-[#0]", Integer.toString(listenPort)));
-			thread.setDaemon(true);
+			thread.setDaemon(Boolean.TRUE);
 			thread.start();
-			return true;
+			return Boolean.TRUE;
 		}
 
 	}
@@ -140,7 +140,7 @@ public class Ajp13Listener implements Listener, Runnable {
 	 */
 	@Override
 	public void destroy() {
-		interrupted = true;
+		interrupted = Boolean.TRUE;
 	}
 
 	/**
@@ -310,15 +310,15 @@ public class Ajp13Listener implements Listener, Runnable {
 					Ajp13Listener.logger.debug("Skipping invalid SSL certificate: {}", certValue);
 				}
 				request.setAttribute("javax.servlet.request.X509Certificate", certificateArray);
-				request.setIsSecure(true);
+				request.setIsSecure(Boolean.TRUE);
 			} else if (attName.equals("ssl_cipher")) {
 				final String cipher = headers.getAttributes().get("ssl_cipher");
 				request.setAttribute("javax.servlet.request.cipher_suite", cipher);
 				request.setAttribute("javax.servlet.request.key_size", getKeySize(cipher));
-				request.setIsSecure(true);
+				request.setIsSecure(Boolean.TRUE);
 			} else if (attName.equals("ssl_session")) {
 				request.setAttribute("javax.servlet.request.ssl_session", headers.getAttributes().get("ssl_session"));
-				request.setIsSecure(true);
+				request.setIsSecure(Boolean.TRUE);
 			} else {
 				Ajp13Listener.logger.debug("Unknown request attribute ignored: {}={}", attName, "" + headers.getAttributes().get(attName));
 			}
@@ -350,13 +350,13 @@ public class Ajp13Listener implements Listener, Runnable {
 
 	/**
 	 * Tries to wait for extra requests on the same socket. If any are found
-	 * before the timeout expires, it exits with a true, indicating a new
-	 * request is waiting. If the timeout expires, return a false, instructing
+	 * before the timeout expires, it exits with a Boolean.TRUE, indicating a new
+	 * request is waiting. If the timeout expires, return a Boolean.FALSE, instructing
 	 * the handler thread to begin shutting down the socket and relase itself.
 	 */
 	@Override
 	public boolean processKeepAlive(final WinstoneRequest request, final WinstoneResponse response, final InputStream inSocket) throws IOException, InterruptedException {
-		return true;
+		return Boolean.TRUE;
 	}
 
 	/**

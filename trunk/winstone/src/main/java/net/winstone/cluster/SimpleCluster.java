@@ -55,7 +55,7 @@ public final class SimpleCluster implements Runnable, Cluster {
 	 * Builds a cluster instance
 	 */
 	public SimpleCluster(final Map<String, String> args, final Integer controlPort) {
-		interrupted = false;
+		interrupted = Boolean.FALSE;
 		clusterAddresses = new HashMap<String, Date>();
 		if (controlPort != null) {
 			this.controlPort = controlPort.intValue();
@@ -64,14 +64,14 @@ public final class SimpleCluster implements Runnable, Cluster {
 		// Start cluster init thread
 		initialClusterNodes = args.get("clusterNodes");
 		final Thread thread = new Thread(this, "Cluster monitor thread");
-		thread.setDaemon(true);
+		thread.setDaemon(Boolean.TRUE);
 		thread.setPriority(Thread.MIN_PRIORITY);
 		thread.start();
 	}
 
 	@Override
 	public void destroy() {
-		interrupted = true;
+		interrupted = Boolean.TRUE;
 	}
 
 	/**
@@ -138,7 +138,7 @@ public final class SimpleCluster implements Runnable, Cluster {
 		// Wait until we get an answer
 		WinstoneSession answer = null;
 		String senderThread = null;
-		boolean finished = false;
+		boolean finished = Boolean.FALSE;
 		while (!finished) {
 			// Loop through all search threads. If finished, exit, otherwise
 			// sleep
@@ -161,7 +161,7 @@ public final class SimpleCluster implements Runnable, Cluster {
 			}
 
 			if (searchThreads.isEmpty() || (answer != null)) {
-				finished = true;
+				finished = Boolean.TRUE;
 			} else {
 				try {
 					Thread.sleep(100);
@@ -295,7 +295,7 @@ public final class SimpleCluster implements Runnable, Cluster {
 		if (webAppConfig == null) {
 			outData.writeUTF(ClusterSessionSearch.SESSION_NOT_FOUND);
 		} else {
-			final WinstoneSession session = webAppConfig.getSessionById(sessionId, true);
+			final WinstoneSession session = webAppConfig.getSessionById(sessionId, Boolean.TRUE);
 			if (session != null) {
 				outData.writeUTF(ClusterSessionSearch.SESSION_FOUND);
 				outData.writeObject(session);

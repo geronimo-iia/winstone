@@ -72,7 +72,7 @@ public class Bindings implements NamingEnumeration<Binding> {
 		try {
 			return hasMore();
 		} catch (final NamingException err) {
-			return false;
+			return Boolean.FALSE;
 		}
 	}
 

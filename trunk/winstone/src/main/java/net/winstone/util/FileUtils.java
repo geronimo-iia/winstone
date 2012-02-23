@@ -17,8 +17,8 @@ public class FileUtils {
 
 	/**
 	 * Copy source file to destination. If destination is a path then source
-	 * file name is appended. If destination file exists then: overwrite=true -
-	 * destination file is replaced; overwrite=false - exception is thrown. For
+	 * file name is appended. If destination file exists then: overwrite=Boolean.TRUE -
+	 * destination file is replaced; overwrite=Boolean.FALSE - exception is thrown. For
 	 * larger files (20Mb) we use streams copy, and for smaller files we use
 	 * channels.
 	 * 
@@ -172,8 +172,8 @@ public class FileUtils {
 	 * @param from
 	 *            Deletes the file or directory denoted by this abstract
 	 *            pathname.
-	 * @return true if and only if the file or directory is successfully
-	 *         deleted; false otherwise
+	 * @return Boolean.TRUE if and only if the file or directory is successfully
+	 *         deleted; Boolean.FALSE otherwise
 	 */
 	public static boolean delete(final File from) {
 		if ((from != null) && from.exists()) {
@@ -184,7 +184,7 @@ public class FileUtils {
 			}
 			return from.delete();
 		}
-		return false;
+		return Boolean.FALSE;
 	}
 
 }

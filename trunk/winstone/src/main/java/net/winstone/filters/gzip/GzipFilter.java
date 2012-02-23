@@ -58,7 +58,7 @@ public class GzipFilter implements Filter {
 	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException {
 		// Add cast to WinstoneRequest avoid type cast.
 		final Enumeration<String> headers = ((WinstoneRequest) request).getHeaders(GzipFilter.ACCEPT_ENCODING);
-		boolean acceptsGzipEncoding = false;
+		boolean acceptsGzipEncoding = Boolean.FALSE;
 		while (headers.hasMoreElements() && !acceptsGzipEncoding) {
 			acceptsGzipEncoding = (headers.nextElement().indexOf("gzip") != -1);
 		}

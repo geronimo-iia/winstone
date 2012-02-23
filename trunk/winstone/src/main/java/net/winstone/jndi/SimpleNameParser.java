@@ -11,7 +11,7 @@ import javax.naming.NamingException;
  * The name parser for jndi names.<br />
  * The NameParser contains knowledge of the syntactic information (like
  * left-to-right orientation, name separator, etc.) needed to parse names. <br />
- * The equals() method, when used to compare two NameParsers, returns true if
+ * The equals() method, when used to compare two NameParsers, returns Boolean.TRUE if
  * and only if they serve the same namespace.
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
@@ -24,7 +24,7 @@ public class SimpleNameParser implements NameParser {
 	static {
 		SimpleNameParser.syntax.put("jndi.syntax.direction", "left_to_right");
 		SimpleNameParser.syntax.put("jndi.syntax.separator", "/");
-		SimpleNameParser.syntax.put("jndi.syntax.ignorecase", "false");
+		SimpleNameParser.syntax.put("jndi.syntax.ignorecase", "Boolean.FALSE");
 		SimpleNameParser.syntax.put("jndi.syntax.escape", "\\");
 		SimpleNameParser.syntax.put("jndi.syntax.beginquote", "'");
 	}
@@ -37,15 +37,15 @@ public class SimpleNameParser implements NameParser {
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {
-			return true;
+			return Boolean.TRUE;
 		}
 		if (obj == null) {
-			return false;
+			return Boolean.FALSE;
 		}
 		if (getClass() != obj.getClass()) {
-			return false;
+			return Boolean.FALSE;
 		}
-		return true;
+		return Boolean.TRUE;
 	}
 
 	@Override

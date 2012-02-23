@@ -188,7 +188,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 	}
 
 	public static boolean useSavedSessions(final Map<String, String> args) {
-		return StringUtils.booleanArg(args, "useSavedSessions", false);
+		return StringUtils.booleanArg(args, "useSavedSessions", Boolean.FALSE);
 	}
 
 	/**
@@ -210,30 +210,30 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 		loader = buildWebAppClassLoader(startupArgs, parentClassLoader, webRoot, localLoaderClassPathFiles);
 
 		// Build switch values
-		boolean useJasper = StringUtils.booleanArg(startupArgs, "useJasper", true);
-		boolean useInvoker = StringUtils.booleanArg(startupArgs, "useInvoker", false);
-		final boolean useJNDI = StringUtils.booleanArg(startupArgs, "useJNDI", false);
+		boolean useJasper = StringUtils.booleanArg(startupArgs, "useJasper", Boolean.TRUE);
+		boolean useInvoker = StringUtils.booleanArg(startupArgs, "useInvoker", Boolean.FALSE);
+		final boolean useJNDI = StringUtils.booleanArg(startupArgs, "useJNDI", Boolean.FALSE);
 		useSavedSessions = WebAppConfiguration.useSavedSessions(startupArgs);
 
 		// Check jasper is available - simple tests
 		if (useJasper) {
 			try {
-				Class.forName(WinstoneConstant.JAVAX_JSP_FACTORY, true, parentClassLoader);
-				Class.forName(WinstoneConstant.JSP_SERVLET_CLASS, true, loader);
+				Class.forName(WinstoneConstant.JAVAX_JSP_FACTORY, Boolean.TRUE, parentClassLoader);
+				Class.forName(WinstoneConstant.JSP_SERVLET_CLASS, Boolean.TRUE, loader);
 			} catch (final Throwable err) {
-				if (StringUtils.booleanArg(startupArgs, "useJasper", false)) {
+				if (StringUtils.booleanArg(startupArgs, "useJasper", Boolean.FALSE)) {
 					WebAppConfiguration.logger.warn("WARNING: Jasper servlet not found - disabling JSP support. Do you have all \nthe jasper libraries in the common lib folder (see --commonLibFolder setting) ?");
 					WebAppConfiguration.logger.debug("Error loading Jasper JSP compilation servlet");
 				}
-				useJasper = false;
+				useJasper = Boolean.FALSE;
 			}
 		}
 		if (useInvoker) {
 			try {
-				Class.forName(InvokerServlet.class.getName(), false, loader);
+				Class.forName(InvokerServlet.class.getName(), Boolean.FALSE, loader);
 			} catch (final Throwable err) {
 				WebAppConfiguration.logger.warn("WARNING: Invoker servlet not found - disabling invoker support.");
-				useInvoker = false;
+				useInvoker = Boolean.FALSE;
 			}
 		}
 
@@ -255,7 +255,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 
 		errorPagesByException = new HashMap<Class<?>, String>();
 		errorPagesByCode = new HashMap<String, String>();
-		boolean distributable = false;
+		boolean distributable = Boolean.FALSE;
 
 		exactServletMatchMounts = new HashMap<String, String>();
 		final List<Mapping> localFolderPatterns = new ArrayList<Mapping>();
@@ -318,7 +318,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 				if (nodeName.equals(WebAppConfiguration.ELEM_DISPLAY_NAME)) {
 					displayName = WebAppConfiguration.getTextFromNode(child);
 				} else if (nodeName.equals(WebAppConfiguration.ELEM_DISTRIBUTABLE)) {
-					distributable = true;
+					distributable = Boolean.TRUE;
 				} else if (nodeName.equals(WebAppConfiguration.ELEM_SECURITY_CONSTRAINT)) {
 					constraintNodes.add(child);
 				} else if (nodeName.equals(WebAppConfiguration.ELEM_ENV_ENTRY)) {
@@ -366,7 +366,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 					}
 					if (listenerClass != null) {
 						try {
-							final Class<?> listener = Class.forName(listenerClass, true, loader);
+							final Class<?> listener = Class.forName(listenerClass, Boolean.TRUE, loader);
 							final Object listenerInstance = listener.newInstance();
 							addListenerInstance(listenerInstance, contextAttributeListeners, contextListeners, requestAttributeListeners, requestListeners, sessionActivationListeners, sessionAttributeListeners, sessionListeners);
 							WebAppConfiguration.logger.debug("Adding web application listener: {}", listenerClass);
@@ -400,10 +400,10 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 				else if (nodeName.equals(WebAppConfiguration.ELEM_FILTER_MAPPING)) {
 					String filterName = null;
 					final List<String> mappings = new ArrayList<String>();
-					boolean onRequest = false;
-					boolean onForward = false;
-					boolean onInclude = false;
-					boolean onError = false;
+					boolean onRequest = Boolean.FALSE;
+					boolean onForward = Boolean.FALSE;
+					boolean onInclude = Boolean.FALSE;
+					boolean onError = Boolean.FALSE;
 
 					// Parse the element and extract
 					for (int k = 0; k < child.getChildNodes().getLength(); k++) {
@@ -421,18 +421,18 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 						} else if (mapNodeName.equals(WebAppConfiguration.ELEM_DISPATCHER)) {
 							final String dispatcherValue = WebAppConfiguration.getTextFromNode(mapChild);
 							if (dispatcherValue.equals(WebAppConfiguration.DISPATCHER_REQUEST)) {
-								onRequest = true;
+								onRequest = Boolean.TRUE;
 							} else if (dispatcherValue.equals(WebAppConfiguration.DISPATCHER_FORWARD)) {
-								onForward = true;
+								onForward = Boolean.TRUE;
 							} else if (dispatcherValue.equals(WebAppConfiguration.DISPATCHER_INCLUDE)) {
-								onInclude = true;
+								onInclude = Boolean.TRUE;
 							} else if (dispatcherValue.equals(WebAppConfiguration.DISPATCHER_ERROR)) {
-								onError = true;
+								onError = Boolean.TRUE;
 							}
 						}
 					}
 					if (!onRequest && !onInclude && !onForward && !onError) {
-						onRequest = true;
+						onRequest = Boolean.TRUE;
 					}
 					if (mappings.isEmpty()) {
 						throw new WinstoneException("Error in filter mapping - no pattern and no servlet name for filter " + filterName);
@@ -500,7 +500,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 					}
 					if ((exception != null) && (location != null)) {
 						try {
-							final Class<?> exceptionClass = Class.forName(exception.trim(), false, loader);
+							final Class<?> exceptionClass = Class.forName(exception.trim(), Boolean.FALSE, loader);
 							localErrorPagesByExceptionList.add(exceptionClass);
 							errorPagesByException.put(exceptionClass, location.trim());
 						} catch (final ClassNotFoundException err) {
@@ -626,7 +626,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 			final String authClassName = "net.winstone.core.authentication." + authMethod.substring(0, 1).toUpperCase() + authMethod.substring(1).toLowerCase() + "AuthenticationHandler";
 			try {
 				// Build the realm
-				final Class<?> realmClass = Class.forName(realmClassName, true, parentClassLoader);
+				final Class<?> realmClass = Class.forName(realmClassName, Boolean.TRUE, parentClassLoader);
 				final Constructor<?> realmConstr = realmClass.getConstructor(new Class[] { Set.class, Map.class });
 				authenticationRealm = (AuthenticationRealm) realmConstr.newInstance(new Object[] { rolesAllowed, startupArgs });
 
@@ -714,7 +714,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 
 		// If we don't have an instance of the default servlet, mount the
 		// inbuilt one
-		final boolean useDirLists = StringUtils.booleanArg(startupArgs, "directoryListings", true);
+		final boolean useDirLists = StringUtils.booleanArg(startupArgs, "directoryListings", Boolean.TRUE);
 		final Map<String, String> staticParams = new HashMap<String, String>();
 		staticParams.put("webRoot", webRoot);
 		staticParams.put("prefix", this.prefix);
@@ -725,7 +725,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 			servletInstances.put(defaultServletName, defaultServlet);
 			startupServlets.add(defaultServlet);
 		}
-		if (StringUtils.booleanArg(startupArgs, "alwaysMountDefaultServlet", true) && (servletInstances.get(WebAppConfiguration.DEFAULT_SERVLET_NAME) == null)) {
+		if (StringUtils.booleanArg(startupArgs, "alwaysMountDefaultServlet", Boolean.TRUE) && (servletInstances.get(WebAppConfiguration.DEFAULT_SERVLET_NAME) == null)) {
 			final ServletConfiguration defaultServlet = new ServletConfiguration(this, WebAppConfiguration.DEFAULT_SERVLET_NAME, StaticResourceServlet.class.getName(), staticParams, 0);
 			servletInstances.put(WebAppConfiguration.DEFAULT_SERVLET_NAME, defaultServlet);
 			startupServlets.add(defaultServlet);
@@ -858,7 +858,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 		final URL jarURLs[] = urlList.toArray(new URL[urlList.size()]);
 
 		String preferredClassLoader = StringUtils.stringArg(startupArgs, "preferredClassLoader", WebappClassLoader.class.getName());
-		if (StringUtils.booleanArg(startupArgs, "useServletReloading", false) && StringUtils.stringArg(startupArgs, "preferredClassLoader", "").equals("")) {
+		if (StringUtils.booleanArg(startupArgs, "useServletReloading", Boolean.FALSE) && StringUtils.stringArg(startupArgs, "preferredClassLoader", "").equals("")) {
 			preferredClassLoader = ReloadingClassLoader.class.getName();
 		}
 
@@ -867,7 +867,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 		ClassLoader outputCL = null;
 		if (!preferredClassLoader.equals("")) {
 			try {
-				final Class<?> preferredCL = Class.forName(preferredClassLoader, true, parentClassLoader);
+				final Class<?> preferredCL = Class.forName(preferredClassLoader, Boolean.TRUE, parentClassLoader);
 				final Constructor<?> reloadConstr = preferredCL.getConstructor(new Class[] { URL[].class, ClassLoader.class });
 				outputCL = (ClassLoader) reloadConstr.newInstance(new Object[] { jarURLs, parentClassLoader });
 			} catch (final Throwable err) {
@@ -977,7 +977,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 
 	public static void addJspServletParams(final Map<String, String> jspParams) {
 		jspParams.put("logVerbosityLevel", WebAppConfiguration.JSP_SERVLET_LOG_LEVEL);
-		jspParams.put("fork", "false");
+		jspParams.put("fork", "Boolean.FALSE");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1142,7 +1142,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 		final String exact = exactServletMatchMounts.get(path);
 		if (exact != null) {
 			if (servletInstances.get(exact) != null) {
-				servletPath.append(WinstoneRequest.decodeURLToken(path, false));
+				servletPath.append(WinstoneRequest.decodeURLToken(path, Boolean.FALSE));
 				// pathInfo.append(""); // a hack - empty becomes null later
 				return servletInstances.get(exact);
 			}
@@ -1162,7 +1162,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 			throw new WinstoneException("Matched URL to a servlet that doesn't exist: " + defaultServletName);
 		}
 		// pathInfo.append(path);
-		servletPath.append(WinstoneRequest.decodeURLToken(path, false));
+		servletPath.append(WinstoneRequest.decodeURLToken(path, Boolean.FALSE));
 		return servletInstances.get(defaultServletName);
 	}
 
@@ -1442,7 +1442,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 			return getErrorDispatcherByCode(uriInsideWebapp, HttpServletResponse.SC_BAD_REQUEST, "URI must start with a slash: " + uriInsideWebapp, new IllegalArgumentException("method=" + request.getMethod() + "\nprotocol=" + request.getProtocol()));
 		} else if (contextStartupError != null) {
 			final StringWriter sw = new StringWriter();
-			final PrintWriter pw = new PrintWriter(sw, true);
+			final PrintWriter pw = new PrintWriter(sw, Boolean.TRUE);
 			contextStartupError.printStackTrace(pw);
 			return getErrorDispatcherByCode(uriInsideWebapp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The error below occurred during context initialisation, so no further requests can be \nprocessed:<br><pre>" + sw.toString() + "</pre>",
 					contextStartupError);
@@ -1784,23 +1784,23 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {
-			return true;
+			return Boolean.TRUE;
 		}
 		if (obj == null) {
-			return false;
+			return Boolean.FALSE;
 		}
 		if (getClass() != obj.getClass()) {
-			return false;
+			return Boolean.FALSE;
 		}
 		final WebAppConfiguration other = (WebAppConfiguration) obj;
 		if (prefix == null) {
 			if (other.prefix != null) {
-				return false;
+				return Boolean.FALSE;
 			}
 		} else if (!prefix.equals(other.prefix)) {
-			return false;
+			return Boolean.FALSE;
 		}
-		return true;
+		return Boolean.TRUE;
 	}
 
 	@Override

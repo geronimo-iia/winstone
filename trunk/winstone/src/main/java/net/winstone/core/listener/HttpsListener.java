@@ -66,8 +66,8 @@ public class HttpsListener extends HttpListener {
 	private final char[] password;
 	private final String keyManagerType;
 	/**
-	 * If true, request the client certificate ala "SSLVerifyClient require"
-	 * Apache directive. If false, which is the default, don't do so.
+	 * If Boolean.TRUE, request the client certificate ala "SSLVerifyClient require"
+	 * Apache directive. If Boolean.FALSE, which is the default, don't do so.
 	 * Technically speaking, there's the equivalent of
 	 * "SSLVerifyClient optional", but IE doesn't recognize it and it always
 	 * prompt the certificate chooser dialog box, so in practice it's useless.
@@ -98,7 +98,7 @@ public class HttpsListener extends HttpListener {
 			try {
 				String pwd = StringUtils.stringArg(args, getConnectorName() + "KeyStorePassword", null);
 				keyManagerType = StringUtils.stringArg(args, getConnectorName() + "KeyManagerType", "SunX509");
-				performClientAuth = StringUtils.booleanArg(args, "httpsVerifyClient", false);
+				performClientAuth = StringUtils.booleanArg(args, "httpsVerifyClient", Boolean.FALSE);
 
 				final File opensslCert = StringUtils.fileArg(args, "httpsCertificate");
 				final File opensslKey = StringUtils.fileArg(args, "httpsPrivateKey"); //
@@ -153,7 +153,7 @@ public class HttpsListener extends HttpListener {
 		try {
 			final BufferedReader r = new BufferedReader(reader);
 			String line;
-			boolean in = false;
+			boolean in = Boolean.FALSE;
 			while ((line = r.readLine()) != null) {
 				if (line.startsWith("-----")) {
 					in = !in;
@@ -212,9 +212,9 @@ public class HttpsListener extends HttpListener {
 		final SSLServerSocketFactory factory = context.getServerSocketFactory();
 		final SSLServerSocket ss = (SSLServerSocket) (listenAddress == null ? factory.createServerSocket(listenPort, HttpListener.BACKLOG_COUNT) : factory.createServerSocket(listenPort, HttpListener.BACKLOG_COUNT,
 				InetAddress.getByName(listenAddress)));
-		ss.setEnableSessionCreation(true);
+		ss.setEnableSessionCreation(Boolean.TRUE);
 		if (performClientAuth) {
-			ss.setNeedClientAuth(true);
+			ss.setNeedClientAuth(Boolean.TRUE);
 		}
 		return ss;
 	}
@@ -244,7 +244,7 @@ public class HttpsListener extends HttpListener {
 					req.setAttribute("javax.servlet.request.key_size", getKeySize(ss.getCipherSuite()));
 				}
 			}
-			req.setIsSecure(true);
+			req.setIsSecure(Boolean.TRUE);
 		}
 	}
 

@@ -38,8 +38,8 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 	protected boolean committed;
 	protected boolean bodyOnly;
 	protected WinstoneResponse owner;
-	protected boolean disregardMode = false;
-	protected boolean closed = false;
+	protected boolean disregardMode = Boolean.FALSE;
+	protected boolean closed = Boolean.FALSE;
 	protected Stack<ByteArrayOutputStream> includeByteStreams;
 
 	/**
@@ -49,8 +49,8 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 		outStream = new ClientOutputStream(out);
 		bodyOnly = bodyOnlyForInclude;
 		bufferSize = WinstoneOutputStream.DEFAULT_BUFFER_SIZE;
-		committed = false;
-		// this.headersWritten = false;
+		committed = Boolean.FALSE;
+		// this.headersWritten = Boolean.FALSE;
 		buffer = new ByteArrayOutputStream();
 	}
 
@@ -134,7 +134,7 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 		// If we haven't written the headers yet, write them out
 		if (!committed && !bodyOnly) {
 			owner.validateHeaders();
-			committed = true;
+			committed = Boolean.TRUE;
 
 			WinstoneOutputStream.logger.debug("Committing response body");
 

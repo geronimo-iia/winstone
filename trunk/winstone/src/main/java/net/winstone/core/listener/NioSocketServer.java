@@ -33,7 +33,7 @@ public class NioSocketServer implements Runnable {
 	public NioSocketServer(final boolean useNIO) throws IOException {
 		if (useNIO) {
 			final ServerSocketChannel ssc = ServerSocketChannel.open();
-			ssc.configureBlocking(false);
+			ssc.configureBlocking(Boolean.FALSE);
 			final ServerSocket ss = ssc.socket();
 			ss.bind(new InetSocketAddress(NioSocketServer.LISTEN_PORT));
 
@@ -45,13 +45,13 @@ public class NioSocketServer implements Runnable {
 		}
 
 		thread = new Thread(this);
-		thread.setDaemon(true);
+		thread.setDaemon(Boolean.TRUE);
 		thread.start();
 	}
 
 	@Override
 	public void run() {
-		boolean interrupted = false;
+		boolean interrupted = Boolean.FALSE;
 		while (!interrupted) {
 			try {
 				if (selector != null) {
@@ -61,7 +61,7 @@ public class NioSocketServer implements Runnable {
 				}
 				interrupted = Thread.interrupted();
 			} catch (final IOException err) {
-				interrupted = true;
+				interrupted = Boolean.TRUE;
 			}
 		}
 		thread = null;
@@ -76,7 +76,7 @@ public class NioSocketServer implements Runnable {
 			if (key.isAcceptable()) {
 				final ServerSocketChannel ssc = (ServerSocketChannel) key.channel();
 				final SocketChannel sc = ssc.accept();
-				sc.configureBlocking(false);
+				sc.configureBlocking(Boolean.FALSE);
 				sc.register(selector, SelectionKey.OP_READ);
 			} else if (key.isReadable()) {
 				final SocketChannel sc = (SocketChannel) key.channel();

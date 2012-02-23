@@ -60,8 +60,8 @@ public class ServletConfiguration implements javax.servlet.ServletConfig, Compar
 	private final Map<String, String> securityRoleRefs;
 	/** runtime memeber */
 	private final Object servletSemaphore = Boolean.TRUE;
-	private boolean isSingleThreadModel = false;
-	private boolean unavailable = false;
+	private boolean isSingleThreadModel = Boolean.FALSE;
+	private boolean unavailable = Boolean.FALSE;
 	private Throwable unavailableException = null;
 
 	protected ServletConfiguration(final WebAppConfiguration webAppConfig) {
@@ -198,7 +198,7 @@ public class ServletConfiguration implements javax.servlet.ServletConfig, Compar
 			Servlet newInstance = null;
 			Throwable otherError = null;
 			try {
-				final Class<?> servletClass = Class.forName(className, true, webAppConfig.getLoader());
+				final Class<?> servletClass = Class.forName(className, Boolean.TRUE, webAppConfig.getLoader());
 				newInstance = (Servlet) servletClass.newInstance();
 				isSingleThreadModel = Class.forName("javax.servlet.SingleThreadModel").isInstance(newInstance);
 
@@ -311,7 +311,7 @@ public class ServletConfiguration implements javax.servlet.ServletConfig, Compar
 
 	protected void setUnavailable(final Servlet unavailableServlet) {
 
-		unavailable = true;
+		unavailable = Boolean.TRUE;
 		if (unavailableServlet != null) {
 			ServletConfiguration.logger.debug("{}: destroy", servletName);
 			final ClassLoader cl = Thread.currentThread().getContextClassLoader();

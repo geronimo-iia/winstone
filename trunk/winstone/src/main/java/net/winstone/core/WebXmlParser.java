@@ -37,7 +37,7 @@ public class WebXmlParser implements EntityResolver, ErrorHandler {
 
 	public WebXmlParser(final ClassLoader commonCL) {
 		commonLoader = commonCL;
-		rethrowValidationExceptions = true;
+		rethrowValidationExceptions = Boolean.TRUE;
 	}
 
 	private final static String SCHEMA_SOURCE_PROPERTY = "http://java.sun.com/xml/jaxp/properties/schemaSource";
@@ -69,7 +69,7 @@ public class WebXmlParser implements EntityResolver, ErrorHandler {
 			// if non-compliant parser, then parse as non-XSD compliant
 			WebXmlParser.logger.warn("WARNING: Non-XML-Schema-compliant parser detected. Servlet spec <= 2.3 supported");
 			try {
-				rethrowValidationExceptions = false;
+				rethrowValidationExceptions = Boolean.FALSE;
 				return parseAsV23Webapp(webXmlFile);
 			} catch (final Throwable v23Err) {
 				WebXmlParser.logger.error("Error when parsing web.xml file using the v2.2/2.3 servlet specification:", v23Err);
@@ -87,7 +87,7 @@ public class WebXmlParser implements EntityResolver, ErrorHandler {
 			final DocumentBuilder builder = factory.newDocumentBuilder();
 			builder.setEntityResolver(this);
 			builder.setErrorHandler(this);
-			rethrowValidationExceptions = true;
+			rethrowValidationExceptions = Boolean.TRUE;
 			return builder.parse(webXmlFile);
 		} catch (final Throwable errV25) {
 			try {
@@ -100,13 +100,13 @@ public class WebXmlParser implements EntityResolver, ErrorHandler {
 				final DocumentBuilder builder = factory.newDocumentBuilder();
 				builder.setEntityResolver(this);
 				builder.setErrorHandler(this);
-				rethrowValidationExceptions = true;
+				rethrowValidationExceptions = Boolean.TRUE;
 				return builder.parse(webXmlFile);
 			} catch (final Throwable errV24) {
 				// Try parsing as a v2.3 spec webapp, and if another error
 				// happens, report 2.3, 2.4, 2.5
 				try {
-					rethrowValidationExceptions = false;
+					rethrowValidationExceptions = Boolean.FALSE;
 					return parseAsV23Webapp(webXmlFile);
 				} catch (final Throwable errV23) {
 					WebXmlParser.logger.error("ERROR: An XSD compliant parser was available, but web.xml parsing failed under both XSD and non-XSD conditions. See below for error reports.");
@@ -130,12 +130,12 @@ public class WebXmlParser implements EntityResolver, ErrorHandler {
 	private DocumentBuilderFactory getBaseDBF() {
 		// Use JAXP to create a document builder
 		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setExpandEntityReferences(false);
-		factory.setValidating(true);
-		factory.setNamespaceAware(true);
-		factory.setIgnoringComments(true);
-		factory.setCoalescing(true);
-		factory.setIgnoringElementContentWhitespace(true);
+		factory.setExpandEntityReferences(Boolean.FALSE);
+		factory.setValidating(Boolean.TRUE);
+		factory.setNamespaceAware(Boolean.TRUE);
+		factory.setIgnoringComments(Boolean.TRUE);
+		factory.setCoalescing(Boolean.TRUE);
+		factory.setIgnoringElementContentWhitespace(Boolean.TRUE);
 		return factory;
 	}
 

@@ -70,8 +70,8 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
 		this.forwardFilterPatterns = forwardFilterPatterns;
 		this.includeFilterPatterns = includeFilterPatterns;
 		matchingFilters = null; // set after the call to forward or include
-		useRequestAttributes = false;
-		isErrorDispatch = false;
+		useRequestAttributes = Boolean.FALSE;
+		isErrorDispatch = Boolean.FALSE;
 	}
 
 	public void setForURLDispatcher(final String servletPath, final String pathInfo, final String queryString, final String requestURIInsideWebapp, final Mapping forwardFilterPatterns[], final Mapping includeFilterPatterns[]) {
@@ -83,8 +83,8 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
 		this.forwardFilterPatterns = forwardFilterPatterns;
 		this.includeFilterPatterns = includeFilterPatterns;
 		matchingFilters = null; // set after the call to forward or include
-		useRequestAttributes = true;
-		isErrorDispatch = false;
+		useRequestAttributes = Boolean.TRUE;
+		isErrorDispatch = Boolean.FALSE;
 	}
 
 	public void setForErrorDispatcher(final String servletPath, final String pathInfo, final String queryString, final int statusCode, final String summaryMessage, final Throwable exception, final String errorHandlerURI,
@@ -98,8 +98,8 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
 		errorException = exception;
 		errorSummaryMessage = summaryMessage;
 		matchingFilters = SimpleRequestDispatcher.getMatchingFilters(errorFilterPatterns, webAppConfig, servletPath + (pathInfo == null ? "" : pathInfo), getName(), "ERROR", (servletPath != null));
-		useRequestAttributes = true;
-		isErrorDispatch = true;
+		useRequestAttributes = Boolean.TRUE;
+		isErrorDispatch = Boolean.TRUE;
 	}
 
 	public void setForInitialDispatcher(final String servletPath, final String pathInfo, final String queryString, final String requestURIInsideWebapp, final Mapping requestFilterPatterns[], final AuthenticationHandler authHandler) {
@@ -109,8 +109,8 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
 		requestURI = requestURIInsideWebapp;
 		this.authHandler = authHandler;
 		matchingFilters = SimpleRequestDispatcher.getMatchingFilters(requestFilterPatterns, webAppConfig, servletPath + (pathInfo == null ? "" : pathInfo), getName(), "REQUEST", (servletPath != null));
-		useRequestAttributes = false;
-		isErrorDispatch = false;
+		useRequestAttributes = Boolean.FALSE;
+		isErrorDispatch = Boolean.FALSE;
 	}
 
 	public String getName() {
@@ -294,7 +294,7 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
 		if (outsideFilter) {
 			final WinstoneResponse rsp = getUnwrappedResponse(response);
 			rsp.flushBuffer();
-			rsp.getWinstoneOutputStream().setClosed(true);
+			rsp.getWinstoneOutputStream().setClosed(Boolean.TRUE);
 		}
 	}
 
@@ -303,7 +303,7 @@ public class SimpleRequestDispatcher implements javax.servlet.RequestDispatcher,
 		if (authHandler != null) {
 			return authHandler.processAuthentication(request, response, servletPath + (pathInfo == null ? "" : pathInfo));
 		} else {
-			return true;
+			return Boolean.TRUE;
 		}
 	}
 

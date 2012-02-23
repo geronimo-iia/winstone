@@ -153,7 +153,7 @@ public class MultipartRequestWrapper extends HttpServletRequestWrapper {
 
 						// write out a file in temp space and store it
 						final File tempFile = File.createTempFile("mph", ".tmp");
-						final OutputStream outStream = new FileOutputStream(tempFile, true);
+						final OutputStream outStream = new FileOutputStream(tempFile, Boolean.TRUE);
 						while ((readBytes = inRaw.read(buffer)) != -1) {
 							outStream.write(buffer, 0, readBytes);
 						}

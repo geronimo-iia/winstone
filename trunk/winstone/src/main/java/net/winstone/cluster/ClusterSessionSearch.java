@@ -45,21 +45,21 @@ public final class ClusterSessionSearch implements Runnable {
 	 * Sets up for a threaded search
 	 */
 	public ClusterSessionSearch(final String webAppPrefix, final String hostName, final String sessionId, final String ipPort, final int controlPort) {
-		isFinished = false;
+		isFinished = Boolean.FALSE;
 		searchWebAppHostname = hostName;
 		searchWebAppPrefix = webAppPrefix;
 		searchId = sessionId;
 		searchAddressPort = ipPort;
 		result = null;
 		this.controlPort = controlPort;
-		started = false;
+		started = Boolean.FALSE;
 	}
 
 	public void start() {
 		if (!started) {
-			started = true;
+			started = Boolean.TRUE;
 			final Thread searchThread = new Thread(this);
-			searchThread.setDaemon(true);
+			searchThread.setDaemon(Boolean.TRUE);
 			searchThread.start();
 		}
 	}
@@ -102,8 +102,8 @@ public final class ClusterSessionSearch implements Runnable {
 		} catch (final Throwable err) {
 			logger.warn("Error during cluster session search", err);
 		}
-		isFinished = true;
-		started = false;
+		isFinished = Boolean.TRUE;
+		started = Boolean.FALSE;
 	}
 
 	public boolean isFinished() {

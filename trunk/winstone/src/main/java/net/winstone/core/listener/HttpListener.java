@@ -46,7 +46,7 @@ public class HttpListener implements Listener, Runnable {
 	// listener socket
 	protected static int CONNECTION_TIMEOUT = 60000;
 	protected static int BACKLOG_COUNT = 5000;
-	protected static boolean DEFAULT_HNL = false;
+	protected static boolean DEFAULT_HNL = Boolean.FALSE;
 	protected static int KEEP_ALIVE_TIMEOUT = 10000;
 	protected static int KEEP_ALIVE_SLEEP = 20;
 	protected static int KEEP_ALIVE_SLEEP_MAX = 500;
@@ -76,9 +76,9 @@ public class HttpListener implements Listener, Runnable {
 	@Override
 	public boolean start() throws IOException {
 		if (listenPort < 0) {
-			return false;
+			return Boolean.FALSE;
 		} else {
-			interrupted = false;
+			interrupted = Boolean.FALSE;
 
 			ServerSocket ss = getServerSocket();
 			ss.setSoTimeout(LISTENER_TIMEOUT);
@@ -86,9 +86,9 @@ public class HttpListener implements Listener, Runnable {
 			serverSocket = ss;
 
 			final Thread thread = new Thread(this, "ConnectorThread:" + getConnectorName() + "-" + Integer.toString(listenPort));
-			thread.setDaemon(true);
+			thread.setDaemon(Boolean.TRUE);
 			thread.start();
-			return true;
+			return Boolean.TRUE;
 		}
 	}
 
@@ -165,7 +165,7 @@ public class HttpListener implements Listener, Runnable {
 	 */
 	@Override
 	public void destroy() {
-		interrupted = true;
+		interrupted = Boolean.TRUE;
 	}
 
 	/**
@@ -183,7 +183,7 @@ public class HttpListener implements Listener, Runnable {
 
 		// Build input/output streams, plus request/response
 		final WinstoneInputStream inData = new WinstoneInputStream(inSocket);
-		final WinstoneOutputStream outData = new WinstoneOutputStream(outSocket, false);
+		final WinstoneOutputStream outData = new WinstoneOutputStream(outSocket, Boolean.FALSE);
 		final WinstoneRequest request = objectPool.getRequestFromPool();
 		final WinstoneResponse rsp = objectPool.getResponseFromPool();
 		outData.setResponse(rsp);
@@ -320,10 +320,10 @@ public class HttpListener implements Listener, Runnable {
 
 	/**
 	 * Tries to wait for extra requests on the same socket. If any are found
-	 * before the timeout expires, it exits with a true, indicating a new
+	 * before the timeout expires, it exits with a Boolean.TRUE, indicating a new
 	 * request is waiting. If the protocol does not support keep-alives, or the
 	 * request instructed us to close the connection, or the timeout expires,
-	 * return a false, instructing the handler thread to begin shutting down the
+	 * return a Boolean.FALSE, instructing the handler thread to begin shutting down the
 	 * socket and relase itself.
 	 */
 	@Override

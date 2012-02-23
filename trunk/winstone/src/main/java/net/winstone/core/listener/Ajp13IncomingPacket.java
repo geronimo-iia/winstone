@@ -138,7 +138,7 @@ public class Ajp13IncomingPacket {
 
 		// Attribute parsing
 		attributes = new HashMap<String, String>();
-		while (true) {
+		while (Boolean.TRUE) {
 			final byte type = di.readByte();
 			if (type == -1) {
 				break; // end of attributes

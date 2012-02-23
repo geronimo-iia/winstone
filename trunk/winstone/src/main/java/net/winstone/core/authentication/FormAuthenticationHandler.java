@@ -92,7 +92,7 @@ public class FormAuthenticationHandler extends BaseAuthenticationHandler {
 	@Override
 	public boolean processAuthentication(final ServletRequest request, final ServletResponse response, final String pathRequested) throws IOException, ServletException {
 		if (pathRequested.equals(loginPage) || pathRequested.equals(errorPage)) {
-			return true;
+			return Boolean.TRUE;
 		} else {
 			return super.processAuthentication(request, response, pathRequested);
 		}
@@ -108,7 +108,7 @@ public class FormAuthenticationHandler extends BaseAuthenticationHandler {
 		while (unwrapped instanceof HttpServletRequestWrapper) {
 			unwrapped = ((HttpServletRequestWrapper) unwrapped).getRequest();
 		}
-		final HttpSession session = request.getSession(true);
+		final HttpSession session = request.getSession(Boolean.TRUE);
 		session.setAttribute(FormAuthenticationHandler.CACHED_REQUEST, new RetryRequestParams(unwrapped));
 
 		// Forward on to the login page
@@ -151,7 +151,7 @@ public class FormAuthenticationHandler extends BaseAuthenticationHandler {
 				} else {
 					FormAuthenticationHandler.logger.warn("Request type invalid - can't set authenticated user in request class: {}", wrapperCheck.getClass().getName());
 				}
-				final HttpSession session = request.getSession(true);
+				final HttpSession session = request.getSession(Boolean.TRUE);
 				String previousLocation = loginPage;
 				final RetryRequestParams cachedRequest = (RetryRequestParams) session.getAttribute(FormAuthenticationHandler.CACHED_REQUEST);
 				if ((cachedRequest != null) && (actualRequest != null)) {
@@ -174,7 +174,7 @@ public class FormAuthenticationHandler extends BaseAuthenticationHandler {
 					rdError.forward(request, response);
 				}
 			}
-			return false;
+			return Boolean.FALSE;
 		} // If it's not a login, get the session, and look up the auth user
 			// variable
 		else {
@@ -192,7 +192,7 @@ public class FormAuthenticationHandler extends BaseAuthenticationHandler {
 				FormAuthenticationHandler.logger.warn("Request type invalid - can't set authenticated user in request class: {}", request.getClass().getName());
 			}
 
-			final HttpSession session = actualRequest.getSession(false);
+			final HttpSession session = actualRequest.getSession(Boolean.FALSE);
 			if (session != null) {
 				final AuthenticationPrincipal authenticatedUser = (AuthenticationPrincipal) session.getAttribute(FormAuthenticationHandler.AUTHENTICATED_USER);
 				if (authenticatedUser != null) {
@@ -200,7 +200,7 @@ public class FormAuthenticationHandler extends BaseAuthenticationHandler {
 					FormAuthenticationHandler.logger.debug("Got authenticated user from session");
 				}
 			}
-			return true;
+			return Boolean.TRUE;
 		}
 	}
 }

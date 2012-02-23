@@ -24,7 +24,7 @@ public class MapLoaderTest extends TestCase {
 	public void testLoadOnNullRessource() {
 		final Map<String, String> result = MapLoader.load(null);
 		Assert.assertNotNull("Result of MapLoader.load must be not null", result);
-		Assert.assertEquals("Result must be empty", result.isEmpty(), true);
+		Assert.assertTrue("Result must be empty", result.isEmpty());
 	}
 
 }

@@ -20,10 +20,10 @@ public class MapConverter {
 				} catch (final NoSuchFieldException e) {
 				}
 				if (field != null) {
-					boolean notAccessible = false;
+					boolean notAccessible = Boolean.FALSE;
 					if (!field.isAccessible()) {
-						field.setAccessible(true);
-						notAccessible = true;
+						field.setAccessible(Boolean.TRUE);
+						notAccessible = Boolean.TRUE;
 					}
 					if (field.getType().equals(String.class)) {
 						field.set(target, entry.getValue());
@@ -35,7 +35,7 @@ public class MapConverter {
 						field.setBoolean(target, Boolean.parseBoolean(entry.getValue()));
 					}
 					if (notAccessible) {
-						field.setAccessible(false);
+						field.setAccessible(Boolean.FALSE);
 					}
 				}
 			}

@@ -127,7 +127,7 @@ public class Server implements LifeCycle {
 			initializeListener();
 			if (!listeners.isEmpty()) {
 				controlThread = new Thread(new ServerControlThread(), "LauncherControlThread[ControlPort=" + Integer.toString(controlPort) + "]]");
-				controlThread.setDaemon(false);
+				controlThread.setDaemon(Boolean.FALSE);
 				controlThread.start();
 			}
 			Runtime.getRuntime().addShutdownHook(new ShutdownHook(this));
@@ -175,7 +175,7 @@ public class Server implements LifeCycle {
 	}
 
 	/**
-	 * @return true is the server is running.
+	 * @return Boolean.TRUE is the server is running.
 	 */
 	public boolean isRunning() {
 		return (controlThread != null) && controlThread.isAlive();
@@ -226,7 +226,7 @@ public class Server implements LifeCycle {
 	 */
 	private void initializeJndi() {
 		// If jndi is enabled, run the container wide jndi populator
-		if (StringUtils.booleanArg(args, "useJNDI", false)) {
+		if (StringUtils.booleanArg(args, "useJNDI", Boolean.FALSE)) {
 			// Set jndi resource handler if not set (workaround for JamVM bug)
 			try {
 				final Class<?> ctxFactoryClass = Class.forName("net.winstone.jndi.url.java.javaURLContextFactory");
@@ -243,7 +243,7 @@ public class Server implements LifeCycle {
 			final String jndiMgrClassName = StringUtils.stringArg(args, "containerJndiClassName", JndiManager.class.getName()).trim();
 			try {
 				// Build the realm
-				final Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, true, commonLibClassLoader);
+				final Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, Boolean.TRUE, commonLibClassLoader);
 				globalJndiManager = (JndiManager) jndiMgrClass.newInstance();
 				globalJndiManager.initialize();
 				Server.logger.info("JNDI Started {}", jndiMgrClass.getName());
@@ -274,7 +274,7 @@ public class Server implements LifeCycle {
 	protected final boolean createObject(final String name, final String className, final String value, final Map<String, String> args, final ClassLoader loader) {
 		// basic check
 		if ((className == null) || (name == null)) {
-			return false;
+			return Boolean.FALSE;
 		}
 
 		// If we are working with a datasource
@@ -282,7 +282,7 @@ public class Server implements LifeCycle {
 			try {
 				final DataSourceConfig dataSourceConfig = MapConverter.apply(extractRelevantArgs(args, name), new DataSourceConfig());
 				globalJndiManager.bind(dataSourceConfig, loader);
-				return true;
+				return Boolean.TRUE;
 			} catch (final Throwable err) {
 				Server.logger.error("Error building JDBC Datasource object " + name, err);
 			}
@@ -292,7 +292,7 @@ public class Server implements LifeCycle {
 				final Properties p = new Properties();
 				p.putAll(extractRelevantArgs(args, name));
 				globalJndiManager.bindSmtpSession(name, p, loader);
-				return true;
+				return Boolean.TRUE;
 			} catch (final Throwable err) {
 				Server.logger.error("Error building JavaMail session " + name, err);
 			}
@@ -300,13 +300,13 @@ public class Server implements LifeCycle {
 		else if (value != null) {
 			try {
 				globalJndiManager.bind(name, className, value, loader);
-				return true;
+				return Boolean.TRUE;
 			} catch (final Throwable err) {
 				Server.logger.error("Error building JNDI object " + name + " (class: " + className + ")", err);
 			}
 		}
 
-		return false;
+		return Boolean.FALSE;
 	}
 
 	/**
@@ -366,7 +366,7 @@ public class Server implements LifeCycle {
 		 */
 		@Override
 		public void run() {
-			boolean interrupted = false;
+			boolean interrupted = Boolean.FALSE;
 			try {
 				ServerSocket controlSocket = null;
 
@@ -406,7 +406,7 @@ public class Server implements LifeCycle {
 						}
 					} catch (final InterruptedIOException err) {
 					} catch (final InterruptedException err) {
-						interrupted = true;
+						interrupted = Boolean.TRUE;
 					} catch (final Throwable err) {
 						Server.logger.error("Error during listener init or shutdown", err);
 					} finally {
@@ -417,7 +417,7 @@ public class Server implements LifeCycle {
 							}
 						}
 						if (Thread.interrupted()) {
-							interrupted = true;
+							interrupted = Boolean.TRUE;
 						}
 					}
 				}

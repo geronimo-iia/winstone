@@ -69,8 +69,8 @@ public interface Listener {
 
 	/**
 	 * Tries to wait for extra requests on the same socket. If any are found
-	 * before the timeout expires, it exits with a true, indicating a new
-	 * request is waiting. If the timeout expires, return a false, instructing
+	 * before the timeout expires, it exits with a Boolean.TRUE, indicating a new
+	 * request is waiting. If the timeout expires, return a Boolean.FALSE, instructing
 	 * the handler thread to begin shutting down the socket and relase itself.
 	 */
 	public boolean processKeepAlive(WinstoneRequest request, WinstoneResponse response, InputStream inSocket) throws IOException, InterruptedException;

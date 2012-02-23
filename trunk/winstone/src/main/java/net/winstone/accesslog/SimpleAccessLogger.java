@@ -45,7 +45,7 @@ public final class SimpleAccessLogger implements AccessLogger {
 		final File file = new File(fileName);
 		file.getParentFile().mkdirs();
 		try {
-			outWriter = new PrintWriter(new FileOutputStream(file, true), true);
+			outWriter = new PrintWriter(new FileOutputStream(file, Boolean.TRUE), Boolean.TRUE);
 		} catch (final FileNotFoundException e) {
 			logger.error("Unable to open " + fileName, e);
 		}

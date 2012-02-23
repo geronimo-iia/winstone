@@ -29,15 +29,42 @@ public class ObjectPool implements Runnable {
 
 	protected static org.slf4j.Logger logger = LoggerFactory.getLogger(ObjectPool.class);
 
+	/**
+	 * FLUSH PERIOD 60 second.
+	 */
 	private static final long FLUSH_PERIOD = 60000L;
 
+	/**
+	 * Default startup request handler in pool (5).
+	 */
 	private final static transient int STARTUP_REQUEST_HANDLERS_IN_POOL = 5;
+	/**
+	 * Maximum idle request handler in pool (50).
+	 */
 	private final static transient int MAX_IDLE_REQUEST_HANDLERS_IN_POOL = 50;
+	/**
+	 * Maximum request handler in pool (1000).
+	 */
 	private final static transient int MAX_REQUEST_HANDLERS_IN_POOL = 1000;
+	/**
+	 * Retry period (1 second).
+	 */
 	private final static transient long RETRY_PERIOD = 1000;
+	/**
+	 * Start requests in pool (10).
+	 */
 	private final static transient int START_REQUESTS_IN_POOL = 10;
+	/**
+	 * Max requests in pool (1000).
+	 */
 	private final static transient int MAX_REQUESTS_IN_POOL = 1000;
+	/**
+	 * Start responses in pool (10).
+	 */
 	private final static transient int START_RESPONSES_IN_POOL = 10;
+	/**
+	 * Maximum responses in pool (1000).
+	 */
 	private final static transient int MAX_RESPONSES_IN_POOL = 1000;
 
 	private final List<RequestHandlerThread> unusedRequestHandlerThreads;
@@ -63,7 +90,7 @@ public class ObjectPool implements Runnable {
 	 * and responses
 	 */
 	public ObjectPool(final Map<String, String> args) throws IOException {
-		simulateModUniqueId = StringUtils.booleanArg(args, "simulateModUniqueId", false);
+		simulateModUniqueId = StringUtils.booleanArg(args, "simulateModUniqueId", Boolean.FALSE);
 		saveSessions = WebAppConfiguration.useSavedSessions(args);
 
 		// Build the initial pool of handler threads
@@ -93,7 +120,7 @@ public class ObjectPool implements Runnable {
 		}
 
 		thread = new Thread(this, "WinstoneObjectPoolMgmt");
-		thread.setDaemon(true);
+		thread.setDaemon(Boolean.TRUE);
 		thread.start();
 	}
 
@@ -104,13 +131,13 @@ public class ObjectPool implements Runnable {
 	 */
 	@Override
 	public void run() {
-		boolean interrupted = false;
+		boolean interrupted = Boolean.FALSE;
 		while (!interrupted) {
 			try {
 				Thread.sleep(ObjectPool.FLUSH_PERIOD);
 				removeUnusedRequestHandlers();
 			} catch (final InterruptedException err) {
-				interrupted = true;
+				interrupted = Boolean.TRUE;
 			}
 		}
 		thread = null;

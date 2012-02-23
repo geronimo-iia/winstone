@@ -76,19 +76,19 @@ public class ReloadingClassLoader extends WebappClassLoader implements ServletCo
 	@Override
 	public void contextInitialized(final ServletContextEvent sce) {
 		webAppConfig = (WebAppConfiguration) sce.getServletContext();
-		interrupted = false;
+		interrupted = Boolean.FALSE;
 		synchronized (this) {
 			loadedClasses.clear();
 		}
 		final Thread thread = new Thread(this, "WinstoneClassLoader Reloading Monitor Thread");
-		thread.setDaemon(true);
+		thread.setDaemon(Boolean.TRUE);
 		thread.setPriority(Thread.MIN_PRIORITY);
 		thread.start();
 	}
 
 	@Override
 	public void contextDestroyed(final ServletContextEvent sce) {
-		interrupted = true;
+		interrupted = Boolean.TRUE;
 		webAppConfig = null;
 		synchronized (this) {
 			loadedClasses.clear();

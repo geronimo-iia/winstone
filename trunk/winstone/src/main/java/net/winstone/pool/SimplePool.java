@@ -39,7 +39,7 @@ public class SimplePool<T> implements Pool<T> {
 	protected final ResourceFactory<T> factory;
 
 	/**
-	 * true if pool instance is in a closing way. all released resource will be
+	 * Boolean.TRUE if pool instance is in a closing way. all released resource will be
 	 * destroyed.
 	 */
 	protected boolean closing;
@@ -74,13 +74,13 @@ public class SimplePool<T> implements Pool<T> {
 		this.capacity = capacity;
 		this.timeout = timeout;
 		this.borrowed = new ConcurrentHashMap<T, Object>(capacity);
-		this.pooled = new ArrayBlockingQueue<T>(capacity, true);
+		this.pooled = new ArrayBlockingQueue<T>(capacity, Boolean.TRUE);
 		this.closing = Boolean.FALSE;
 		// create initial idle instance.
 		this.minIdle = Math.min(minIdle, capacity);
 		if (this.minIdle > 0) {
 			for (int i = 0; i < this.minIdle; i++) {
-				boolean offered = false;
+				boolean offered = Boolean.FALSE;
 				final T resource = factory.create();
 				if (timeout > 0) {
 					try {
@@ -124,7 +124,7 @@ public class SimplePool<T> implements Pool<T> {
 
 	@Override
 	public void release(final T resource) {
-		boolean offered = false;
+		boolean offered = Boolean.FALSE;
 		if (resource != null) {
 			if (borrowed.remove(resource, Boolean.TRUE)) {
 				// if we closing pool, we did not offer in pooled list.
