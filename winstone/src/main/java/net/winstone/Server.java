@@ -1,4 +1,4 @@
-package net.winstone.boot;
+package net.winstone;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import net.winstone.WinstoneException;
-import net.winstone.WinstoneResourceBundle;
+import net.winstone.boot.Command;
+import net.winstone.boot.ShutdownHook;
 import net.winstone.cluster.Cluster;
 import net.winstone.cluster.SimpleCluster;
 import net.winstone.core.HostConfiguration;

@@ -15,6 +15,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -74,10 +75,6 @@ public class HostConfiguration {
 	 * JNDI Manager instance.
 	 */
 	private final JndiManager jndiManager;
-	/**
-	 * Prefix.
-	 */
-	private final String prefix;
 
 	/**
 	 * Thread instance in order to flush sessions.
@@ -105,20 +102,38 @@ public class HostConfiguration {
 		this.objectPool = objectPool;
 		this.commonLibCL = commonLibCL;
 		this.jndiManager = jndiManager;
-		prefix = StringUtils.stringArg(args, "prefix", "");
-		// Is this the single or multiple configuration ? Check args
-		File warfile = StringUtils.fileArg(args, "warfile");
-		File webroot = StringUtils.fileArg(args, "webroot");
-		// If single-webapp mode
-		if ((webappsDirName == null) && ((warfile != null) || (webroot != null))) {
-			try {
-				final WebAppConfiguration webAppConfiguration = initWebApp(getWebRoot(webroot, warfile), "webapp");
-				webapps.put(webAppConfiguration.getContextPath(), webAppConfiguration);
-			} catch (final IOException err) {
-				HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", err);
+		/**
+		 * For now we can keep this mode single/multiple
+		 */
+		if (webappsDirName == null) {
+			// Single web application
+			File warfile = StringUtils.fileArg(args, "warfile");
+			File webroot = StringUtils.fileArg(args, "webroot");
+			if ((warfile != null) || (webroot != null)) {
+				String prefix = StringUtils.stringArg(args, "prefix", "");
+				try {
+					addWebAppConfiguration(prefix, getWebRoot(webroot, warfile), "webapp");
+				} catch (IOException e) {
+					HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", e);
+				}
+			}
+			// Several webroot on different locations
+			String webroots = StringUtils.stringArg(args, "webroots", null);
+			if (webroots != null) {
+				StringTokenizer tokenizer = new StringTokenizer(webroots, ";");
+				while (tokenizer.hasMoreTokens()) {
+					String root = tokenizer.nextToken();
+					if (!"".equals(root)) {
+						File froot = new File(root);
+						if (!froot.exists()) {
+							logger.warn("WebRoot {} not exist. Skipping it", root);
+						} else {
+							deploy(froot);
+						}
+					}
+				}
 			}
 		} else {
-			// Otherwise multi-webapp mode
 			initMultiWebappDir(webappsDirName);
 		}
 		HostConfiguration.logger.debug("Initialized {} webapps: prefixes - {}", webapps.size() + "", webapps.keySet() + "");
@@ -151,21 +166,26 @@ public class HostConfiguration {
 	}
 
 	/**
-	 * @param webRoot
-	 *            web root file
+	 * 
+	 * @param prefix
+	 *            path * @param webRoot web root file
 	 * @param contextName
 	 *            context name
 	 * @return a WebAppConfiguration instance.
-	 * @throws IOException
 	 * @throws WinstoneException
 	 *             if context name is ever used
 	 * */
-	public WebAppConfiguration addWebAppConfiguration(final File webRoot, final String contextName) throws IOException, WinstoneException {
-		if (webapps.containsKey(contextName)) {
-			throw new WinstoneException("Context " + contextName + " is ever used");
+	public WebAppConfiguration addWebAppConfiguration(final String prefix, final File webRoot, final String contextName) throws WinstoneException {
+		if (webapps.containsKey(prefix)) {
+			throw new WinstoneException("Preifx " + prefix + " is ever used");
 		}
-		final WebAppConfiguration webAppConfiguration = initWebApp(webRoot, contextName);
-		webapps.put(webAppConfiguration.getContextPath(), webAppConfiguration);
+		WebAppConfiguration webAppConfiguration = null;
+		try {
+			webAppConfiguration = initWebApp(prefix, webRoot, contextName);
+			webapps.put(webAppConfiguration.getContextPath(), webAppConfiguration);
+		} catch (IOException e) {
+			HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", e);
+		}
 		return webAppConfiguration;
 	}
 
@@ -212,7 +232,7 @@ public class HostConfiguration {
 			final String contextName = webAppConfig.getContextName();
 			destroyWebApp(prefix);
 			try {
-				final WebAppConfiguration webAppConfiguration = initWebApp(new File(webRoot), contextName);
+				final WebAppConfiguration webAppConfiguration = initWebApp(prefix, new File(webRoot), contextName);
 				webapps.put(webAppConfiguration.getContextPath(), webAppConfiguration);
 			} catch (final Throwable err) {
 				HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", err);
@@ -225,6 +245,8 @@ public class HostConfiguration {
 	/**
 	 * Initialize specified webapplication.
 	 * 
+	 * @param prefix
+	 *            path
 	 * @param webRoot
 	 *            web root file
 	 * @param contextName
@@ -232,7 +254,7 @@ public class HostConfiguration {
 	 * @return a WebAppConfiguration instance.
 	 * @throws IOException
 	 */
-	protected final WebAppConfiguration initWebApp(final File webRoot, final String contextName) throws IOException {
+	protected final WebAppConfiguration initWebApp(final String prefix, final File webRoot, final String contextName) throws IOException {
 		Node webXMLParentNode = null;
 		final File webInfFolder = new File(webRoot, HostConfiguration.WEB_INF);
 		if (webInfFolder.exists()) {
@@ -416,40 +438,49 @@ public class HostConfiguration {
 		} else {
 			final File children[] = webappsDir.listFiles();
 			for (File aChildren : children) {
-				final String childName = aChildren.getName();
-				// Check any directories for warfiles that match, and skip: only
-				// deploy the war file
-				if (aChildren.isDirectory()) {
-					final File matchingWarFile = new File(webappsDir, aChildren.getName() + ".war");
-					if (matchingWarFile.exists() && matchingWarFile.isFile()) {
-						HostConfiguration.logger.debug("Webapp dir deployment {} skipped, since there is a war file of the same name to check for re-extraction", childName);
-					} else {
-						final String prefix = childName.equalsIgnoreCase("ROOT") ? "" : "/" + childName;
-						if (!webapps.containsKey(prefix)) {
-							try {
-								final WebAppConfiguration webAppConfig = initWebApp(aChildren, childName);
-								webapps.put(webAppConfig.getContextPath(), webAppConfig);
-								HostConfiguration.logger.info("Deployed web application found at {}", childName);
-							} catch (final Throwable err) {
-								HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", err);
-							}
-						}
-					}
-				} else if (childName.endsWith(".war")) {
-					final String outputName = childName.substring(0, childName.lastIndexOf(".war"));
-					final String prefix = outputName.equalsIgnoreCase("ROOT") ? "" : "/" + outputName;
+				deploy(aChildren);
+			}
+		}
+	}
 
-					if (!webapps.containsKey(prefix)) {
-						final File outputDir = new File(webappsDir, outputName);
-						outputDir.mkdirs();
-						try {
-							final WebAppConfiguration webAppConfig = initWebApp(getWebRoot(new File(webappsDir, outputName), aChildren), outputName);
-							webapps.put(webAppConfig.getContextPath(), webAppConfig);
-							HostConfiguration.logger.info("Deployed web application found at {}", childName);
-						} catch (final Throwable err) {
-							HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", err);
-						}
+	/**
+	 * Deploy a Webapplication war or folder.
+	 * 
+	 * @param aChildren
+	 */
+	protected void deploy(File aChildren) {
+		final String childName = aChildren.getName();
+		// Check any directories for warfiles that match, and skip: only
+		// deploy the war file
+		if (aChildren.isDirectory()) {
+			final File matchingWarFile = new File(aChildren.getParentFile(), aChildren.getName() + ".war");
+			if (matchingWarFile.exists() && matchingWarFile.isFile()) {
+				HostConfiguration.logger.debug("Webapp dir deployment {} skipped, since there is a war file of the same name to check for re-extraction", childName);
+			} else {
+				final String prefix = childName.equalsIgnoreCase("ROOT") ? "" : "/" + childName;
+				if (!webapps.containsKey(prefix)) {
+					try {
+						final WebAppConfiguration webAppConfig = initWebApp(prefix, aChildren, childName);
+						webapps.put(webAppConfig.getContextPath(), webAppConfig);
+						HostConfiguration.logger.info("Deployed web application found at {}", childName);
+					} catch (final Throwable err) {
+						HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", err);
 					}
+				}
+			}
+		} else if (childName.endsWith(".war")) {
+			final String outputName = childName.substring(0, childName.lastIndexOf(".war"));
+			final String prefix = outputName.equalsIgnoreCase("ROOT") ? "" : "/" + outputName;
+
+			if (!webapps.containsKey(prefix)) {
+				final File outputDir = new File(aChildren.getParentFile(), outputName);
+				outputDir.mkdirs();
+				try {
+					final WebAppConfiguration webAppConfig = initWebApp(prefix, getWebRoot(new File(aChildren.getParentFile(), outputName), aChildren), outputName);
+					webapps.put(webAppConfig.getContextPath(), webAppConfig);
+					HostConfiguration.logger.info("Deployed web application found at {}", childName);
+				} catch (final Throwable err) {
+					HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", err);
 				}
 			}
 		}

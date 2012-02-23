@@ -3,7 +3,6 @@ package net.winstone;
 import java.io.IOException;
 
 import net.winstone.boot.BootStrap;
-import net.winstone.boot.Server;
 
 /**
  * Utility to start winstone.

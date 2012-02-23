@@ -6,6 +6,8 @@
  */
 package net.winstone.boot;
 
+import net.winstone.Server;
+
 /**
  * A jvm hook to force the calling of the web-app destroy before the process
  * terminates
