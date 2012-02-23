@@ -162,18 +162,12 @@ public class BootStrap {
 			final String commonLibCLFolder = StringUtils.stringArg(args, "commonLibFolder", "lib");
 			final File libFolder = new File(commonLibCLFolder);
 			if (libFolder.exists() && libFolder.isDirectory()) {
-				BootStrap.logger.debug("Using common lib folder: {}", libFolder.getCanonicalPath());
-				final File children[] = libFolder.listFiles();
-				for (int n = 0; n < children.length; n++) {
-					if (children[n].getName().endsWith(".jar") || children[n].getName().endsWith(".zip")) {
-						jspClasspaths.add(children[n]);
-						BootStrap.logger.debug("Adding {} to common classpath", children[n].getName());
-					}
-				}
+				addFolderToClassPath(jspClasspaths, libFolder);
 			} else {
 				BootStrap.logger.debug("No common lib folder found");
 			}
 
+			
 			BootStrap.logger.debug("Initializing JSP Common Lib classloader: {}", jspClasspaths.toString());
 			/** calcule de m'attribut pour les jsp */
 			final StringBuilder cp = new StringBuilder();
@@ -188,6 +182,17 @@ public class BootStrap {
 
 		} catch (final IOException ex) {
 			BootStrap.logger.error("computeClassPath", ex);
+		}
+	}
+
+	protected void addFolderToClassPath(final List<File> jspClasspaths, final File libFolder) throws IOException {
+		BootStrap.logger.debug("Using lib folder: {}", libFolder.getCanonicalPath());
+		final File children[] = libFolder.listFiles();
+		for (int n = 0; n < children.length; n++) {
+			if (children[n].getName().endsWith(".jar") || children[n].getName().endsWith(".zip")) {
+				jspClasspaths.add(children[n]);
+				BootStrap.logger.debug("Adding {} to common classpath", children[n].getName());
+			}
 		}
 	}
 
