@@ -1,5 +1,6 @@
 package net.winstone;
 
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -12,41 +13,88 @@ import net.winstone.util.StringUtils;
  * resources it retrieves (based on Rick Knowles), and where all properties are
  * loaded in memory.
  * 
- * @author Jérôme Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
-public class WinstoneResourceBundle {
+public class WinstoneResourceBundle implements Iterable<String> {
 
 	protected final Map<String, String> resources;
 
+	/**
+	 * 
+	 * WinstoneResourceBundleHolder. Use initialization on demand class holder.
+	 * 
+	 * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
+	 * 
+	 */
 	private static class WinstoneResourceBundleHolder {
-
 		private static WinstoneResourceBundle bundle = new WinstoneResourceBundle("net.winstone.winstone-message");
 	}
 
+	/**
+	 * @return a WinstoneResourceBundle instance.
+	 */
 	public static WinstoneResourceBundle getInstance() {
 		return WinstoneResourceBundleHolder.bundle;
 	}
 
 	/**
-	 * Constructor
+	 * 
+	 * Build a new instance of WinstoneResourceBundle.
+	 * 
+	 * @param baseName
 	 */
 	public WinstoneResourceBundle(final String baseName) {
 		this(ResourceBundle.getBundle(baseName));
 	}
 
+	/**
+	 * 
+	 * Build a new instance of WinstoneResourceBundle.
+	 * 
+	 * @param baseName
+	 * @param locale
+	 */
 	public WinstoneResourceBundle(final String baseName, final Locale locale) {
 		this(ResourceBundle.getBundle(baseName, locale));
 	}
 
+	/**
+	 * 
+	 * Build a new instance of WinstoneResourceBundle.
+	 * 
+	 * @param baseName
+	 * @param locale
+	 * @param classLoader
+	 */
 	public WinstoneResourceBundle(final String baseName, final Locale locale, final ClassLoader classLoader) {
 		this(ResourceBundle.getBundle(baseName, locale, classLoader));
 	}
 
+	/**
+	 * 
+	 * Build a new instance of WinstoneResourceBundle.
+	 * 
+	 * @param resourceBundle
+	 */
 	public WinstoneResourceBundle(final ResourceBundle resourceBundle) {
 		super();
 		resources = MapLoader.load(resourceBundle);
 	}
 
+	/**
+	 * @see java.lang.Iterable#iterator()
+	 */
+	@Override
+	public Iterator<String> iterator() {
+		return resources.keySet().iterator();
+	}
+
+	/**
+	 * WinstoneResourceBundle implement Iterable<String>.
+	 * 
+	 * @see java.lang.Iterable#iterator()
+	 */
+	@Deprecated
 	public Iterable<String> getKeys() {
 		return resources.keySet();
 	}
