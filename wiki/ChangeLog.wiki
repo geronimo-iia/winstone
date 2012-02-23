@@ -13,6 +13,12 @@
  * Adding programmatic HostGroup, Cluster and JNDI access on Server instance.
  * Start adding javadoc and comment
  * Use Boolean singleton
+ * Add webroots command line option 
+ * Fix jndi manager configuration
+ * Fix dependencies on log4j
+ * Add more information on deployed webapplication (or not...)
+ * Relocate Server class and expose clean member
+ * Expose method on HostGroup, HostConfiguration
  * From [https://github.com/jenkinsci/winstone jenkins winstone]
    * Add better consistency check between war and exploded dir
    * Fix XSS vulnerability in default error pages [http://www.cloudbees.com/jenkins-advisory/jenkins-security-advisory-2011-11-08.cb jenkins-advisory]
