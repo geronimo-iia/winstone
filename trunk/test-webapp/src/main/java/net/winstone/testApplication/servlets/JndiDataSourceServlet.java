@@ -1,6 +1,8 @@
 package net.winstone.testApplication.servlets;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -30,6 +32,23 @@ public class JndiDataSourceServlet extends HttpServlet {
 			if (dataSource == null) {
 				throw new ServletException("Datasource 'jdbc/myDatasource' should be found");
 			}
+			log("\"Datasource 'jdbc/myDatasource' was found");
+			
+			Connection connection = null;
+			try {
+				connection = dataSource.getConnection();
+				log("\"Datasource 'jdbc/myDatasource' connection was open");
+			} catch (SQLException e) {
+			}finally {
+				if (connection!=null) {
+					try {
+						connection.close();
+						log("\"Datasource 'jdbc/myDatasource' connection was close");
+					} catch (SQLException e) {
+					}
+				}
+			}
+			
 		} catch (final NamingException ex) {
 			throw new ServletException(ex);
 		}
