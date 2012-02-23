@@ -7,7 +7,7 @@
 package net.winstone.servlet;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -41,19 +41,14 @@ public class InvokerServlet extends HttpServlet {
 	private static final String INCLUDE_PATH_INFO = "javax.servlet.include.path_info";
 	private Map<String, ServletConfiguration> mountedInstances;
 	private final Boolean mountedInstancesSemaphore = Boolean.TRUE;
-
-	// private String prefix;
-	// private String invokerPrefix;
-
+ 
 	/**
 	 * Set up a blank map of servlet configuration instances
 	 */
 	@Override
 	public void init(final ServletConfig config) throws ServletException {
 		super.init(config);
-		mountedInstances = new HashMap<String, ServletConfiguration>();
-		// this.prefix = config.getInitParameter("prefix");
-		// this.invokerPrefix = config.getInitParameter("invokerPrefix");
+		mountedInstances = new Hashtable<String, ServletConfiguration>(); 
 	}
 
 	/**
@@ -69,9 +64,7 @@ public class InvokerServlet extends HttpServlet {
 				mountedInstances.clear();
 			}
 		}
-		mountedInstances = null;
-		// this.prefix = null;
-		// this.invokerPrefix = null;
+		mountedInstances = null; 
 	}
 
 	/**
@@ -88,9 +81,7 @@ public class InvokerServlet extends HttpServlet {
 		if (sc == null) {
 			// If found, mount an instance
 			try {
-				// Class servletClass = Class.forName(servletName, Boolean.TRUE,
-				// Thread.currentThread().getContextClassLoader());
-				sc = new ServletConfiguration((WebAppConfiguration) getServletContext(), getServletConfig().getServletName() + ":" + servletName, servletName, new HashMap<String, String>(), -1);
+				sc = new ServletConfiguration((WebAppConfiguration) getServletContext(), getServletConfig().getServletName() + ":" + servletName, servletName, new Hashtable<String, String>(), -1);
 				mountedInstances.put(servletName, sc);
 				InvokerServlet.logger.debug("{}: Mounting servlet class {}", servletName, getServletConfig().getServletName());
 				// just to trigger the servlet.init()
