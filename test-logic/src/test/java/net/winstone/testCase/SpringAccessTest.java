@@ -39,7 +39,7 @@ public class SpringAccessTest extends TestCase{
 		final Map<String, String> args = new HashMap<String, String>();
 		args.put("webroot","../test-webapp-spring/target/test-webapp-spring");
 		args.put("prefix", "/examples");
-		args.put("httpPort", "10006");
+		args.put("httpPort", "10009");
 		args.put("ajp13Port", "-1");
 		args.put("controlPort", "-1");
 		args.put("debug", "8");
@@ -55,7 +55,7 @@ public class SpringAccessTest extends TestCase{
 		winstone.launch();
 		// Check for a simple connection
 		final WebConversation wc = new WebConversation();
-		final WebRequest wreq = new GetMethodWebRequest("http://localhost:10006/examples/index.html");
+		final WebRequest wreq = new GetMethodWebRequest("http://localhost:10009/examples/index.html");
 		try {
 			final WebResponse wresp1 = wc.getResponse(wreq);
 			logger.info("ResponseCode: " + wresp1.getResponseCode());
