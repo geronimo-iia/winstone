@@ -5,4 +5,4 @@ mvn clean install && java -jar target\winstone-1.0.3-SNAPSHOT-boot.jar --webroot
 
   
  This fail:
- java -jar target\winstone-1.0.3-SNAPSHOT-boot.jar --webroot=..\test-webapp-spring\target\test-webapp-spring s--useJNDI==true --jndi.resource.jdbc/testDatasource=javax.sql.DataSource --jndi.param.jdbc/testDatasource.url=jdbc:h2:~/test
+ java -jar target\winstone-1.0.3-SNAPSHOT-boot.jar --webroot=..\test-webapp-spring\target\test-webapp-spring --useJNDI=true --jndi.resource.jdbc/testDatasource=javax.sql.DataSource --jndi.param.jdbc/testDatasource.url=jdbc:h2:~/test
