@@ -106,7 +106,7 @@ public class BootStrap {
 			BootStrap.logger.info("no embedded file was found");
 		}
 		/** check parameter validity */
-		if (!args.containsKey("webroot") && !args.containsKey("warfile") && !args.containsKey("webappsDir") && !args.containsKey("hostsDir")) {
+		if (!args.containsKey("webroots") && !args.containsKey("webroot") && !args.containsKey("warfile") && !args.containsKey("webappsDir") && !args.containsKey("hostsDir")) {
 			printUsage();
 			return server;
 		}
