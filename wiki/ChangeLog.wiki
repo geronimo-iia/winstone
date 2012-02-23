@@ -43,7 +43,7 @@
    * do not report ClientSocketException caused by the client aborting the connection.
    * eliminated a pointless use of a variable in RequestHandlerThread
    * ClassNotFoundException resulting from the user error be reported to the user
-
+  * implemented a fix for hash DoS
 
 ==v1.0.2 ==
  * Add log4jConfiguration
