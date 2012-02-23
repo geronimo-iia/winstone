@@ -36,6 +36,14 @@ public final class SimpleAccessLogger implements AccessLogger {
 	private final String pattern;
 	private PrintWriter outWriter;
 
+	/**
+	 * 
+	 * Build a new instance of SimpleAccessLogger.
+	 * @param host
+	 * @param webapp
+	 * @param patternType
+	 * @param filePattern
+	 */
 	SimpleAccessLogger(final String host, final String webapp, final PatternType patternType, final String filePattern) {
 		super();
 		dateCache = new DateCache(new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z"));

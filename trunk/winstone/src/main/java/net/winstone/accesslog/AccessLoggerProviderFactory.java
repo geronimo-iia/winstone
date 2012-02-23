@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 
 /**
- * AccessLoggerProviderFactory instanciate AccessLoggerProvider using
+ * AccessLoggerProviderFactory instantiate AccessLoggerProvider using
  * ServiceLoader provided by JDK 1.6.
  * 
  * @author Jerome guibert
@@ -30,7 +30,7 @@ public final class AccessLoggerProviderFactory {
 	}
 
 	/**
-	 * Buld a new instance of AccessLoggerProviderFactory.
+	 * Build a new instance of AccessLoggerProviderFactory.
 	 */
 	private AccessLoggerProviderFactory() {
 		super();
