@@ -44,6 +44,22 @@ public class HostGroup {
 	 * jndi manager
 	 */
 	private final JndiManager jndiManager;
+	/**
+	 * Clusterinstance.
+	 */
+	private final Cluster cluster;
+	/**
+	 * ObjectPool instance.
+	 */
+	private final ObjectPool objectPool;
+	/**
+	 * ClassLoader instance.
+	 */
+	private final ClassLoader commonLibCL;
+	/**
+	 * arguments instance.
+	 */
+	private final Map<String, String> args;
 
 	/**
 	 * Build a new instance of HostGroup.
@@ -57,20 +73,24 @@ public class HostGroup {
 	 */
 	public HostGroup(final Cluster cluster, final ObjectPool objectPool, final JndiManager jndiManager, final ClassLoader commonLibCL, final Map<String, String> args) throws IOException {
 		super();
-		hostConfigs = new HashMap<String, HostConfiguration>();
+		this.hostConfigs = new HashMap<String, HostConfiguration>();
+		this.cluster = cluster;
+		this.objectPool = objectPool;
 		this.jndiManager = jndiManager;
+		this.commonLibCL = commonLibCL;
+		this.args = args;
 		// Is this the single or multiple configuration ? Check args
 		final String hostDirName = args.get("hostsDir");
 		final String webappsDirName = args.get("webappsDir");
 
 		// If host mode
 		if (hostDirName == null) {
-			addHostConfiguration(webappsDirName, HostGroup.DEFAULT_HOSTNAME, cluster, objectPool, commonLibCL, args);
+			addHostConfiguration(webappsDirName, HostGroup.DEFAULT_HOSTNAME);
 			defaultHostName = HostGroup.DEFAULT_HOSTNAME;
 			HostGroup.logger.debug("Initialized in non-virtual-host mode");
-		} // Otherwise multi-host mode
-		else {
-			initMultiHostDir(hostDirName, cluster, objectPool, commonLibCL, args);
+		} else {
+			// Otherwise multi-host mode
+			initMultiHostDir(hostDirName);
 			HostGroup.logger.debug("Initialized in virtual host mode with {} hosts: hostnames - {}", hostConfigs.size() + "", hostConfigs.keySet() + "");
 		}
 	}
@@ -83,6 +103,32 @@ public class HostGroup {
 	public HostConfiguration getHostByName(final String hostname) {
 		final HostConfiguration host = hostConfigs.get(hostname);
 		return host != null ? host : hostConfigs.get(defaultHostName);
+	}
+
+	/**
+	 * Add an host configuration
+	 * 
+	 * @param webappsDirName
+	 *            web application directory
+	 * @param hostname
+	 *            host name
+	 */
+	public void addHostConfiguration(final String webappsDirName, final String hostname) {
+		HostGroup.logger.debug("Deploying host found at {}", hostname);
+		final HostConfiguration config = new HostConfiguration(hostname, cluster, objectPool, jndiManager, commonLibCL, args, webappsDirName);
+		hostConfigs.put(hostname, config);
+	}
+
+	/**
+	 * remove specified HostConfiguration.
+	 * 
+	 * @param hostname
+	 */
+	public void removeHostConfiguration(final String hostname) {
+		if (hostConfigs.containsKey(hostname)) {
+			hostConfigs.get(hostname).destroy();
+			hostConfigs.remove(hostname);
+		}
 	}
 
 	/**
@@ -102,35 +148,13 @@ public class HostGroup {
 	}
 
 	/**
-	 * Initialize an host.
-	 * 
-	 * @param webappsDirName
-	 * @param hostname
-	 * @param cluster
-	 * @param objectPool
-	 * @param commonLibCL
-	 * @param commonLibCLPaths
-	 * @param args
-	 * @throws IOException
-	 */
-	protected final void addHostConfiguration(final String webappsDirName, final String hostname, final Cluster cluster, final ObjectPool objectPool, final ClassLoader commonLibCL, final Map<String, String> args) throws IOException {
-		HostGroup.logger.debug("Deploying host found at {}", hostname);
-		final HostConfiguration config = new HostConfiguration(hostname, cluster, objectPool, jndiManager, commonLibCL, args, webappsDirName);
-		hostConfigs.put(hostname, config);
-	}
-
-	/**
 	 * Initialize a group host.
 	 * 
 	 * @param hostsDirName
-	 * @param cluster
-	 * @param objectPool
-	 * @param commonLibCL
-	 * @param commonLibCLPaths
-	 * @param args
-	 * @throws IOException
+	 * @throws WinstoneException
+	 *             if specified hosts directory is not found or not a directory.
 	 */
-	protected final void initMultiHostDir(String hostsDirName, final Cluster cluster, final ObjectPool objectPool, final ClassLoader commonLibCL, final Map<String, String> args) throws IOException {
+	protected final void initMultiHostDir(String hostsDirName) throws IOException, WinstoneException {
 		if (hostsDirName == null) {
 			// never reach in this implementation
 			hostsDirName = "hosts";
@@ -147,11 +171,10 @@ public class HostGroup {
 			}
 			for (int n = 0; n < children.length; n++) {
 				final String childName = children[n].getName();
-
 				// Mount directories as host dirs
 				if (children[n].isDirectory()) {
 					if (!hostConfigs.containsKey(childName)) {
-						addHostConfiguration(children[n].getCanonicalPath(), childName, cluster, objectPool, commonLibCL, args);
+						addHostConfiguration(children[n].getCanonicalPath(), childName);
 					}
 				}
 				// set default host name

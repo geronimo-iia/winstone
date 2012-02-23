@@ -89,9 +89,8 @@ public class HostConfiguration implements Runnable {
 	 * @param commonLibCL
 	 * @param args
 	 * @param webappsDirName
-	 * @throws IOException
 	 */
-	public HostConfiguration(final String hostname, final Cluster cluster, final ObjectPool objectPool, final JndiManager jndiManager, final ClassLoader commonLibCL, final Map<String, String> args, final String webappsDirName) throws IOException {
+	public HostConfiguration(final String hostname, final Cluster cluster, final ObjectPool objectPool, final JndiManager jndiManager, final ClassLoader commonLibCL, final Map<String, String> args, final String webappsDirName) {
 		this.hostname = hostname;
 		this.args = args;
 		webapps = new HashMap<String, WebAppConfiguration>();
@@ -373,9 +372,8 @@ public class HostConfiguration implements Runnable {
 	 * Initialize host with multiple webapplication from specified directory.
 	 * 
 	 * @param webappsDirName
-	 * @throws IOException
 	 */
-	protected final void initMultiWebappDir(String webappsDirName) throws IOException {
+	protected final void initMultiWebappDir(String webappsDirName) {
 		if (webappsDirName == null) {
 			webappsDirName = "webapps";
 		}
