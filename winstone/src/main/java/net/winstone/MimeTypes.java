@@ -15,7 +15,7 @@ import net.winstone.util.MapLoader;
  * initialized on demand (@see
  * http://en.wikipedia.org/wiki/Initialization_on_demand_holder_idiom).
  * 
- * @author Jerome Guibert
+ *  @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
 public class MimeTypes implements FileNameMap {
 
@@ -31,6 +31,11 @@ public class MimeTypes implements FileNameMap {
 		this(Collections.unmodifiableMap(MapLoader.load(ResourceBundle.getBundle("mime"))));
 	}
 
+	/**
+	 * 
+	 * Build a new instance of MimeTypes.
+	 * @param ressource
+	 */
 	private MimeTypes(final Map<String, String> ressource) {
 		super();
 		this.ressource = ressource;
