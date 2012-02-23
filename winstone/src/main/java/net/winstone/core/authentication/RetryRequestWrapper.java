@@ -14,7 +14,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
@@ -24,8 +23,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
 import net.winstone.WinstoneException;
+import net.winstone.core.ObjectPool;
 import net.winstone.core.WinstoneInputStream;
 import net.winstone.core.WinstoneRequest;
+import net.winstone.util.SizeRestrictedHashMap;
+import net.winstone.util.SizeRestrictedHashtable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -311,7 +313,7 @@ public final class RetryRequestWrapper extends HttpServletRequestWrapper {
 		if (hasBeenForwarded()) {
 			return super.getParameterMap();
 		} else {
-			final Map<String, String[]> paramMap = new HashMap<String, String[]>();
+			final Map<String, String[]> paramMap = new SizeRestrictedHashtable<String, String[]>(ObjectPool.getMaximumAllowedParameter());
 			for (final Enumeration names = getParameterNames(); names.hasMoreElements();) {
 				final String name = (String) names.nextElement();
 				paramMap.put(name, getParameterValues(name));
@@ -360,7 +362,7 @@ public final class RetryRequestWrapper extends HttpServletRequestWrapper {
 			final String contentType = oldRequest.getContentType();
 			final String queryString = oldRequest.getQueryString();
 			final String method = oldRequest.getMethod();
-			final Map workingParameters = new HashMap();
+			final Map workingParameters = new SizeRestrictedHashMap(ObjectPool.getMaximumAllowedParameter());
 			try {
 				// Parse query string from request
 				if ((method.equals(RetryRequestWrapper.METHOD_GET) || method.equals(RetryRequestWrapper.METHOD_HEAD) || method.equals(RetryRequestWrapper.METHOD_POST)) && (queryString != null)) {

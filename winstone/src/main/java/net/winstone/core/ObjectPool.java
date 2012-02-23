@@ -86,11 +86,26 @@ public class ObjectPool implements Runnable {
 	int maxIdleRequestHandlesInPool = ObjectPool.MAX_IDLE_REQUEST_HANDLERS_IN_POOL;
 
 	/**
+	 * max number of parameters allowed.
+	 */
+	private static int MAXPARAMALLOWED = WinstoneConstant.DEFAULT_MAXIMUM_PARAMETER_ALLOWED;
+
+	/**
 	 * Constructs an instance of the object pool, including handlers, requests
 	 * and responses
 	 */
 	public ObjectPool(final Map<String, String> args) throws IOException {
+		super();
+		// load simulateModUniqueId
 		simulateModUniqueId = StringUtils.booleanArg(args, "simulateModUniqueId", Boolean.FALSE);
+		// load maxParamAllowed
+		int maxParamAllowed = StringUtils.intArg(args, "maxParamAllowed", WinstoneConstant.DEFAULT_MAXIMUM_PARAMETER_ALLOWED);
+		if (maxParamAllowed < 1) {
+			logger.error("MaxParamAllowed should be greather than 1. Set to default value {}", WinstoneConstant.DEFAULT_MAXIMUM_PARAMETER_ALLOWED);
+			maxParamAllowed = WinstoneConstant.DEFAULT_MAXIMUM_PARAMETER_ALLOWED;
+		}
+		ObjectPool.MAXPARAMALLOWED = maxParamAllowed;
+		// load saveSessions
 		saveSessions = WebAppConfiguration.useSavedSessions(args);
 
 		// Build the initial pool of handler threads
@@ -111,9 +126,9 @@ public class ObjectPool implements Runnable {
 			unusedRequestHandlerThreads.add(new RequestHandlerThread(this, threadIndex++, simulateModUniqueId, saveSessions));
 		}
 
-		// Initialise the request/response pools
+		// Initialize the request/response pools
 		for (int n = 0; n < ObjectPool.START_REQUESTS_IN_POOL; n++) {
-			unusedRequestPool.add(new WinstoneRequest());
+			unusedRequestPool.add(new WinstoneRequest(ObjectPool.MAXPARAMALLOWED));
 		}
 		for (int n = 0; n < ObjectPool.START_RESPONSES_IN_POOL; n++) {
 			unusedResponsePool.add(new WinstoneResponse());
@@ -252,7 +267,7 @@ public class ObjectPool implements Runnable {
 				ObjectPool.logger.debug("ReqPool: Using pooled request - available: {}", "" + unusedRequestPool.size());
 			} else {
 				// If we are out, allocate a new one
-				winstoneRequest = new WinstoneRequest();
+				winstoneRequest = new WinstoneRequest(MAXPARAMALLOWED);
 				ObjectPool.logger.debug("ReqPool: Spawning new request - available: {}", "" + unusedRequestPool.size());
 			}
 		}
@@ -312,5 +327,13 @@ public class ObjectPool implements Runnable {
 			}
 			ObjectPool.logger.debug("RspPool: Response released - available: {}", "" + unusedResponsePool.size());
 		}
+	}
+
+	/**
+	 * 
+	 * @return maximum Parameter Allowed.
+	 */
+	public static int getMaximumAllowedParameter() {
+		return MAXPARAMALLOWED;
 	}
 }

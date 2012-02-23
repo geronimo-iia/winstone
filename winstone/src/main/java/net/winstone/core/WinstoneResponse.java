@@ -62,12 +62,13 @@ public class WinstoneResponse implements HttpServletResponse {
 	private String protocol;
 	private String reqKeepAliveHeader;
 	private Integer errorStatusCode;
+	
 
 	/**
-	 * Constructor
+	 * Build a new instance of WinstoneResponse.
 	 */
 	public WinstoneResponse() {
-
+		super();
 		headers = new ArrayList<String>();
 		cookies = new ArrayList<Cookie>();
 
@@ -98,8 +99,13 @@ public class WinstoneResponse implements HttpServletResponse {
 		implicitEncoding = null;
 	}
 
-	private String getEncodingFromLocale(final Locale local) {
-		String localeString = local.getLanguage() + "_" + local.getCountry();
+	/**
+	 * Determine witch encoding to use for specified locale.
+	 * @param locale
+	 * @return
+	 */
+	private String getEncodingFromLocale(final Locale locale) {
+		String localeString = locale.getLanguage() + "_" + locale.getCountry();
 		final Map<String, String> encMap = webAppConfig.getLocaleEncodingMap();
 		WinstoneResponse.logger.debug("Scanning for locale-encoding match: {} in {}", localeString, encMap + "");
 
@@ -108,7 +114,7 @@ public class WinstoneResponse implements HttpServletResponse {
 			WinstoneResponse.logger.debug("Found locale-encoding match: {}", fullMatch);
 			return fullMatch;
 		} else {
-			localeString = local.getLanguage();
+			localeString = locale.getLanguage();
 			WinstoneResponse.logger.debug("Scanning for locale-encoding match: {} in {}", localeString, encMap + "");
 			final String match = encMap.get(localeString);
 			if (match != null) {
