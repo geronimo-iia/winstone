@@ -14,6 +14,8 @@ import java.util.Map;
 public class StringUtils {
 
 	/**
+	 * Load a File argument.
+	 * 
 	 * @param args
 	 * @param name
 	 * @return a file instance for specified name argument, null if none is
@@ -24,6 +26,14 @@ public class StringUtils {
 		return value != null ? new File(value) : null;
 	}
 
+	/**
+	 * Load a boolean argument.
+	 * 
+	 * @param args
+	 * @param name
+	 * @param defaultTrue
+	 * @return
+	 */
 	public static boolean booleanArg(final Map<String, String> args, final String name, final boolean defaultTrue) {
 		final String value = args.get(name);
 		if (defaultTrue) {
@@ -33,10 +43,26 @@ public class StringUtils {
 		}
 	}
 
+	/**
+	 * Load a String argument.
+	 * 
+	 * @param args
+	 * @param name
+	 * @param defaultValue
+	 * @return
+	 */
 	public static String stringArg(final Map<String, String> args, final String name, final String defaultValue) {
 		return (args.get(name) == null ? defaultValue : args.get(name));
 	}
 
+	/**
+	 * Load a int argument.
+	 * 
+	 * @param args
+	 * @param name
+	 * @param defaultValue
+	 * @return
+	 */
 	public static int intArg(final Map<String, String> args, final String name, final int defaultValue) {
 		return Integer.parseInt(StringUtils.stringArg(args, name, Integer.toString(defaultValue)));
 	}
@@ -119,6 +145,11 @@ public class StringUtils {
 
 	/**
 	 * replace substrings within string.
+	 * 
+	 * @param input
+	 * @param sub
+	 * @param with
+	 * @return
 	 */
 	public static String replace(final String input, final String sub, final String with) {
 		int fromIndex = 0;
