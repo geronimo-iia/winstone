@@ -27,7 +27,7 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>test-webapp</finalName>
+		<finalName>test-jsp</finalName>
 	</build>
 </project>
 
