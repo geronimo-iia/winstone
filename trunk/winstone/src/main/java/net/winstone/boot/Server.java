@@ -39,26 +39,50 @@ import org.slf4j.LoggerFactory;
 /**
  * Implements the main launcher daemon thread.
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
 public class Server implements LifeCycle {
 
 	protected static org.slf4j.Logger logger = LoggerFactory.getLogger(Server.class);
+	/**
+	 * Default control port.
+	 */
 	private final int DEFAULT_CONTROL_PORT = -1;
-	// parameter
+	/**
+	 * parameter
+	 */
 	private final Map<String, String> args;
+	/**
+	 * common libraries class loader
+	 */
 	private final ClassLoader commonLibClassLoader;
-	// control
+	/**
+	 * control
+	 */
 	private Thread controlThread = null;
+	/**
+	 * control Port
+	 */
 	private int controlPort = DEFAULT_CONTROL_PORT;
-	// host and cluster
+	/**
+	 * hostGroup instance.
+	 */
 	private HostGroup hostGroup = null;
+	/**
+	 * cluster instance.
+	 */
 	private Cluster cluster = null;
-	// object pool
+	/**
+	 * object pool instance.
+	 */
 	private ObjectPool objectPool = null;
-	// listener
+	/**
+	 * listener instance.
+	 */
 	private final List<Listener> listeners = new ArrayList<Listener>();
-	// jndi manager
+	/**
+	 * jndi manager instance.
+	 */
 	private JndiManager globalJndiManager = null;
 
 	/**
@@ -158,12 +182,11 @@ public class Server implements LifeCycle {
 	}
 
 	/**
-	 * Instanciate listener.
+	 * Instantiate listener.
 	 * 
 	 * @throws IOException
 	 */
 	private void initializeListener() throws IOException {
-		// TODO create a parameters for this list
 		// Create connectors (http, https and ajp)
 		spawnListener(HttpListener.class.getName());
 		spawnListener(Ajp13Listener.class.getName());
@@ -176,7 +199,7 @@ public class Server implements LifeCycle {
 	}
 
 	/**
-	 * Instanciate cluster if needed.
+	 * Instantiate cluster if needed.
 	 */
 	private void initializeCluster() {
 		// Optionally set up clustering if enabled and libraries are available
@@ -199,7 +222,7 @@ public class Server implements LifeCycle {
 	}
 
 	/**
-	 * Instanciate Jndi Manaher if needed.
+	 * Instantiate Jndi Manager if needed.
 	 */
 	private void initializeJndi() {
 		// If jndi is enabled, run the container wide jndi populator
@@ -451,6 +474,42 @@ public class Server implements LifeCycle {
 				}
 			}
 		}
+	}
+
+	/**
+	 * @return the HostGroup instance
+	 * @throws IllegalStateException
+	 *             if server is not started.
+	 */
+	public HostGroup getHostGroup() throws IllegalStateException {
+		if (hostGroup == null) {
+			throw new IllegalStateException("Server is not started");
+		}
+		return hostGroup;
+	}
+
+	/**
+	 * @return the JndiManager instance, null if none is used.
+	 * @throws IllegalStateException
+	 *             if server is not started.
+	 */
+	public JndiManager getJndiManager() throws IllegalStateException {
+		if (hostGroup == null) {
+			throw new IllegalStateException("Server is not started");
+		}
+		return globalJndiManager;
+	}
+
+	/**
+	 * @return the cluster, null if not used.
+	 * @throws IllegalStateException
+	 *             if server is not started.
+	 */
+	public Cluster getCluster() throws IllegalStateException {
+		if (cluster == null) {
+			throw new IllegalStateException("Server is not started");
+		}
+		return cluster;
 	}
 
 	/**
