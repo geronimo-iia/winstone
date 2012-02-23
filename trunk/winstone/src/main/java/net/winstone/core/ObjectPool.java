@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  * @version $Id: ObjectPool.java,v 1.9 2006/11/18 14:56:59 rickknowles Exp $
  */
-public class ObjectPool implements Runnable {
+public class ObjectPool {
 
 	protected static org.slf4j.Logger logger = LoggerFactory.getLogger(ObjectPool.class);
 
@@ -134,28 +134,28 @@ public class ObjectPool implements Runnable {
 			unusedResponsePool.add(new WinstoneResponse());
 		}
 
-		thread = new Thread(this, "WinstoneObjectPoolMgmt");
+		thread = new Thread(new Runnable() {
+			/**
+			 * Every 60s, remove unused request handler.
+			 * 
+			 * @see java.lang.Runnable#run()
+			 */
+			@Override
+			public void run() {
+				boolean interrupted = Boolean.FALSE;
+				while (!interrupted) {
+					try {
+						Thread.sleep(ObjectPool.FLUSH_PERIOD);
+						removeUnusedRequestHandlers();
+					} catch (final InterruptedException err) {
+						interrupted = Boolean.TRUE;
+					}
+				}
+				thread = null;
+			}
+		}, "WinstoneObjectPoolMgmt");
 		thread.setDaemon(Boolean.TRUE);
 		thread.start();
-	}
-
-	/**
-	 * Every 60s, remove unused request handler.
-	 * 
-	 * @see java.lang.Runnable#run()
-	 */
-	@Override
-	public void run() {
-		boolean interrupted = Boolean.FALSE;
-		while (!interrupted) {
-			try {
-				Thread.sleep(ObjectPool.FLUSH_PERIOD);
-				removeUnusedRequestHandlers();
-			} catch (final InterruptedException err) {
-				interrupted = Boolean.TRUE;
-			}
-		}
-		thread = null;
 	}
 
 	/**

@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -36,7 +37,7 @@ import org.w3c.dom.Node;
  * @version $Id: HostConfiguration.java,v 1.8 2007/08/02 06:16:00 rickknowles
  *          Exp $
  */
-public class HostConfiguration implements Runnable {
+public class HostConfiguration {
 
 	protected static org.slf4j.Logger logger = LoggerFactory.getLogger(HostConfiguration.class);
 	/**
@@ -74,6 +75,11 @@ public class HostConfiguration implements Runnable {
 	 */
 	private final JndiManager jndiManager;
 	/**
+	 * Prefix.
+	 */
+	private final String prefix;
+
+	/**
 	 * Thread instance in order to flush sessions.
 	 */
 	private Thread thread;
@@ -91,37 +97,76 @@ public class HostConfiguration implements Runnable {
 	 * @param webappsDirName
 	 */
 	public HostConfiguration(final String hostname, final Cluster cluster, final ObjectPool objectPool, final JndiManager jndiManager, final ClassLoader commonLibCL, final Map<String, String> args, final String webappsDirName) {
+		webapps = new HashMap<String, WebAppConfiguration>();
+		/** load configuration */
 		this.hostname = hostname;
 		this.args = args;
-		webapps = new HashMap<String, WebAppConfiguration>();
 		this.cluster = cluster;
 		this.objectPool = objectPool;
 		this.commonLibCL = commonLibCL;
 		this.jndiManager = jndiManager;
+		prefix = StringUtils.stringArg(args, "prefix", "");
 		// Is this the single or multiple configuration ? Check args
 		File warfile = StringUtils.fileArg(args, "warfile");
 		File webroot = StringUtils.fileArg(args, "webroot");
 		// If single-webapp mode
 		if ((webappsDirName == null) && ((warfile != null) || (webroot != null))) {
-			String prefix = args.get("prefix");
-			if (prefix == null) {
-				prefix = "";
-			}
 			try {
-				final WebAppConfiguration webAppConfiguration = initWebApp(prefix, getWebRoot(webroot, warfile), "webapp");
+				final WebAppConfiguration webAppConfiguration = initWebApp(getWebRoot(webroot, warfile), "webapp");
 				webapps.put(webAppConfiguration.getContextPath(), webAppConfiguration);
 			} catch (final IOException err) {
 				HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", err);
 			}
-		} // Otherwise multi-webapp mode
-		else {
+		} else {
+			// Otherwise multi-webapp mode
 			initMultiWebappDir(webappsDirName);
 		}
 		HostConfiguration.logger.debug("Initialized {} webapps: prefixes - {}", webapps.size() + "", webapps.keySet() + "");
 
-		thread = new Thread(this, "WinstoneHostConfigurationMgmt:" + this.hostname);
+		// initialize demaon to invalidate session
+		thread = new Thread(new Runnable() {
+
+			/**
+			 * Main method of thread which invalidate Expired Sessions every
+			 * 60s.
+			 * 
+			 * @see java.lang.Runnable#run()
+			 */
+			@Override
+			public void run() {
+				boolean interrupted = Boolean.FALSE;
+				while (!interrupted) {
+					try {
+						Thread.sleep(HostConfiguration.FLUSH_PERIOD);
+						invalidateExpiredSessions();
+					} catch (final InterruptedException err) {
+						interrupted = Boolean.TRUE;
+					}
+				}
+				thread = null;
+			}
+		}, "WinstoneHostConfigurationMgmt:" + this.hostname);
 		thread.setDaemon(Boolean.TRUE);
 		thread.start();
+	}
+
+	/**
+	 * @param webRoot
+	 *            web root file
+	 * @param contextName
+	 *            context name
+	 * @return a WebAppConfiguration instance.
+	 * @throws IOException
+	 * @throws WinstoneException
+	 *             if context name is ever used
+	 * */
+	public WebAppConfiguration addWebAppConfiguration(final File webRoot, final String contextName) throws IOException, WinstoneException {
+		if (webapps.containsKey(contextName)) {
+			throw new WinstoneException("Context " + contextName + " is ever used");
+		}
+		final WebAppConfiguration webAppConfiguration = initWebApp(webRoot, contextName);
+		webapps.put(webAppConfiguration.getContextPath(), webAppConfiguration);
+		return webAppConfiguration;
 	}
 
 	/**
@@ -148,10 +193,38 @@ public class HostConfiguration implements Runnable {
 	}
 
 	/**
-	 * Initialize specified webapplication.
+	 * @return a set of context names.
+	 */
+	public Set<String> getContextNames() {
+		return webapps.keySet();
+	}
+
+	/**
+	 * Reload Specified Webapplication.
 	 * 
 	 * @param prefix
-	 *            prefix
+	 * @throws IOException
+	 */
+	public void reloadWebApp(final String prefix) throws IOException {
+		final WebAppConfiguration webAppConfig = webapps.get(prefix);
+		if (webAppConfig != null) {
+			final String webRoot = webAppConfig.getWebroot();
+			final String contextName = webAppConfig.getContextName();
+			destroyWebApp(prefix);
+			try {
+				final WebAppConfiguration webAppConfiguration = initWebApp(new File(webRoot), contextName);
+				webapps.put(webAppConfiguration.getContextPath(), webAppConfiguration);
+			} catch (final Throwable err) {
+				HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", err);
+			}
+		} else {
+			throw new WinstoneException("Unknown webapp prefix: " + prefix);
+		}
+	}
+
+	/**
+	 * Initialize specified webapplication.
+	 * 
 	 * @param webRoot
 	 *            web root file
 	 * @param contextName
@@ -159,7 +232,7 @@ public class HostConfiguration implements Runnable {
 	 * @return a WebAppConfiguration instance.
 	 * @throws IOException
 	 */
-	protected final WebAppConfiguration initWebApp(final String prefix, final File webRoot, final String contextName) throws IOException {
+	protected final WebAppConfiguration initWebApp(final File webRoot, final String contextName) throws IOException {
 		Node webXMLParentNode = null;
 		final File webInfFolder = new File(webRoot, HostConfiguration.WEB_INF);
 		if (webInfFolder.exists()) {
@@ -217,51 +290,9 @@ public class HostConfiguration implements Runnable {
 	/**
 	 * Invalidate all expired sessions.
 	 */
-	public void invalidateExpiredSessions() {
+	protected void invalidateExpiredSessions() {
 		for (WebAppConfiguration webapp : webapps.values()) {
 			webapp.invalidateExpiredSessions();
-		}
-	}
-
-	/**
-	 * Main method of thread which invalidate Expired Sessions every 60s.
-	 * 
-	 * @see java.lang.Runnable#run()
-	 */
-	@Override
-	public void run() {
-		boolean interrupted = Boolean.FALSE;
-		while (!interrupted) {
-			try {
-				Thread.sleep(HostConfiguration.FLUSH_PERIOD);
-				invalidateExpiredSessions();
-			} catch (final InterruptedException err) {
-				interrupted = Boolean.TRUE;
-			}
-		}
-		thread = null;
-	}
-
-	/**
-	 * Reload Specified Webapplication.
-	 * 
-	 * @param prefix
-	 * @throws IOException
-	 */
-	public void reloadWebApp(final String prefix) throws IOException {
-		final WebAppConfiguration webAppConfig = webapps.get(prefix);
-		if (webAppConfig != null) {
-			final String webRoot = webAppConfig.getWebroot();
-			final String contextName = webAppConfig.getContextName();
-			destroyWebApp(prefix);
-			try {
-				final WebAppConfiguration webAppConfiguration = initWebApp(prefix, new File(webRoot), contextName);
-				webapps.put(webAppConfiguration.getContextPath(), webAppConfiguration);
-			} catch (final Throwable err) {
-				HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", err);
-			}
-		} else {
-			throw new WinstoneException("Unknown webapp prefix: " + prefix);
 		}
 	}
 
@@ -396,7 +427,7 @@ public class HostConfiguration implements Runnable {
 						final String prefix = childName.equalsIgnoreCase("ROOT") ? "" : "/" + childName;
 						if (!webapps.containsKey(prefix)) {
 							try {
-								final WebAppConfiguration webAppConfig = initWebApp(prefix, aChildren, childName);
+								final WebAppConfiguration webAppConfig = initWebApp(aChildren, childName);
 								webapps.put(webAppConfig.getContextPath(), webAppConfig);
 								HostConfiguration.logger.info("Deployed web application found at {}", childName);
 							} catch (final Throwable err) {
@@ -412,7 +443,7 @@ public class HostConfiguration implements Runnable {
 						final File outputDir = new File(webappsDir, outputName);
 						outputDir.mkdirs();
 						try {
-							final WebAppConfiguration webAppConfig = initWebApp(prefix, getWebRoot(new File(webappsDir, outputName), aChildren), outputName);
+							final WebAppConfiguration webAppConfig = initWebApp(getWebRoot(new File(webappsDir, outputName), aChildren), outputName);
 							webapps.put(webAppConfig.getContextPath(), webAppConfig);
 							HostConfiguration.logger.info("Deployed web application found at {}", childName);
 						} catch (final Throwable err) {
