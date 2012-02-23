@@ -1,0 +1,9 @@
+= Requested Features =
+
+  * Expose a programmatic API to:
+    * add/remove/list HostConfiguration
+    * deploy/undeploy/repload/list WebApplication
+  * Add a Servlet Manager info about Winstone Stuff
+  * Add a ServerConfiguration with command line parsing
+  * Relocate Jndi Management feeds from command line
+  * 
