@@ -18,6 +18,7 @@ Deploy several webapplication using a multiple directories :
 {{{
   java -jar target/winstone-X.X.X-boot.jar --webroots=[<location of webroot>;]+ (+ other options)
 }}}
+_webroots is a dot-comma separated list of webroot_
 - OR -
 Deploy several webapplication under the same directory:
 {{{
