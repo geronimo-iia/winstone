@@ -4,21 +4,31 @@
 
 ==Run it==
 
+Deploy a single webapplication using a directory:
 {{{
   java -jar target/winstone-X.X.X-boot.jar --webroot=<location of webroot> (+ other options)
 }}}
 - OR -
+Deploy a single webapplication using a war file:
 {{{
   java -jar target/winstone-X.X.X-boot.jar --warfile=<location of warfile> (+ other options)
 }}}
 - OR -
+Deploy several webapplication using a multiple directories :
+{{{
+  java -jar target/winstone-X.X.X-boot.jar --webroots=[<location of webroot>;]+ (+ other options)
+}}}
+- OR -
+Deploy several webapplication under the same directory:
 {{{
   java -jar target/winstone-X.X.X-boot.jar --webappsDir=<location of webapps directory> (+ other options)
 }}}
 - OR -
+Deploy several webapplication under the host directory:
 {{{
   java -jar target/winstone-X.X.X-boot.jar --hostsDir=<location of hosts directory> (+ other options)
 }}}
+
 
 
 ==Build from source==
