@@ -122,10 +122,6 @@
 			<artifactId>httpunit</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
@@ -142,12 +138,6 @@
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>${org.slf4j.version}</version>
-				<scope>compile</scope>
-			</dependency>
-			<dependency>
 				<groupId>com.google.collections</groupId>
 				<artifactId>google-collections</artifactId>
 				<version>${google-collections.version}</version>
@@ -158,6 +148,16 @@
 				<artifactId>slf4j-log4j12</artifactId>
 				<version>${org.slf4j.version}</version>
 				<scope>compile</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-jdk14</artifactId>
+				<version>${org.slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-simple</artifactId>
+				<version>${org.slf4j.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.h2database</groupId>
@@ -176,6 +176,11 @@
 				<artifactId>httpunit</artifactId>
 				<version>1.6</version>
 				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>1.0.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -252,7 +257,7 @@
 		<module>winstone-jsp</module>
 		<module>test-webapp</module>
 		<module>test-jsp</module>
-		<module>test-webapp-spring</module>		
+		<module>test-webapp-spring</module>
 		<module>test-logic</module>
 	</modules>
 </project>
