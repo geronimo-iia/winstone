@@ -5,6 +5,16 @@
     * add/remove/list HostConfiguration
     * deploy/undeploy/repload/list WebApplication
   * Add a Servlet Manager info about Winstone Stuff
-  * Add a ServerConfiguration with command line parsing
+  * Add a ServerConfiguration with command line parsing and validator 
+  * Apply ioc pattern on all configured object
   * Relocate Jndi Management feeds from command line
- 
+  * Create dedicated module:
+    * jndi 
+    * test and sub-module 
+  * Use Executor Service instead of simple thread
+  * Choose a default SLF4J implementation:
+    * logback ?
+    * log4j ?
+    * Simple ?
+  * Study jackson framework choice to parse web.xml element 
+
