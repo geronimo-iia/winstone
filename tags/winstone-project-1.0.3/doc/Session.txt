@@ -1,0 +1,12 @@
+
+Session persistence across reboots
+
+From v0.9.5, if you start with --useSavedSessions as an argument, all sessions in the container will be saved to disk after each request, and loaded on container startup. The effect is that sessions will persist across reboots, instead of being lost (which is the default behaviour, or --useSavedSessions=false).
+
+This is useful for development time, if only to prevent you from having to log in to your webapp every time you restart the container. It does however come with a few costs / side effects to think about:
+
+    * Security: The sessions are serialized to disk in the webapp temp directory (see the spec for details) which is, by default, inside the system temp directory. If you are worried about people being able to read these files on a shared machine, set the temp directory manually with -Djava.io.tmpdir=<path>
+    * Speed: Each time a request accesses a session, that session is re-saved to disk before the request completes. This introduces a slight hit performance-wise, but it's after the request has released the output stream, so there's good chance you won't notice any slow-down, except maybe under load or heavy keep-alive usage.
+    * Serializability: You'll need to make sure anything you put in the session implements java.io.Serializable (for obvious reasons). This follows the same rules about session contents, as the "distributable" webapp / clustering feature, since it shares a large chunk of it's code.
+
+Please give this feature a try if you can, and let me know if you hit any problems. It is still a little green around the edges, so any feedback or corrections will be appreciated.
