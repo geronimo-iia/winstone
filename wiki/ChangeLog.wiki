@@ -4,7 +4,10 @@
 
 =Change Log=
 
-==v1.0.3-SNAPSHOT ==
+==v1.0.4-SNAPSHOT ==
+
+
+==v1.0.3 ==
  * update of command line argument list
  * Fix path separator on HostConfiguration
  * WebApplicationConfiguration versus jdk5
