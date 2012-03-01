@@ -8,6 +8,7 @@
 		<version>1.0.4-SNAPSHOT</version>
 	</parent>
 	<artifactId>winstone-test-jsp</artifactId>
+	<name>Winstone Web Application Test with JSP</name>
 	<packaging>war</packaging>
 	<dependencies>
 		<dependency>

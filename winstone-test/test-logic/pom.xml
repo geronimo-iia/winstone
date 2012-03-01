@@ -8,6 +8,7 @@
 		<version>1.0.4-SNAPSHOT</version>
 	</parent>
 	<artifactId>winstone-test-logic</artifactId>
+	<name>Winstone Test Logic</name>
 	<packaging>jar</packaging>
 	<dependencies>
 		<dependency>

@@ -7,6 +7,7 @@
 		<version>1.0.4-SNAPSHOT</version>
 	</parent>
 	<artifactId>winstone-test-webapp</artifactId>
+	<name>Winstone Web Application Test</name>
 	<packaging>war</packaging>
 	<dependencies>
 		<dependency>
