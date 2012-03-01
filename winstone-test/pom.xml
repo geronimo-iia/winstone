@@ -13,8 +13,8 @@
 	<modules>
 		<module>webapp</module>
 		<module>webapp-jsp</module>
-		<!-- <module>webapp-spring</module> -->
-		<!-- <module>test-logic</module> -->
+		<module>webapp-spring</module>
+		<module>test-logic</module>
 	</modules>
 </project>
 
