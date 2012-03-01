@@ -257,6 +257,7 @@
 		<spring.version>3.0.5.RELEASE</spring.version>
 	</properties>
 	<modules>
+		<module>jndi</module>
 		<module>winstone</module>
 		<module>winstone-jsp</module>
 		<module>winstone-test</module>
