@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Jndi Manager
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
 public class JndiManager {
 

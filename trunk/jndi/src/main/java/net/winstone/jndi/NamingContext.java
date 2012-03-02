@@ -65,13 +65,13 @@ import org.slf4j.LoggerFactory;
  * <li>Import Rick Knowles work on previous WinstonContext</li>
  * </ul>
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  */
 public class NamingContext implements Context {
-	
+
 	protected Logger logger = LoggerFactory.getLogger(getClass());
-	
+
 	private static final transient String PREFIX = "java:";
 	private static final transient String FIRST_CHILD = "comp";
 	private static final transient String BODGED_PREFIX = "java:comp";
@@ -168,7 +168,7 @@ public class NamingContext implements Context {
 
 	@Override
 	public Object lookup(final String name) throws NamingException {
-		logger.trace("lookup {}",name);
+		logger.trace("lookup {}", name);
 		return lookup(new CompositeName(name));
 	}
 
@@ -179,7 +179,7 @@ public class NamingContext implements Context {
 		// If null, it means we don't know how to handle this -> throw to the
 		// parent
 		if (searchName == null) {
-			logger.debug("lookup parent for {}",name);
+			logger.debug("lookup parent for {}", name);
 			return parent.lookup(name);
 		}
 
@@ -196,14 +196,14 @@ public class NamingContext implements Context {
 		if (nm.size() == 1) {
 			// Atomic name: Find object in internal data structure
 			if (inter == null) {
-				logger.debug("{} not found",name);
+				logger.debug("{} not found", name);
 				throw new NameNotFoundException(name + " not found");
 			}
 			// Call getObjectInstance for using any object factories
 			try {
 				return NamingManager.getObjectInstance(inter, new CompositeName().add(atom), this, environnement);
 			} catch (final Exception e) {
-				logger.debug("getObjectInstance failed for {} ",atom);
+				logger.debug("getObjectInstance failed for {} ", atom);
 				final NamingException ne = new NamingException("getObjectInstance failed");
 				ne.setRootCause(e);
 				throw ne;
@@ -211,7 +211,7 @@ public class NamingContext implements Context {
 		} else {
 			// Intermediate name: Consume name in this context and continue
 			if (!(inter instanceof Context)) {
-				logger.debug("{} does not name a context",atom);
+				logger.debug("{} does not name a context", atom);
 				throw new NotContextException(atom + " does not name a context");
 			}
 

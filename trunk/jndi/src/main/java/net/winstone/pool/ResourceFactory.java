@@ -4,7 +4,7 @@ package net.winstone.pool;
  * An interface defining life-cycle methods for instances resources served by an
  * Pool.
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  * @param <T>
  *            Pooled Object.
  */

@@ -1,9 +1,9 @@
-package net.winstone.util;
+package net.winstone.pool;
 
 /**
  * Interface to declare function.
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  * @param <R>
  *            Returned type
  * @param <P>

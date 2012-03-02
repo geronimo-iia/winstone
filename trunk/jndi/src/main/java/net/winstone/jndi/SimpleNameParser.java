@@ -11,11 +11,11 @@ import javax.naming.NamingException;
  * The name parser for jndi names.<br />
  * The NameParser contains knowledge of the syntactic information (like
  * left-to-right orientation, name separator, etc.) needed to parse names. <br />
- * The equals() method, when used to compare two NameParsers, returns Boolean.TRUE if
- * and only if they serve the same namespace.
+ * The equals() method, when used to compare two NameParsers, returns
+ * Boolean.TRUE if and only if they serve the same namespace.
  * 
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
 public class SimpleNameParser implements NameParser {
 

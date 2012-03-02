@@ -8,8 +8,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import net.winstone.util.Function;
-
 /**
  * A simple object pool.
  * 
@@ -17,7 +15,7 @@ import net.winstone.util.Function;
  *      ConcurrentHashMap choice.
  * @see http://www.ibm.com/developerworks/java/library/j-jtp09275.html?ca=dgr-
  *      jw22JavaUrbanLegends for choose what put in a pool.
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  * @param <T>
  *            Pooled Object.
  */
@@ -39,8 +37,8 @@ public class SimplePool<T> implements Pool<T> {
 	protected final ResourceFactory<T> factory;
 
 	/**
-	 * Boolean.TRUE if pool instance is in a closing way. all released resource will be
-	 * destroyed.
+	 * Boolean.TRUE if pool instance is in a closing way. all released resource
+	 * will be destroyed.
 	 */
 	protected boolean closing;
 
@@ -101,7 +99,7 @@ public class SimplePool<T> implements Pool<T> {
 	public T acquire() {
 		T result = null;
 		if (!closing) {
-			if (pooled.isEmpty() && (borrowed.size() < capacity)) {
+			if (pooled.isEmpty() && borrowed.size() < capacity) {
 				// build a new instance
 				result = factory.create();
 			} else {
@@ -176,7 +174,7 @@ public class SimplePool<T> implements Pool<T> {
 	 * @return the number of drained resources.
 	 */
 	public int drain() {
-		final int delta = (pooled.size() - this.minIdle);
+		final int delta = pooled.size() - this.minIdle;
 		int drained = 0;
 		if (delta > 0) {
 			for (int i = 0; i < delta; i++) {

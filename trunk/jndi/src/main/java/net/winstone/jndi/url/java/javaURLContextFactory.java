@@ -26,7 +26,7 @@ import net.winstone.jndi.NamingContext;
  * <li>java:comp/env/mail JavaMail Session Connection Factories</li>
  * </ul>
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
 public class javaURLContextFactory implements InitialContextFactory, ObjectFactory {
 
