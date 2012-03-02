@@ -1,13 +1,13 @@
 /**
  * 
  */
-package net.winstone.testCase;
+package net.winstone.test.load;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.winstone.testCase.load.Launcher;
+import net.winstone.test.load.Launcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,7 @@ import junit.framework.TestCase;
 /**
  * SpringAccessTest. 
  *
- * @author JGT
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  *
  */
 public class SpringAccessTest extends TestCase{

@@ -4,7 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package net.winstone.testCase;
+package net.winstone.test.load;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +15,7 @@ import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import net.winstone.testCase.load.Launcher;
+import net.winstone.test.load.Launcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,12 +32,14 @@ import com.meterware.httpunit.WebResponse;
  * retrieve case, then a keep-alive connection case.
  * 
  * @author mailto: <a href="rick_knowles@hotmail.com">Rick Knowles</a>
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  * @version $Id: HttpConnectorTest.java,v 1.8 2007/04/23 15:06:22 rickknowles
  *          Exp $
  */
 public class HttpConnectorTest extends TestCase {
 
 	public static final String WEBROOT = "../webapp/target/webapp";
+	
 	protected Logger logger = LoggerFactory.getLogger(getClass());
 
 	public static Test suite() {

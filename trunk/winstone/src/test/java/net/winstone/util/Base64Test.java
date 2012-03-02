@@ -3,6 +3,13 @@ package net.winstone.util;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+/**
+ * 
+ * Base64Test.
+ * 
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
+ * 
+ */
 public class Base64Test extends TestCase {
 
 	public Base64Test(final String name) {

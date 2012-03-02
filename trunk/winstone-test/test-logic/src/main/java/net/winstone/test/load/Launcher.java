@@ -4,7 +4,7 @@
  * - the common development and distribution license (CDDL), v1.0; or
  * - the GNU Lesser General Public License, v2.1 or later
  */
-package net.winstone.testCase.load;
+package net.winstone.test.load;
 
 import java.util.Map;
 
@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  * This is the class that gets launched by the command line. Load argument from
  * command line, process them and try to launch server.
  * 
- * @author Jerome Guibert
+ *@author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  * @author <a href="mailto:rick_knowles@hotmail.com">Rick Knowles</a>
  */
 public class Launcher {

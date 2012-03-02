@@ -10,6 +10,15 @@
 	<artifactId>winstone-test</artifactId>
 	<packaging>pom</packaging>
 	<name>Winstone Server Test Group</name>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>net.winstone</groupId>
+				<artifactId>winstone</artifactId>
+				<version>1.0.4-SNAPSHOT</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<modules>
 		<module>webapp</module>
 		<module>webapp-jsp</module>
