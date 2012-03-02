@@ -42,7 +42,7 @@ import java.io.Serializable;
  * <li><i>killInactivePeriod</i> Kills excess unused connections every n
  * minutes. Default is disabled (-1);</li>
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
 public class DataSourceConfig implements Serializable {
 

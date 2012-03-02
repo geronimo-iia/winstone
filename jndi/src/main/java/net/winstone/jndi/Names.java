@@ -13,7 +13,7 @@ import javax.naming.NamingException;
  * Enumeration across the names/classes of the bindings in a particular context.
  * Used by the list() method.
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
 public class Names implements NamingEnumeration<NameClassPair> {
 

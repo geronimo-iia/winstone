@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * created resource. This is usefull to test a mechanism with or without object
  * pool.
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  * @param <T>
  *            Pooled Object.
  */

@@ -19,14 +19,14 @@ import java.util.concurrent.TimeoutException;
 
 import javax.sql.DataSource;
 
+import net.winstone.pool.Function;
 import net.winstone.pool.ResourceFactory;
 import net.winstone.pool.SimplePool;
-import net.winstone.util.Function;
 
 /**
  * DataSource Implementation.
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
 public class SimpleDatasource implements DataSource, ResourceFactory<Connection> {
 

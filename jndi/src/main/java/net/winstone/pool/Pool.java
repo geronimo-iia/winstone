@@ -4,7 +4,7 @@ package net.winstone.pool;
  * A Pool interface based on {@link http
  * ://en.wikipedia.org/wiki/Object_pool_pattern }.
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  * 
  * @param <T>
  *            Pooled Object.
