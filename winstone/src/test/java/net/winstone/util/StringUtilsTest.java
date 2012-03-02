@@ -6,7 +6,7 @@ import junit.framework.TestCase;
 /**
  * Simple tests for the string utility.
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
 public class StringUtilsTest extends TestCase {
 
@@ -17,7 +17,6 @@ public class StringUtilsTest extends TestCase {
 		Assert.assertEquals("One token", "Foo = bar squared", StringUtils.replace("Foo = [#0] squared", "[#0]", "bar"));
 		Assert.assertEquals("Repeated token", "Foo = bar bar squared", StringUtils.replace("Foo = [#0] [#0] squared", "[#0]", "bar"));
 		Assert.assertEquals("Two tokens", "Foo = blah bar squared", StringUtils.replace("Foo = [#1] [#0] squared", new String[][] { { "[#0]", "bar" }, { "[#1]", "blah" } }));
-
 		Assert.assertEquals(StringUtils.replace("testing sentence", "not", "do"), "testing sentence");
 
 	}

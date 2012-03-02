@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>net.winstone</groupId>
 		<artifactId>winstone-project</artifactId>
 		<version>1.0.4-SNAPSHOT</version>
-		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>winstone</artifactId>
 	<packaging>jar</packaging>
@@ -21,17 +21,7 @@
 					<ajdtVersion>none</ajdtVersion>
 				</configuration>
 			</plugin>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<includes>
-						<include>**/*Test.java</include>
-					</includes>
-					<excludes>
-						<exclude>**/*NaughtyTest.java</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
+			<!-- Main Class -->
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
@@ -44,6 +34,7 @@
 					</archive>
 				</configuration>
 			</plugin>
+			<!-- Packaging -->
 			<plugin>
 				<groupId>org.intelligents-ia.keystone</groupId>
 				<artifactId>keystone-plugin</artifactId>
@@ -54,10 +45,10 @@
 						<phase>package</phase>
 						<configuration>
 							<mainClass>net.winstone.Winstone</mainClass>
-							<info>false</info>
+							<info>true</info>
 							<verbose>false</verbose>
 							<cleanUpLib>true</cleanUpLib>
-							<replaceProjectArtifact>true</replaceProjectArtifact>
+							<replaceProjectArtifact>false</replaceProjectArtifact>
 						</configuration>
 						<goals>
 							<goal>custom</goal>
@@ -65,36 +56,35 @@
 					</execution>
 				</executions>
 			</plugin>
-		</plugins>
-	</build>
-	<reporting>
-		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>findbugs-maven-plugin</artifactId>
 				<version>2.3</version>
 			</plugin>
 		</plugins>
-	</reporting>
+	</build>
 	<dependencies>
+		<dependency>
+			<groupId>net.winstone</groupId>
+			<artifactId>jndi</artifactId>
+			<version>1.0.4-SNAPSHOT</version>
+		</dependency>
 		<!-- we did not add mail dependency in minimal system -->
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<!-- Servlet API 2.5 -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 		</dependency>
+		<!-- Log -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>ch.qos.logback</groupId> -->
-		<!-- <artifactId>logback-classic</artifactId> -->
-		<!-- </dependency> -->
 	</dependencies>
 	<profiles>
 		<profile>
@@ -106,11 +96,12 @@
 				</property>
 			</activation>
 			<dependencies>
-				<dependency>
-					<groupId>com.oracle</groupId>
-					<artifactId>ojdbc6</artifactId>
-					<version>11.2.0.3</version>
-				</dependency>
+				<!-- This work only it your deploy oracle driver on your local repository -->
+				<!-- <dependency> -->
+				<!-- <groupId>com.oracle</groupId> -->
+				<!-- <artifactId>ojdbc6</artifactId> -->
+				<!-- <version>11.2.0.3</version> -->
+				<!-- </dependency> -->
 				<dependency>
 					<groupId>com.h2database</groupId>
 					<artifactId>h2</artifactId>
@@ -118,7 +109,6 @@
 				</dependency>
 			</dependencies>
 		</profile>
-
 	</profiles>
 </project>
 

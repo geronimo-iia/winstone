@@ -3,6 +3,13 @@ package net.winstone;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+/**
+ * 
+ * WinstoneResourceBundleTest.
+ * 
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
+ * 
+ */
 public class WinstoneResourceBundleTest extends TestCase {
 
 	public void testKey() {

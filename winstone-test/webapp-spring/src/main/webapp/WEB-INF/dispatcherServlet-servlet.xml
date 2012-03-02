@@ -17,8 +17,6 @@
 	<bean
 		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter" />
 
-
-
 	<bean id="viewNameTranslator"
 		class="org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator" />
 

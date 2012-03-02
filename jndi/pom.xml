@@ -9,7 +9,7 @@
 	</parent>
 	<artifactId>jndi</artifactId>
 	<packaging>jar</packaging>
-	<name>winstone Jndi</name>
+	<name>Winstone Jndi</name>
 	<dependencies>
 		<dependency>
 			<groupId>org.slf4j</groupId>

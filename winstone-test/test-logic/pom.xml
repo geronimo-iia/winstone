@@ -13,34 +13,14 @@
 	<dependencies>
 		<dependency>
 			<groupId>net.winstone</groupId>
-			<artifactId>winstone</artifactId>
-			<version>1.0.4-SNAPSHOT</version>
+			<artifactId>winstone</artifactId> 
 			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.winstone</groupId>
-			<artifactId>winstone-test-webapp</artifactId>
-			<version>1.0.4-SNAPSHOT</version>
-			<type>war</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.winstone</groupId>
-			<artifactId>winstone-test-webapp-spring</artifactId>
-			<version>1.0.4-SNAPSHOT</version>
-			<type>war</type>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>httpunit</groupId>
 			<artifactId>httpunit</artifactId>
 			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<scope>compile</scope>
-		</dependency>
+		</dependency> 
 	</dependencies>
 	<build>
 		<plugins>

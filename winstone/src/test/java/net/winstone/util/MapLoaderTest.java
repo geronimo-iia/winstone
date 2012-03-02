@@ -9,7 +9,7 @@ import junit.framework.TestCase;
 /**
  * MapLoaderTest test unit for MapLoader class.
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
 public class MapLoaderTest extends TestCase {
 

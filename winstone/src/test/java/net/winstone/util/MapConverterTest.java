@@ -10,7 +10,7 @@ import net.winstone.jndi.resources.DataSourceConfig;
 /**
  * Testing of MapConverter.
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
 public class MapConverterTest extends TestCase {
 
