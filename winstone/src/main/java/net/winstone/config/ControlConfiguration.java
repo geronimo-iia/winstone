@@ -9,43 +9,20 @@ package net.winstone.config;
  * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  * 
  */
-public class ControlConfiguration {
-
+public class ControlConfiguration extends AddressConfiguration {
 	/**
-	 * set the shutdown/control port. -1 to disable, Default disabled
+	 * serialVersionUID:long
 	 */
-	private final int controlPort;
-
-	/**
-	 * set the ip address which the control listener should bind to, Default is
-	 * local host.
-	 */
-	private final String controlAddress;
+	private static final long serialVersionUID = -7265773222974448024L;
 
 	/**
 	 * Build a new instance of ControlConfiguration.
-	 * @param controlPort
-	 * @param controlAddress
+	 * 
+	 * @param port
+	 * @param address
 	 */
-	public ControlConfiguration(int controlPort, String controlAddress) {
-		super();
-		this.controlPort = controlPort;
-		this.controlAddress = controlAddress;
+	public ControlConfiguration(int port, String address) {
+		super(port, address);
 	}
 
-	/**
-	 * @return the controlPort
-	 */
-	public final int getControlPort() {
-		return controlPort;
-	}
-
-	/**
-	 * @return the controlAddress
-	 */
-	public final String getControlAddress() {
-		return controlAddress;
-	}
-	
-	
 }
