@@ -3,7 +3,6 @@
  */
 package net.winstone.config;
 
-import java.io.File;
 import java.io.Serializable;
 
 /**
@@ -18,6 +17,89 @@ public class ServerConfiguration implements Serializable {
 	 * serialVersionUID:long
 	 */
 	private static final long serialVersionUID = -5540953351305251467L;
+	/**
+	 * ControlConfiguration instance.
+	 */
+	private ControlConfiguration controlConfiguration;
+	/**
+	 * HttpListenerConfiguration instance.
+	 */
+	private HttpListenerConfiguration httpListenerConfiguration;
+	/**
+	 * HttpsListenerConfiguration instance.
+	 */
+	private HttpsListenerConfiguration httpsListenerConfiguration;
+	/**
+	 * Ajp13ListenerConfiguration instance.
+	 */
+	private Ajp13ListenerConfiguration ajp13ListenerConfiguration;
+	/**
+	 * ClusterConfiguration instance.
+	 */
+	private ClusterConfiguration clusterConfiguration;
+	/**
+	 * HandlerConfiguration instance.
+	 */
+	private HandlerConfiguration handlerConfiguration;
+	/**
+	 * AccessLoggerConfiguration instance.
+	 */
+	private AccessLoggerConfiguration accessLoggerConfiguration;
+	/**
+	 * SimpleAccessLoggerConfiguration instance.
+	 */
+	private SimpleAccessLoggerConfiguration simpleAccessLoggerConfiguration;
+
+	/**
+	 * enable servlet reloading (true/false). Default is false
+	 */
+	private Boolean useServletReloading;
+	/**
+	 * enable directory lists (true/false). Default is true
+	 */
+	private Boolean directoryListings;
+	/**
+	 * enable the servlet invoker (true/false) Default is true
+	 */
+	private Boolean useInvoker;
+	/**
+	 * set the invoker prefix. Default is /servlet/
+	 */
+	private String invokerPrefix;
+	/**
+	 * simulate the apache mod_unique_id function. Default is false
+	 */
+	private Boolean simulateModUniqueId;
+	/**
+	 * enables session persistence (true/false). Default is false
+	 */
+	private Boolean useSavedSessions;
+	/**
+	 * set the max number of parameters allowed in a form submission to
+	 * protect\n\ against hash DoS attack (oCERT #2011-003). Default is 10000.
+	 */
+	private int maxParamAllowed;
+
+	/**
+	 * override the preferred webapp class loader.
+	 */
+	private String preferredClassLoader;
+	/**
+	 * RealmConfiguration instance.
+	 */
+	private RealmConfiguration realmConfiguration;
+	/**
+	 * RealmMemoryConfiguration instance.
+	 */
+	private RealmMemoryConfiguration realmMemoryConfiguration;
+	/**
+	 * RealmFileConfiguration instance.
+	 */
+	private RealmFileConfiguration realmFileConfiguration;
+	/**
+	 * RealmJDBCConfiguration instance.
+	 */
+	private RealmJDBCConfiguration realmJDBCConfiguration;
 
 	/**
 	 * Override the JAVA_HOME variable
@@ -29,7 +111,6 @@ public class ServerConfiguration implements Serializable {
 	private String toolsJar;// = The location of tools.jar. Default is
 							// JAVA_HOME/lib/tools.jar\n\
 
-	
 	/**
 	 * 
 	 */
@@ -41,105 +122,11 @@ public class ServerConfiguration implements Serializable {
 	private String commonLibFolder;// = folder for additional jar files. Default
 									// is ./lib\n\
 
-
-
-	/**
-	 * 
-	 */
-	private Boolean directoryListings;// = enable directory lists (true/false).
-										// Default is true\n\
 	/**
 	 * 
 	 */
 	private Boolean useJasper;// = enable jasper JSP handling (true/false).
 								// Default is false\n\
-	/**
-	 * 
-	 */
-	private Boolean useServletReloading;// = enable servlet reloading
-										// (true/false). Default is false\n\
-	/**
-	 * 
-	 */
-	private String preferredClassLoader;// = override the preferred webapp class
-										// loader.\n\
-	/**
-	 * 
-	 */
-	private Boolean useInvoker;// = enable the servlet invoker (true/false).
-								// Default is true\n\
-	/**
-	 * 
-	 */
-	private String invokerPrefix;// = set the invoker prefix. Default is
-									// /servlet/\n\
-	/**
-	 * 
-	 */
-	private Boolean simulateModUniqueId;// = simulate the apache mod_unique_id
-										// function. Default is false\n\
-	/**
-	 * 
-	 */
-	private Boolean useSavedSessions;// = enables session persistence
-										// (true/false). Default is false\n\
-	/**
-	 * 
-	 */
-	private int maxParamAllowed;// = set the max number of parameters allowed in
-								// a form submission to protect\n\ against hash
-								// DoS attack (oCERT #2011-003). Default is
-								// 10000.\n\
-	/**
-	 * 
-	 */
-	private Boolean useCluster;// = enable cluster support (true/false). Default
-								// is false\n\
-	/**
-	 * 
-	 */
-	private String clusterClassName;// = Set the cluster class to use. Defaults
-									// to SimpleCluster class\n\
-	/**
-	 * 
-	 */
-	private String clusterNodes;// = a comma separated list of node addresses
-								// (IP:ControlPort,IP:ControlPort,etc)\n\
-
-	/**
-	 * 
-	 */
-	private String realmClassName;// = Set the realm class to use for user
-									// authentication. Defaults to
-									// ArgumentsRealm class\n\n\
-	// private StringargumentsRealm.passwd.<user> = Password for user <user>.
-	// Only valid for the ArgumentsRealm realm class\n\
-	// private StringargumentsRealm.roles.<user> = Roles for user <user> (comma
-	// separated). Only valid for the ArgumentsRealm realm class\n\n\
-	/**
-	 * 
-	 */
-	private String fileRealmConfigFile;// = File containing users/passwds/roles.
-										// Only valid for the FileRealm realm
-										// class\n\
-
-	/**
-	 * 
-	 */
-	private String accessLoggerClassName;// = Set the access logger class to use
-											// for user authentication. Defaults
-											// to disabled\n\
-	/**
-	 * 
-	 */
-	private String simpleAccessLoggerFormat;// = The log format to use. Supports
-											// combined/common/resin/custom
-											// (SimpleAccessLogger only)\n\
-	/**
-	 * 
-	 */
-	private String simpleAccessLoggerFile;// = The location pattern for the log
-											// file(SimpleAccessLogger only)\n\
 
 	/**
 	 * Build a new instance of ServerConfiguration.

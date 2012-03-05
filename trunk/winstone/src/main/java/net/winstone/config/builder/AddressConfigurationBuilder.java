@@ -10,16 +10,16 @@ package net.winstone.config.builder;
  * 
  */
 public class AddressConfigurationBuilder {
+
 	protected int port = -1;
 	protected String address = null;
 
 	/**
-	 * Build a new instance of AddressConfigurationBuilder.
+	 * 
+	 * @param port
+	 * @param address
+	 * @return
 	 */
-	public AddressConfigurationBuilder() {
-		super();
-	}
-
 	public AddressConfigurationBuilder setAddress(final int port, final String address) {
 		this.port = port;
 		this.address = address;
