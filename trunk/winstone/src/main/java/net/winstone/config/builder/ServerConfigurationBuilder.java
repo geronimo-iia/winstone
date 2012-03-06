@@ -3,6 +3,8 @@
  */
 package net.winstone.config.builder;
 
+import java.io.File;
+
 import net.winstone.config.AccessLoggerConfiguration;
 import net.winstone.config.Ajp13ListenerConfiguration;
 import net.winstone.config.ClusterConfiguration;
@@ -34,7 +36,7 @@ public class ServerConfigurationBuilder {
 	 */
 	protected HttpListenerConfiguration httpListenerConfiguration = null;
 	protected HttpsListenerConfiguration httpsListenerConfiguration = null;
-	protected Ajp13ListenerConfiguration ajp13ListenerAddressConfiguration = null;
+	protected Ajp13ListenerConfiguration ajp13ListenerConfiguration = null;
 	/**
 	 * Cluster
 	 */
@@ -67,6 +69,8 @@ public class ServerConfigurationBuilder {
 	private RealmFileConfiguration realmFileConfiguration;
 	private RealmJDBCConfiguration realmJDBCConfiguration;
 
+	private File tempDirectory = null;
+
 	/**
 	 * Build a new instance of ServerConfigurationBuilder.
 	 */
@@ -79,11 +83,33 @@ public class ServerConfigurationBuilder {
 	 * @return a fresh ServerConfiguration intance.
 	 */
 	public ServerConfiguration build() {
-		ServerConfiguration configuration = new ServerConfiguration();
 
-		/**
-		 * 
-		 */
+		ServerConfigurationImpl configuration = new ServerConfigurationImpl();
+		configuration.setControlConfiguration(controlConfiguration);
+		configuration.setHttpListenerConfiguration(httpListenerConfiguration);
+		configuration.setHttpsListenerConfiguration(httpsListenerConfiguration);
+		configuration.setAjp13ListenerConfiguration(ajp13ListenerConfiguration);
+		configuration.setClusterConfiguration(clusterConfiguration);
+		configuration.setHandlerConfiguration(handlerConfiguration);
+		configuration.setAccessLoggerConfiguration(accessLoggerConfiguration);
+		configuration.setSimpleAccessLoggerConfiguration(simpleAccessLoggerConfiguration);
+
+		configuration.setUseServletReloading(useServletReloading);
+		configuration.setDirectoryListings(directoryListings);
+		configuration.setUseInvoker(useInvoker);
+		configuration.setInvokerPrefix(invokerPrefix);
+		configuration.setSimulateModUniqueId(simulateModUniqueId);
+		configuration.setUseSavedSessions(useSavedSessions);
+		configuration.setMaxParamAllowed(maxParamAllowed);
+
+		configuration.setPreferredClassLoader(preferredClassLoader);
+
+		configuration.setRealmConfiguration(realmConfiguration);
+		configuration.setRealmMemoryConfiguration(realmMemoryConfiguration);
+		configuration.setRealmFileConfiguration(realmFileConfiguration);
+		configuration.setRealmJDBCConfiguration(realmJDBCConfiguration);
+
+		configuration.setTempDirectory(tempDirectory);
 		return configuration;
 	}
 
@@ -198,8 +224,8 @@ public class ServerConfigurationBuilder {
 		return this;
 	}
 
-	ServerConfigurationBuilder setAjp13ListenerAddressConfiguration(Ajp13ListenerConfiguration ajp13ListenerAddressConfiguration) {
-		this.ajp13ListenerAddressConfiguration = ajp13ListenerAddressConfiguration;
+	ServerConfigurationBuilder setAjp13ListenerConfiguration(Ajp13ListenerConfiguration ajp13ListenerConfiguration) {
+		this.ajp13ListenerConfiguration = ajp13ListenerConfiguration;
 		return this;
 	}
 
