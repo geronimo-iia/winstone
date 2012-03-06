@@ -1,7 +1,7 @@
 /**
  * 
  */
-package net.winstone.config.builder;
+package net.winstone.boot;
 
 /**
  * ServerConfigurationParser.
