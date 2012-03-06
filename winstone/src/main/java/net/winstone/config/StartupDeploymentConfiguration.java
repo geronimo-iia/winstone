@@ -43,4 +43,6 @@ public class StartupDeploymentConfiguration {
 	 * set directory for name-based virtual hosts to be deployed from
 	 */
 	private File hostsDir;
+	
+	
 }

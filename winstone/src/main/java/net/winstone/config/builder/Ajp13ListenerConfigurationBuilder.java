@@ -60,6 +60,6 @@ public class Ajp13ListenerConfigurationBuilder extends CompositeBuilder {
 	 */
 	@Override
 	public ServerConfigurationBuilder build() {
-		return builder.setAjp13ListenerAddressConfiguration(new Ajp13ListenerConfiguration(port, address));
+		return builder.setAjp13ListenerConfiguration(new Ajp13ListenerConfiguration(port, address));
 	}
 }
