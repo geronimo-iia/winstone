@@ -9,9 +9,44 @@ import java.util.Map;
 /**
  * String utility<br />
  * 
- * @author Jerome Guibert
+ * @author <a href="mailto:jguibert@intelligents-ia.com" >Jerome Guibert</a>
  */
 public class StringUtils {
+
+	/**
+	 * Check if value is not null.
+	 * 
+	 * @param value
+	 *            value to test
+	 * @param message
+	 *            error message
+	 * @return value
+	 * @throws IllegalArgumentException
+	 *             if value is null
+	 */
+	public <T> T checkNotNull(T value, String message) throws IllegalArgumentException {
+		if (value == null) {
+			throw new IllegalArgumentException(message);
+		}
+		return value;
+	}
+
+	/**
+	 * Check if value is not empty (not null AND not empty)
+	 * 
+	 * @param value
+	 * @param message
+	 *            error message
+	 * @return value
+	 * @throws IllegalArgumentException
+	 *             if value is empty (null or empty)
+	 */
+	public String checkNotEmpty(String value, String message) throws IllegalArgumentException {
+		if (value != null && !"".equals(value)) {
+			return value;
+		}
+		throw new IllegalArgumentException(message);
+	}
 
 	/**
 	 * Load a File argument.
