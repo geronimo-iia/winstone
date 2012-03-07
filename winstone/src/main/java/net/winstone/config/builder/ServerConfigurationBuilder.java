@@ -9,6 +9,7 @@ import net.winstone.config.AccessLoggerConfiguration;
 import net.winstone.config.Ajp13ListenerConfiguration;
 import net.winstone.config.ClusterConfiguration;
 import net.winstone.config.ControlConfiguration;
+import net.winstone.config.DefaultServerConfiguration;
 import net.winstone.config.HandlerConfiguration;
 import net.winstone.config.HttpListenerConfiguration;
 import net.winstone.config.HttpsListenerConfiguration;
@@ -84,7 +85,7 @@ public class ServerConfigurationBuilder {
 	 */
 	public ServerConfiguration build() {
 
-		ServerConfigurationImpl configuration = new ServerConfigurationImpl();
+		DefaultServerConfiguration configuration = new DefaultServerConfiguration();
 		configuration.setControlConfiguration(controlConfiguration);
 		configuration.setHttpListenerConfiguration(httpListenerConfiguration);
 		configuration.setHttpsListenerConfiguration(httpsListenerConfiguration);
