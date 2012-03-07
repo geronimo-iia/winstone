@@ -8,6 +8,9 @@
   * Create dedicated module:
     * jndi 
     * test and sub-module 
+  * commonLibFolder parameter 
+  * Add a ServerConfiguration object and server configuration DSL (testing purpose only)
+
 
 ==v1.0.3 ==
  * update of command line argument list
