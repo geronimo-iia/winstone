@@ -28,55 +28,36 @@ import net.winstone.config.SimpleAccessLoggerConfiguration;
  */
 public class ServerConfigurationBuilder {
 
-	/**
-	 * Control
-	 */
-	protected ControlConfiguration controlConfiguration = null;
-	/**
-	 * Listeners
-	 */
-	protected HttpListenerConfiguration httpListenerConfiguration = null;
-	protected HttpsListenerConfiguration httpsListenerConfiguration = null;
-	protected Ajp13ListenerConfiguration ajp13ListenerConfiguration = null;
-	/**
-	 * Cluster
-	 */
-	protected ClusterConfiguration clusterConfiguration = null;
-	/**
-	 * Handler
-	 */
-	protected HandlerConfiguration handlerConfiguration = null;
-	/**
-	 * Access Log.
-	 */
-	protected AccessLoggerConfiguration accessLoggerConfiguration = new AccessLoggerConfiguration();
-	/**
-	 * SimpleAccessLoggerConfiguration instance.
-	 */
-	protected SimpleAccessLoggerConfiguration simpleAccessLoggerConfiguration = null;
-
-	private Boolean useServletReloading = Boolean.FALSE;
-	private Boolean directoryListings = Boolean.TRUE;
-	private Boolean useInvoker = Boolean.TRUE;
-	private String invokerPrefix = "/servlet/";
-	private Boolean simulateModUniqueId = Boolean.FALSE;
-	private Boolean useSavedSessions = Boolean.FALSE;
-	private int maxParamAllowed = 10000;
-
-	private String preferredClassLoader = null;
-
-	private RealmConfiguration realmConfiguration;
-	private RealmMemoryConfiguration realmMemoryConfiguration;
-	private RealmFileConfiguration realmFileConfiguration;
-	private RealmJDBCConfiguration realmJDBCConfiguration;
-
-	private File tempDirectory = null;
+	private final DefaultServerConfiguration configuration;
 
 	/**
 	 * Build a new instance of ServerConfigurationBuilder.
 	 */
 	public ServerConfigurationBuilder() {
 		super();
+		configuration = new DefaultServerConfiguration();
+
+		configuration.setControlConfiguration(null);
+		configuration.setHttpListenerConfiguration(null);
+		configuration.setHttpsListenerConfiguration(null);
+		configuration.setAjp13ListenerConfiguration(null);
+		configuration.setClusterConfiguration(null);
+		configuration.setHandlerConfiguration(null);
+		configuration.setAccessLoggerConfiguration(new AccessLoggerConfiguration());
+		configuration.setSimpleAccessLoggerConfiguration(null);
+
+		configuration.setUseServletReloading( Boolean.FALSE);
+		configuration.setDirectoryListings( Boolean.TRUE);
+		configuration.setUseInvoker( Boolean.TRUE);
+		configuration.setInvokerPrefix("/servlet/");
+		configuration.setSimulateModUniqueId(Boolean.FALSE);
+		configuration.setUseSavedSessions(Boolean.FALSE);
+		configuration.setMaxParamAllowed(10000);
+
+		configuration.setPreferredClassLoader(null);
+
+		configuration.setTempDirectory(null);
+
 	}
 
 	/**
@@ -84,33 +65,6 @@ public class ServerConfigurationBuilder {
 	 * @return a fresh ServerConfiguration intance.
 	 */
 	public ServerConfiguration build() {
-
-		DefaultServerConfiguration configuration = new DefaultServerConfiguration();
-		configuration.setControlConfiguration(controlConfiguration);
-		configuration.setHttpListenerConfiguration(httpListenerConfiguration);
-		configuration.setHttpsListenerConfiguration(httpsListenerConfiguration);
-		configuration.setAjp13ListenerConfiguration(ajp13ListenerConfiguration);
-		configuration.setClusterConfiguration(clusterConfiguration);
-		configuration.setHandlerConfiguration(handlerConfiguration);
-		configuration.setAccessLoggerConfiguration(accessLoggerConfiguration);
-		configuration.setSimpleAccessLoggerConfiguration(simpleAccessLoggerConfiguration);
-
-		configuration.setUseServletReloading(useServletReloading);
-		configuration.setDirectoryListings(directoryListings);
-		configuration.setUseInvoker(useInvoker);
-		configuration.setInvokerPrefix(invokerPrefix);
-		configuration.setSimulateModUniqueId(simulateModUniqueId);
-		configuration.setUseSavedSessions(useSavedSessions);
-		configuration.setMaxParamAllowed(maxParamAllowed);
-
-		configuration.setPreferredClassLoader(preferredClassLoader);
-
-		configuration.setRealmConfiguration(realmConfiguration);
-		configuration.setRealmMemoryConfiguration(realmMemoryConfiguration);
-		configuration.setRealmFileConfiguration(realmFileConfiguration);
-		configuration.setRealmJDBCConfiguration(realmJDBCConfiguration);
-
-		configuration.setTempDirectory(tempDirectory);
 		return configuration;
 	}
 
@@ -139,7 +93,7 @@ public class ServerConfigurationBuilder {
 	 *            the useServletReloading to set
 	 */
 	public ServerConfigurationBuilder setUseServletReloading(Boolean useServletReloading) {
-		this.useServletReloading = useServletReloading;
+		configuration.setUseServletReloading(useServletReloading);
 		return this;
 	}
 
@@ -148,7 +102,7 @@ public class ServerConfigurationBuilder {
 	 *            the directoryListings to set
 	 */
 	public ServerConfigurationBuilder setDirectoryListings(Boolean directoryListings) {
-		this.directoryListings = directoryListings;
+		configuration.setDirectoryListings(directoryListings);
 		return this;
 	}
 
@@ -157,7 +111,7 @@ public class ServerConfigurationBuilder {
 	 *            the useInvoker to set
 	 */
 	public ServerConfigurationBuilder setUseInvoker(Boolean useInvoker) {
-		this.useInvoker = useInvoker;
+		configuration.setUseInvoker(useInvoker);
 		return this;
 	}
 
@@ -166,7 +120,7 @@ public class ServerConfigurationBuilder {
 	 *            the invokerPrefix to set
 	 */
 	public ServerConfigurationBuilder setInvokerPrefix(String invokerPrefix) {
-		this.invokerPrefix = invokerPrefix;
+		configuration.setInvokerPrefix(invokerPrefix);
 		return this;
 	}
 
@@ -175,7 +129,7 @@ public class ServerConfigurationBuilder {
 	 *            the simulateModUniqueId to set
 	 */
 	public ServerConfigurationBuilder setSimulateModUniqueId(Boolean simulateModUniqueId) {
-		this.simulateModUniqueId = simulateModUniqueId;
+		configuration.setSimulateModUniqueId(simulateModUniqueId);
 		return this;
 	}
 
@@ -184,7 +138,7 @@ public class ServerConfigurationBuilder {
 	 *            the useSavedSessions to set
 	 */
 	public ServerConfigurationBuilder setUseSavedSessions(Boolean useSavedSessions) {
-		this.useSavedSessions = useSavedSessions;
+		configuration.setUseSavedSessions(useSavedSessions);
 		return this;
 	}
 
@@ -193,7 +147,7 @@ public class ServerConfigurationBuilder {
 	 *            the maxParamAllowed to set
 	 */
 	public ServerConfigurationBuilder setMaxParamAllowed(int maxParamAllowed) {
-		this.maxParamAllowed = maxParamAllowed;
+		configuration.setMaxParamAllowed(maxParamAllowed);
 		return this;
 	}
 
@@ -202,7 +156,7 @@ public class ServerConfigurationBuilder {
 	 *            the preferredClassLoader to set
 	 */
 	public ServerConfigurationBuilder setPreferredClassLoader(String preferredClassLoader) {
-		this.preferredClassLoader = preferredClassLoader;
+		configuration.setPreferredClassLoader(preferredClassLoader);
 		return this;
 	}
 
@@ -211,27 +165,27 @@ public class ServerConfigurationBuilder {
 	}
 
 	ServerConfigurationBuilder setControlConfiguration(ControlConfiguration controlConfiguration) {
-		this.controlConfiguration = controlConfiguration;
+		configuration.setControlConfiguration(controlConfiguration);
 		return this;
 	}
 
 	ServerConfigurationBuilder setHttpListenerConfiguration(HttpListenerConfiguration httpListenerConfiguration) {
-		this.httpListenerConfiguration = httpListenerConfiguration;
+		configuration.setHttpListenerConfiguration(httpListenerConfiguration);
 		return this;
 	}
 
 	ServerConfigurationBuilder setHttpsListenerConfiguration(HttpsListenerConfiguration httpsListenerConfiguration) {
-		this.httpsListenerConfiguration = httpsListenerConfiguration;
+		configuration.setHttpsListenerConfiguration(httpsListenerConfiguration);
 		return this;
 	}
 
 	ServerConfigurationBuilder setAjp13ListenerConfiguration(Ajp13ListenerConfiguration ajp13ListenerConfiguration) {
-		this.ajp13ListenerConfiguration = ajp13ListenerConfiguration;
+		configuration.setAjp13ListenerConfiguration(ajp13ListenerConfiguration);
 		return this;
 	}
 
 	ServerConfigurationBuilder setClusterConfiguration(ClusterConfiguration clusterConfiguration) {
-		this.clusterConfiguration = clusterConfiguration;
+		configuration.setClusterConfiguration(clusterConfiguration);
 		return this;
 	}
 
@@ -240,7 +194,7 @@ public class ServerConfigurationBuilder {
 	 *            the handlerConfiguration to set
 	 */
 	ServerConfigurationBuilder setHandlerConfiguration(HandlerConfiguration handlerConfiguration) {
-		this.handlerConfiguration = handlerConfiguration;
+		configuration.setHandlerConfiguration(handlerConfiguration);
 		return this;
 	}
 
@@ -249,7 +203,7 @@ public class ServerConfigurationBuilder {
 	 *            the accessLoggerConfiguration to set
 	 */
 	ServerConfigurationBuilder setAccessLoggerConfiguration(AccessLoggerConfiguration accessLoggerConfiguration) {
-		this.accessLoggerConfiguration = accessLoggerConfiguration;
+		configuration.setAccessLoggerConfiguration(accessLoggerConfiguration);
 		return this;
 	}
 
@@ -258,7 +212,7 @@ public class ServerConfigurationBuilder {
 	 *            the simpleAccessLoggerConfiguration to set
 	 */
 	ServerConfigurationBuilder setSimpleAccessLoggerConfiguration(SimpleAccessLoggerConfiguration simpleAccessLoggerConfiguration) {
-		this.simpleAccessLoggerConfiguration = simpleAccessLoggerConfiguration;
+		configuration.setSimpleAccessLoggerConfiguration(simpleAccessLoggerConfiguration);
 		return this;
 	}
 
@@ -267,7 +221,7 @@ public class ServerConfigurationBuilder {
 	 *            the realmConfiguration to set
 	 */
 	ServerConfigurationBuilder setRealmConfiguration(RealmConfiguration realmConfiguration) {
-		this.realmConfiguration = realmConfiguration;
+		configuration.setRealmConfiguration(realmConfiguration);
 		return this;
 	}
 
@@ -276,7 +230,7 @@ public class ServerConfigurationBuilder {
 	 *            the realmMemoryConfiguration to set
 	 */
 	ServerConfigurationBuilder setRealmMemoryConfiguration(RealmMemoryConfiguration realmMemoryConfiguration) {
-		this.realmMemoryConfiguration = realmMemoryConfiguration;
+		configuration.setRealmMemoryConfiguration(realmMemoryConfiguration);
 		return this;
 	}
 
@@ -285,7 +239,7 @@ public class ServerConfigurationBuilder {
 	 *            the realmFileConfiguration to set
 	 */
 	ServerConfigurationBuilder setRealmFileConfiguration(RealmFileConfiguration realmFileConfiguration) {
-		this.realmFileConfiguration = realmFileConfiguration;
+		configuration.setRealmFileConfiguration(realmFileConfiguration);
 		return this;
 	}
 
@@ -294,7 +248,12 @@ public class ServerConfigurationBuilder {
 	 *            the realmJDBCConfiguration to set
 	 */
 	ServerConfigurationBuilder setRealmJDBCConfiguration(RealmJDBCConfiguration realmJDBCConfiguration) {
-		this.realmJDBCConfiguration = realmJDBCConfiguration;
+		configuration.setRealmJDBCConfiguration(realmJDBCConfiguration);
+		return this;
+	}
+
+	ServerConfigurationBuilder setTempDirectory(File tempDirectory) {
+		configuration.setTempDirectory(tempDirectory);
 		return this;
 	}
 
