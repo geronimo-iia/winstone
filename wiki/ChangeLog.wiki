@@ -8,7 +8,10 @@
   * Create dedicated module:
     * jndi 
     * test and sub-module 
-  * commonLibFolder parameter 
+  * removing deprecated parameter :
+    * commonLibFolder: replaced by --Bootstrap.extraLibrariesFolderPath which is managed by bootsrap framewok ([http://code.google.com/p/intelligents-ia/ keystone])
+    *  --javaHome, Override the JAVA_HOME variable by setting his value on command shell
+    * --toolsJar Default is JAVA_HOME/lib/tools.jar, or in the winstone server libraries.
   * Add a ServerConfiguration object and server configuration DSL (testing purpose only)
 
 
