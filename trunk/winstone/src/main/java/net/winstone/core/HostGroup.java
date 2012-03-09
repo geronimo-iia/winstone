@@ -53,10 +53,7 @@ public class HostGroup {
 	 * ObjectPool instance.
 	 */
 	private final ObjectPool objectPool;
-	/**
-	 * ClassLoader instance.
-	 */
-	private final ClassLoader commonLibCL;
+
 	/**
 	 * arguments instance.
 	 */
@@ -72,13 +69,12 @@ public class HostGroup {
 	 * @param args
 	 * @throws IOException
 	 */
-	public HostGroup(final Cluster cluster, final ObjectPool objectPool, final JndiManager jndiManager, final ClassLoader commonLibCL, final Map<String, String> args) throws IOException {
+	public HostGroup(final Cluster cluster, final ObjectPool objectPool, final JndiManager jndiManager, final Map<String, String> args) throws IOException {
 		super();
-		this.hostConfigs = new HashMap<String, HostConfiguration>();
+		hostConfigs = new HashMap<String, HostConfiguration>();
 		this.cluster = cluster;
 		this.objectPool = objectPool;
 		this.jndiManager = jndiManager;
-		this.commonLibCL = commonLibCL;
 		this.args = args;
 		// Is this the single or multiple configuration ? Check args
 		final String hostDirName = StringUtils.stringArg(args, "hostsDir", null);
@@ -116,7 +112,7 @@ public class HostGroup {
 	 */
 	public void addHostConfiguration(final String webappsDirName, final String hostname) {
 		HostGroup.logger.debug("Deploying host found at {}", hostname);
-		final HostConfiguration config = new HostConfiguration(hostname, cluster, objectPool, jndiManager, commonLibCL, args, webappsDirName);
+		final HostConfiguration config = new HostConfiguration(hostname, cluster, objectPool, jndiManager, args, webappsDirName);
 		hostConfigs.put(hostname, config);
 	}
 
@@ -167,7 +163,7 @@ public class HostGroup {
 			throw new WinstoneException("Hosts dir " + hostsDirName + " is not a directory");
 		} else {
 			final File children[] = hostsDir.listFiles();
-			if ((children == null) || (children.length == 0)) {
+			if (children == null || children.length == 0) {
 				throw new WinstoneException("Hosts dir " + hostsDirName + " is empty (no child webapps found)");
 			}
 			for (int n = 0; n < children.length; n++) {
@@ -179,7 +175,7 @@ public class HostGroup {
 					}
 				}
 				// set default host name
-				if ((defaultHostName == null) || childName.equals(HostGroup.DEFAULT_HOSTNAME)) {
+				if (defaultHostName == null || childName.equals(HostGroup.DEFAULT_HOSTNAME)) {
 					defaultHostName = childName;
 				}
 			}

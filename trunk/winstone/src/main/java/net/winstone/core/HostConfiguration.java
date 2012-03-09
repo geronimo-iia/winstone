@@ -68,10 +68,7 @@ public class HostConfiguration {
 	 * Object Pool instance.
 	 */
 	private final ObjectPool objectPool;
-	/**
-	 * Common libraries class loader instance.
-	 */
-	private final ClassLoader commonLibCL;
+
 	/**
 	 * JNDI Manager instance.
 	 */
@@ -90,44 +87,42 @@ public class HostConfiguration {
 	 * @param cluster
 	 * @param objectPool
 	 * @param jndiManager
-	 * @param commonLibCL
 	 * @param args
 	 * @param webappsDirName
 	 */
-	public HostConfiguration(final String hostname, final Cluster cluster, final ObjectPool objectPool, final JndiManager jndiManager, final ClassLoader commonLibCL, final Map<String, String> args, final String webappsDirName) {
+	public HostConfiguration(final String hostname, final Cluster cluster, final ObjectPool objectPool, final JndiManager jndiManager, final Map<String, String> args, final String webappsDirName) {
 		webapps = new HashMap<String, WebAppConfiguration>();
 		/** load configuration */
 		this.hostname = hostname;
 		this.args = args;
 		this.cluster = cluster;
 		this.objectPool = objectPool;
-		this.commonLibCL = commonLibCL;
 		this.jndiManager = jndiManager;
 		/**
 		 * For now we can keep this mode single/multiple
 		 */
 		if (webappsDirName == null) {
 			// Single web application
-			File warfile = StringUtils.fileArg(args, "warfile");
-			File webroot = StringUtils.fileArg(args, "webroot");
-			if ((warfile != null) || (webroot != null)) {
-				String prefix = StringUtils.stringArg(args, "prefix", "");
+			final File warfile = StringUtils.fileArg(args, "warfile");
+			final File webroot = StringUtils.fileArg(args, "webroot");
+			if (warfile != null || webroot != null) {
+				final String prefix = StringUtils.stringArg(args, "prefix", "");
 				try {
 					addWebAppConfiguration(prefix, getWebRoot(webroot, warfile), "webapp");
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", e);
 				}
 			}
 			// Several webroot on different locations
-			String webroots = StringUtils.stringArg(args, "webroots", null);
+			final String webroots = StringUtils.stringArg(args, "webroots", null);
 			if (webroots != null) {
-				StringTokenizer tokenizer = new StringTokenizer(webroots, ";");
+				final StringTokenizer tokenizer = new StringTokenizer(webroots, ";");
 				while (tokenizer.hasMoreTokens()) {
-					String root = tokenizer.nextToken();
+					final String root = tokenizer.nextToken();
 					if (!"".equals(root)) {
-						File froot = new File(root);
+						final File froot = new File(root);
 						if (!froot.exists()) {
-							logger.warn("WebRoot {} not exist. Skipping it", root);
+							HostConfiguration.logger.warn("WebRoot {} not exist. Skipping it", root);
 						} else {
 							deploy(froot, Boolean.FALSE);
 						}
@@ -142,7 +137,7 @@ public class HostConfiguration {
 			} else if (!webappsDir.isDirectory()) {
 				throw new WinstoneException("Webapps dir " + webappsDirName + " is not a directory");
 			} else {
-				for (File aChildren : webappsDir.listFiles()) {
+				for (final File aChildren : webappsDir.listFiles()) {
 					deploy(aChildren, Boolean.TRUE);
 				}
 			}
@@ -195,7 +190,7 @@ public class HostConfiguration {
 			webAppConfiguration = initWebApp(prefix, webRoot, contextName);
 			webapps.put(webAppConfiguration.getContextPath(), webAppConfiguration);
 			HostConfiguration.logger.info("Deploy web application: prefix [{}] webroot [{}]", prefix, webRoot);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", e);
 		}
 		return webAppConfiguration;
@@ -273,7 +268,7 @@ public class HostConfiguration {
 			final File webXmlFile = new File(webInfFolder, HostConfiguration.WEB_XML);
 			if (webXmlFile.exists()) {
 				HostConfiguration.logger.debug("Parsing web.xml");
-				final Document webXMLDoc = new WebXmlParser(commonLibCL).parseStreamToXML(webXmlFile);
+				final Document webXMLDoc = new WebXmlParser().parseStreamToXML(webXmlFile);
 				if (webXMLDoc != null) {
 					webXMLParentNode = webXMLDoc.getDocumentElement();
 					HostConfiguration.logger.debug("Finished parsing web.xml");
@@ -284,7 +279,7 @@ public class HostConfiguration {
 			}
 		}
 		// Instantiate the webAppConfig
-		return new WebAppConfiguration(this, cluster, jndiManager, webRoot.getCanonicalPath(), prefix, objectPool, args, webXMLParentNode, commonLibCL, contextName);
+		return new WebAppConfiguration(this, cluster, jndiManager, webRoot.getCanonicalPath(), prefix, objectPool, args, webXMLParentNode, contextName);
 	}
 
 	/**
@@ -313,8 +308,8 @@ public class HostConfiguration {
 	 * Destroy all webapplication.
 	 */
 	public void destroy() {
-		Set<String> prefixes = new HashSet<String>(webapps.keySet());
-		for (String prefixe : prefixes) {
+		final Set<String> prefixes = new HashSet<String>(webapps.keySet());
+		for (final String prefixe : prefixes) {
 			destroyWebApp(prefixe);
 		}
 		if (thread != null) {
@@ -326,7 +321,7 @@ public class HostConfiguration {
 	 * Invalidate all expired sessions.
 	 */
 	private void invalidateExpiredSessions() {
-		for (WebAppConfiguration webapp : webapps.values()) {
+		for (final WebAppConfiguration webapp : webapps.values()) {
 			webapp.invalidateExpiredSessions();
 		}
 	}
@@ -341,7 +336,7 @@ public class HostConfiguration {
 	 * @return
 	 * @throws IOException
 	 */
-	private File getWebRoot(File requestedWebroot, File warfile) throws IOException {
+	private File getWebRoot(final File requestedWebroot, final File warfile) throws IOException {
 		if (warfile != null) {
 			HostConfiguration.logger.info("Beginning extraction from war file");
 			// open the war file
@@ -383,7 +378,7 @@ public class HostConfiguration {
 			}
 
 			// check consistency and if out-of-sync, recreate
-			File timestampFile = new File(unzippedDir, ".timestamp");
+			final File timestampFile = new File(unzippedDir, ".timestamp");
 			if (!timestampFile.exists() || Math.abs(timestampFile.lastModified() - warfile.lastModified()) > 1000) {
 				// contents of the target directory is inconsistent from the
 				// war.
@@ -405,7 +400,7 @@ public class HostConfiguration {
 
 				// If archive date is newer than unzipped file, overwrite
 				final File outFile = new File(unzippedDir, elemName);
-				if (outFile.exists() && (outFile.lastModified() > warfile.lastModified())) {
+				if (outFile.exists() && outFile.lastModified() > warfile.lastModified()) {
 					continue;
 				}
 
@@ -440,7 +435,7 @@ public class HostConfiguration {
 	 * @param aChildren
 	 * @param checkMatchingWarfile
 	 */
-	private void deploy(File aChildren, boolean checkMatchingWarfile) {
+	private void deploy(final File aChildren, final boolean checkMatchingWarfile) {
 		final String childName = aChildren.getName();
 		// Check any directories for warfiles that match, and skip: only
 		// deploy the war file
@@ -467,7 +462,7 @@ public class HostConfiguration {
 				WebAppConfiguration webAppConfig = null;
 				try {
 					webAppConfig = addWebAppConfiguration(prefix, getWebRoot(new File(aChildren.getParentFile(), outputName), aChildren), outputName);
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					HostConfiguration.logger.error("Error initializing web application: prefix [" + prefix + "]", e);
 				}
 				if (webAppConfig != null) {
@@ -483,7 +478,7 @@ public class HostConfiguration {
 	 *         if none was found.
 	 */
 	public WebAppConfiguration getWebAppBySessionKey(final String sessionKey) {
-		for (WebAppConfiguration webAppConfiguration : webapps.values()) {
+		for (final WebAppConfiguration webAppConfiguration : webapps.values()) {
 			final WinstoneSession session = webAppConfiguration.getSessionById(sessionKey, Boolean.FALSE);
 			if (session != null) {
 				return webAppConfiguration;

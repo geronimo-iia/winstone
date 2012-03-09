@@ -32,12 +32,10 @@ import org.xml.sax.SAXParseException;
 public class WebXmlParser implements EntityResolver, ErrorHandler {
 
 	protected static org.slf4j.Logger logger = LoggerFactory.getLogger(WebXmlParser.class);
-	private final ClassLoader commonLoader;
-	private boolean rethrowValidationExceptions;
+	private boolean rethrowValidationExceptions = Boolean.TRUE;;
 
-	public WebXmlParser(final ClassLoader commonCL) {
-		commonLoader = commonCL;
-		rethrowValidationExceptions = Boolean.TRUE;
+	public WebXmlParser() {
+		super();
 	}
 
 	private final static String SCHEMA_SOURCE_PROPERTY = "http://java.sun.com/xml/jaxp/properties/schemaSource";
@@ -50,8 +48,8 @@ public class WebXmlParser implements EntityResolver, ErrorHandler {
 	public Document parseStreamToXML(final File webXmlFile) {
 		final DocumentBuilderFactory factory = getBaseDBF();
 
-		final URL localXSD25 = commonLoader.getResource(WebXmlParser.LOCAL_ENTITY_TABLE[3][2]);
-		final URL localXSD24 = commonLoader.getResource(WebXmlParser.LOCAL_ENTITY_TABLE[2][2]);
+		final URL localXSD25 = Thread.currentThread().getContextClassLoader().getResource(WebXmlParser.LOCAL_ENTITY_TABLE[3][2]);
+		final URL localXSD24 = Thread.currentThread().getContextClassLoader().getResource(WebXmlParser.LOCAL_ENTITY_TABLE[2][2]);
 
 		// Test for XSD compliance
 		try {
@@ -162,16 +160,16 @@ public class WebXmlParser implements EntityResolver, ErrorHandler {
 	public InputSource resolveEntity(final String publicName, final String url) throws SAXException, IOException {
 		WebXmlParser.logger.debug("Resolving entity - public={}, url={}", publicName, url);
 		for (int n = 0; n < WebXmlParser.LOCAL_ENTITY_TABLE.length; n++) {
-			if (((WebXmlParser.LOCAL_ENTITY_TABLE[n][0] != null) && (publicName != null) && publicName.equals(WebXmlParser.LOCAL_ENTITY_TABLE[n][0]))
-					|| ((WebXmlParser.LOCAL_ENTITY_TABLE[n][1] != null) && (url != null) && url.equals(WebXmlParser.LOCAL_ENTITY_TABLE[n][1]))) {
-				if (commonLoader.getResource(WebXmlParser.LOCAL_ENTITY_TABLE[n][2]) != null) {
+			if (WebXmlParser.LOCAL_ENTITY_TABLE[n][0] != null && publicName != null && publicName.equals(WebXmlParser.LOCAL_ENTITY_TABLE[n][0]) || WebXmlParser.LOCAL_ENTITY_TABLE[n][1] != null && url != null
+					&& url.equals(WebXmlParser.LOCAL_ENTITY_TABLE[n][1])) {
+				if (Thread.currentThread().getContextClassLoader().getResource(WebXmlParser.LOCAL_ENTITY_TABLE[n][2]) != null) {
 					return getLocalResource(url, WebXmlParser.LOCAL_ENTITY_TABLE[n][2]);
 				}
 			}
 		}
-		if ((url != null) && url.startsWith("jar:")) {
+		if (url != null && url.startsWith("jar:")) {
 			return getLocalResource(url, url.substring(url.indexOf("!/") + 2));
-		} else if ((url != null) && url.startsWith("file:")) {
+		} else if (url != null && url.startsWith("file:")) {
 			return new InputSource(url);
 		} else {
 			WebXmlParser.logger.debug("Cannot find local resource for url: {}", url);
@@ -180,10 +178,10 @@ public class WebXmlParser implements EntityResolver, ErrorHandler {
 	}
 
 	private InputSource getLocalResource(final String url, final String local) {
-		if (commonLoader.getResource(local) == null) {
+		if (Thread.currentThread().getContextClassLoader().getResource(local) == null) {
 			return new InputSource(url);
 		}
-		final InputSource is = new InputSource(commonLoader.getResourceAsStream(local));
+		final InputSource is = new InputSource(Thread.currentThread().getContextClassLoader().getResourceAsStream(local));
 		is.setSystemId(url);
 		return is;
 	}

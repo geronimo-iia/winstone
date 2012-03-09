@@ -6,10 +6,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -71,7 +71,7 @@ public class BootStrap {
 	 * @return a Server instance.
 	 */
 	public Server boot() {
-		Server server = null;
+		final Server server = null;
 		/** Load argument for server initialization. */
 		BootStrap.logger.info("stage 1/3: Loading arguments...");
 		Map<String, String> args = arguments;
@@ -113,8 +113,7 @@ public class BootStrap {
 		/** compute lib path */
 		BootStrap.logger.info("stage 3/3: compute JSP classpath...");
 		computeJSPClassPath(args);
-		server = new Server(args, getClass().getClassLoader());
-		return server;
+		return new Server(args);
 	}
 
 	/**
@@ -123,76 +122,34 @@ public class BootStrap {
 	 * @param args
 	 * @throws IOException
 	 */
-	protected void computeJSPClassPath(final Map<String, String> args) {
+	private void computeJSPClassPath(final Map<String, String> args) {
+
+		String javaHome = StringUtils.stringArg(args, "javaHome", null);
+		if (javaHome != null) {
+			BootStrap.logger.warn("argument --javaHome is deprecated. Set JAVA_HOME variable instead.");
+		}
+		String toolsJar = StringUtils.stringArg(args, "toolsJar", null);
+		if (toolsJar != null) {
+			BootStrap.logger.warn("argument --toolsJar is deprecated. Default is JAVA_HOME/lib/tools.jar, or in the winstone server libraries.");
+		}
+		// if (StringUtils.booleanArg(args, "useJasper", Boolean.FALSE)) {
+		// BootStrap.logger.warn("WARNING: Tools.jar was not found - jsp compilation will cause errors. Maybe you should set JAVA_HOME using --javaHome");
+		// }
 		try {
-			final List<File> jspClasspaths = new ArrayList<File>();
-
-			// Check for java home
-			String javaHome = StringUtils.stringArg(args, "javaHome", System.getProperty("java.home"));
-			BootStrap.logger.debug("Using JAVA_HOME={}", javaHome);
-			final String toolsJarLocation = StringUtils.stringArg(args, "toolsJar", null);
-			File toolsJar = null;
-			if (toolsJarLocation == null) {
-				toolsJar = new File(javaHome, "lib/tools.jar");
-
-				// first try - if it doesn't exist, try up one dir since we
-				// might have
-				// the JRE home by mistake
-				if (!toolsJar.exists()) {
-					final File javaHome2 = new File(javaHome).getParentFile();
-					final File toolsJar2 = new File(javaHome2, "lib/tools.jar");
-					if (toolsJar2.exists()) {
-						javaHome = javaHome2.getCanonicalPath();
-						toolsJar = toolsJar2;
-					}
-				}
-			} else {
-				toolsJar = new File(toolsJarLocation);
-			}
-
-			// Add tools jar to classloader path
-			if (toolsJar.exists()) {
-				jspClasspaths.add(toolsJar);
-				BootStrap.logger.debug("Adding {} to common classpath", toolsJar.getName());
-			} else if (StringUtils.booleanArg(args, "useJasper", Boolean.FALSE)) {
-				BootStrap.logger.warn("WARNING: Tools.jar was not found - jsp compilation will cause errors. Maybe you should set JAVA_HOME using --javaHome");
-			}
-
-			// Set up common lib class loader
-			final String commonLibCLFolder = StringUtils.stringArg(args, "commonLibFolder", "lib");
-			final File libFolder = new File(commonLibCLFolder);
-			if (libFolder.exists() && libFolder.isDirectory()) {
-				addFolderToClassPath(jspClasspaths, libFolder);
-			} else {
-				BootStrap.logger.debug("No common lib folder found");
-			}
-
-			
-			BootStrap.logger.debug("Initializing JSP Common Lib classloader: {}", jspClasspaths.toString());
-			/** calcule de m'attribut pour les jsp */
+			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+			URLClassLoader loader = (URLClassLoader) classLoader;
+			URL[] urls = loader.getURLs();
+			BootStrap.logger.debug("Initializing JSP Common Lib classloader: {}", urls.toString());
 			final StringBuilder cp = new StringBuilder();
-			final File[] fa = jspClasspaths.toArray(new File[0]);
-			for (int n = 0; n < fa.length; n++) {
-				cp.append(fa[n].getCanonicalPath()).append(File.pathSeparatorChar);
+			for (URL url : urls) {
+				cp.append(new File(url.getFile()).getCanonicalPath()).append(File.pathSeparatorChar);
 			}
 			final String jspClasspath = cp.length() > 0 ? cp.substring(0, cp.length() - 1) : "";
 			if (!args.containsKey("jspClasspath")) {
 				args.put("jspClasspath", jspClasspath);
 			}
-
 		} catch (final IOException ex) {
 			BootStrap.logger.error("computeClassPath", ex);
-		}
-	}
-
-	protected void addFolderToClassPath(final List<File> jspClasspaths, final File libFolder) throws IOException {
-		BootStrap.logger.debug("Using lib folder: {}", libFolder.getCanonicalPath());
-		final File children[] = libFolder.listFiles();
-		for (int n = 0; n < children.length; n++) {
-			if (children[n].getName().endsWith(".jar") || children[n].getName().endsWith(".zip")) {
-				jspClasspaths.add(children[n]);
-				BootStrap.logger.debug("Adding {} to common classpath", children[n].getName());
-			}
 		}
 	}
 
@@ -264,7 +221,7 @@ public class BootStrap {
 	 *            arguments
 	 * @throws IOException
 	 */
-	protected void loadPropsFromStream(final InputStream inConfig, final Map<String, String> args) throws IOException {
+	private void loadPropsFromStream(final InputStream inConfig, final Map<String, String> args) throws IOException {
 		final Properties props = new Properties();
 		props.load(inConfig);
 		for (final Iterator<Object> i = props.keySet().iterator(); i.hasNext();) {
@@ -282,7 +239,7 @@ public class BootStrap {
 	 * @param args
 	 * @return Boolean.TRUE if one is found, Boolean.FALSE otherwise.
 	 */
-	protected boolean deployEmbeddedWarfile(final Map<String, String> args) {
+	private boolean deployEmbeddedWarfile(final Map<String, String> args) {
 		boolean result = Boolean.FALSE;
 		final InputStream embeddedWarfile = BootStrap.class.getResourceAsStream(BootStrap.EMBEDDED_WAR);
 		if (embeddedWarfile != null) {
@@ -317,7 +274,7 @@ public class BootStrap {
 	}
 
 	/** print usage */
-	protected void printUsage() {
+	private void printUsage() {
 		// if the caller overrides the usage, use that instead.
 		if (usage == null) {
 			usage = WinstoneResourceBundle.getInstance().getString("UsageInstructions", WinstoneResourceBundle.getInstance().getString("ServerVersion"));
@@ -336,7 +293,7 @@ public class BootStrap {
 	 * @param usage
 	 *            the usage to set
 	 */
-	public final void setUsage(String usage) {
+	public final void setUsage(final String usage) {
 		this.usage = usage;
 	}
 
