@@ -21,6 +21,8 @@ public class Winstone {
 	public static void main(final String[] args) {
 		final BootStrap bootStrap = new BootStrap(args);
 		final Server server = bootStrap.boot();
-		server.start();
+		if (server != null) {
+			server.start();
+		}
 	}
 }
