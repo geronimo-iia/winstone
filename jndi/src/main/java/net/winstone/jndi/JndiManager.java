@@ -108,15 +108,14 @@ public class JndiManager {
 	 * 
 	 * @param dataSourceConfig
 	 *            the datasource configuration to bindSmtpSession.
-	 * @param loader
-	 *            the classloader to use
+	 * 
 	 * @throws IllegalStateException
 	 *             If Jndi manager is closed
 	 * @throws NamingException
 	 *             If binding already exists.
 	 */
-	public void bind(final DataSourceConfig dataSourceConfig, final ClassLoader loader) throws IllegalStateException, NamingException {
-		final SimpleDatasource dataSource = new SimpleDatasource(dataSourceConfig, loader);
+	public void bind(final DataSourceConfig dataSourceConfig) throws IllegalStateException, NamingException {
+		final SimpleDatasource dataSource = new SimpleDatasource(dataSourceConfig);
 		String jndiName = dataSource.getName();
 		if (jndiName.startsWith("jdbc/")) {
 			jndiName = "java:/comp/env/" + jndiName;

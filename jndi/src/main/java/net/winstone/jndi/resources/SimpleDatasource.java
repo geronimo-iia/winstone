@@ -51,11 +51,11 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 	 * @throws IllegalStateException
 	 *             if database driver cannot be loaded
 	 */
-	public SimpleDatasource(final DataSourceConfig config, final ClassLoader loader) throws IllegalArgumentException, IllegalStateException {
+	public SimpleDatasource(final DataSourceConfig config) throws IllegalArgumentException, IllegalStateException {
 		super();
 		logWriter = null;
 		// Set datasource name
-		name = (config.getName() != null) ? config.getName() : config.getUrl();
+		name = config.getName() != null ? config.getName() : config.getUrl();
 		// init connection properties
 		connectionProperties = new Properties();
 		if (config.getUsername() != null) {
@@ -66,12 +66,12 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 		}
 		// check url
 		url = config.getUrl();
-		if ((url == null) || url.isEmpty()) {
+		if (url == null || url.isEmpty()) {
 			throw new IllegalArgumentException(String.format("Can't create database %s connection : url not provided", config.getName()));
 		}
 		// set validation query
 		validationQuery = config.getValidationQuery();
-		validated = ((config.getValidationQuery() != null) && (config.getValidationQuery().length() > 0));
+		validated = config.getValidationQuery() != null && config.getValidationQuery().length() > 0;
 		validationTimeOut = config.getValidationTimeOut();
 		if (validationTimeOut <= 0) {
 			throw new IllegalArgumentException(String.format("Database %s: validation TimeOut must be > 0", config.getName()));
@@ -85,7 +85,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 		// try to init driver
 		try {
 			if (config.getDriverClassName() != null) {
-				final Class<?> driverClass = Class.forName(config.getDriverClassName().trim(), Boolean.TRUE, loader);
+				final Class<?> driverClass = Class.forName(config.getDriverClassName().trim());
 				driver = (Driver) driverClass.newInstance();
 			} else {
 				driver = DriverManager.getDriver(config.getUrl());
@@ -235,7 +235,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 	 * Execute keep alive operation on all idle connection.
 	 */
 	public void keepAlive() {
-		if ((keepAliveSQL != null) && !keepAliveSQL.isEmpty()) {
+		if (keepAliveSQL != null && !keepAliveSQL.isEmpty()) {
 			try {
 				pool.applyOnIdle(new Function<Void, Connection>() {
 
@@ -288,11 +288,11 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 		try {
 			if ("isValid".equals(validationQuery)) {
 				try {
-					return ((Boolean) connection.getClass().getMethod("isValid", int.class).invoke(10));
+					return (Boolean) connection.getClass().getMethod("isValid", int.class).invoke(10);
 				} catch (final Exception e) {
 				}
 			} else if ("isClosed".equals(validationQuery)) {
-				return (connection.isClosed() == Boolean.FALSE);
+				return connection.isClosed() == Boolean.FALSE;
 			} else {
 				// validation task
 				final FutureTask<Boolean> futureTask = new FutureTask<Boolean>(new Runnable() {
@@ -338,7 +338,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 	 */
 	private void log(final String message, final Throwable err, final Object... args) {
 		if (logWriter != null) {
-			if ((args == null) || (args.length == 0)) {
+			if (args == null || args.length == 0) {
 				logWriter.println(message);
 			} else {
 				logWriter.write(String.format(message, args));
@@ -391,7 +391,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 			} else {
 				try {
 					final Object realStmt = method.invoke(connection, args);
-					if ((realStmt instanceof Statement) == Boolean.FALSE) {
+					if (realStmt instanceof Statement == Boolean.FALSE) {
 						return realStmt;
 					}
 				} catch (final InvocationTargetException exception) {

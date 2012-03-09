@@ -27,7 +27,7 @@ public class SimpleDatasourceTest extends AbstractJndiTestCase {
 		// config.setPassword("");
 		config.setMaxActive(2);
 		config.setMaxWait(100);
-		jndiManager.bind(config, Thread.currentThread().getContextClassLoader());
+		jndiManager.bind(config);
 	}
 
 	public void testConnection() throws NamingException, SQLException {

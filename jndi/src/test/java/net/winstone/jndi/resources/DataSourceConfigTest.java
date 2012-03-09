@@ -18,7 +18,7 @@ public class DataSourceConfigTest extends AbstractJndiTestCase {
 		// config.setPassword("");
 		// config.setDriverClassName("org.h2.Driver");
 		config.setMaxWait(500);
-		jndiManager.bind(config, Thread.currentThread().getContextClassLoader());
+		jndiManager.bind(config);
 
 		Assert.assertNotNull(jndiName + " not exists", jndiManager.getInitialContext().lookup(jndiName));
 		Assert.assertTrue(jndiName + " is not an instance of DataSource", jndiManager.getInitialContext().lookup(jndiName) instanceof DataSource);
