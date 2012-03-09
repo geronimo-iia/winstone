@@ -21,7 +21,7 @@ Configuration can be done in two ways:
 }}}
     * Command line arguments - This is for more complex objects that require attributes to be created (JDBC DataSources for example). The syntax here involves adding a clause of the kind `--jndi.resource.<resName>=<className>` for each object to create, followed by `--jndi.param.<resName>.<attName>=<attValue>` for each attribute required. For example:
 {{{
-      java -jar winstone.jar ...< other options > ... 
+      java -jar winstone-X.X.X-boot.jar ...< other options > ... 
                               --useJNDI=true 
                               --jndi.resource.test=java.lang.Float 
                               --jndi.param.test.value=45.56
@@ -33,10 +33,16 @@ Additionally, it includes a JDBC DataSource object which can be used as a wrappe
 
 === Add your JDBC driver ====
 
-Either you add your driver to classpath with command line switch, or you can :
-  # Open winstone jar, and locate /lib folder.
-  # put your jdbc driver under this folder
-  # that's all
+You can:
+  * Add your driver to classpath with jvm command line switch {{{-cp}}},
+  * Use Bootstrap.extraLibrariesFolderPath parameter, by setting an external folder where your jar are located (since 1.0.4).
+{{{
+      java -jar winstone-X.X.X-boot.jar --Bootstrap.extraLibrariesFolderPath=./my-lib ...
+}}}
+  * Customize winstone archive:
+    # Open winstone jar, and locate /lib folder.
+    # put your jdbc driver under this folder
+    # that's all
 
 === Datasource Options ===
 
