@@ -22,13 +22,10 @@ Example: --webroots=../target/sample.war;./sample-2-folder
 ==Other options:==
 
 {{{
---javaHome               = Override the JAVA_HOME variable
---toolsJar               = The location of tools.jar. Default is JAVA_HOME/lib/tools.jar
 --config                 = load configuration properties from here. Default is ./winstone.properties
 --prefix                 = add this prefix to all URLs (eg http://localhost:8080/prefix/resource). Default is none
 --tempDirectory          = specify a default temporary directory.
-
---commonLibFolder        = folder for additional jar files. Default is ./lib
+--Bootstrap.extraLibrariesFolderPath = folder for additional jar files. Default is ./lib. (since 1.0.4)
 }}}
 
 
@@ -101,4 +98,11 @@ against hash DoS attack (oCERT #2011-003). Default is 10000.
 --accessLoggerClassName        = Set the access logger class to use for user authentication. Defaults to disabled
 --simpleAccessLogger.format    = The log format to use. Supports combined/common/resin/custom (SimpleAccessLogger only)
 --simpleAccessLogger.file      = The location pattern for the log file(SimpleAccessLogger only)
+}}}
+
+===Deprecated===
+{{{
+--javaHome               = Deprecated. Override the JAVA_HOME variable by setting his value on command shell
+--toolsJar               = Deprecated. Default is JAVA_HOME/lib/tools.jar, or in the winstone server libraries.
+--commonLibFolder        = Deprecated. See --Bootstrap.extraLibrariesFolderPath
 }}}
