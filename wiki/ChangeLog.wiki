@@ -13,6 +13,7 @@
     *  --javaHome, Override the JAVA_HOME variable by setting his value on command shell
     * --toolsJar Default is JAVA_HOME/lib/tools.jar, or in the winstone server libraries.
   * Add a ServerConfiguration object and server configuration DSL (testing purpose only)
+  * Mark session cookies as HTTP only so that it won't show to JavaScript. (from jenkins branch)
 
 
 ==v1.0.3 ==
