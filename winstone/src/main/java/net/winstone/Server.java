@@ -53,10 +53,7 @@ public class Server implements LifeCycle {
 	 * parameter
 	 */
 	private final Map<String, String> args;
-	/**
-	 * common libraries class loader
-	 */
-	private final ClassLoader commonLibClassLoader;
+
 	/**
 	 * control
 	 */
@@ -91,21 +88,15 @@ public class Server implements LifeCycle {
 	 * 
 	 * @param args
 	 *            configuration
-	 * @param commonLibClassLoader
-	 *            class loader of common lib folder
 	 * @throws IllegalArgumentException
 	 *             if args or commonLibClassLoader is null.
 	 */
-	public Server(final Map<String, String> args, final ClassLoader commonLibClassLoader) throws IllegalArgumentException {
+	public Server(final Map<String, String> args) throws IllegalArgumentException {
 		super();
 		if (args == null) {
 			throw new IllegalArgumentException("arg can not be null or empty");
 		}
-		if (commonLibClassLoader == null) {
-			throw new IllegalArgumentException("commonLibClassLoader can not be null");
-		}
 		this.args = args;
-		this.commonLibClassLoader = commonLibClassLoader;
 	}
 
 	/**
@@ -128,7 +119,7 @@ public class Server implements LifeCycle {
 			controlPort = (args.get("controlPort") == null ? DEFAULT_CONTROL_PORT : Integer.parseInt(args.get("controlPort")));
 			initializeCluster();
 			// Open the web apps
-			hostGroup = new HostGroup(cluster, objectPool, globalJndiManager, commonLibClassLoader, args);
+			hostGroup = new HostGroup(cluster, objectPool, globalJndiManager, args);
 			initializeListener();
 			if (!listeners.isEmpty()) {
 				controlThread = new Thread(new ServerControlThread(), "LauncherControlThread[ControlPort=" + Integer.toString(controlPort) + "]]");
@@ -256,7 +247,7 @@ public class Server implements LifeCycle {
 			final String jndiMgrClassName = StringUtils.stringArg(args, "containerJndiClassName", JndiManager.class.getName()).trim();
 			try {
 				// Build the realm
-				final Class<?> jndiMgrClass = Class.forName(jndiMgrClassName, Boolean.TRUE, commonLibClassLoader);
+				final Class<?> jndiMgrClass = Class.forName(jndiMgrClassName);
 				globalJndiManager = (JndiManager) jndiMgrClass.newInstance();
 				globalJndiManager.initialize();
 				Server.logger.info("JNDI Started {}", jndiMgrClass.getName());
@@ -274,7 +265,7 @@ public class Server implements LifeCycle {
 					final String className = args.get(key);
 					final String value = args.get("jndi.param." + resourceName + ".value");
 					Server.logger.debug("Creating object: {} from startup arguments", resourceName);
-					createObject(resourceName.trim(), className.trim(), value, args, commonLibClassLoader);
+					createObject(resourceName.trim(), className.trim(), value, args);
 				}
 			}
 
@@ -284,7 +275,7 @@ public class Server implements LifeCycle {
 	/**
 	 * Build an object to insert into the jndi space
 	 */
-	protected final boolean createObject(final String name, final String className, final String value, final Map<String, String> args, final ClassLoader loader) {
+	protected final boolean createObject(final String name, final String className, final String value, final Map<String, String> args) {
 		// basic check
 		if ((className == null) || (name == null)) {
 			return Boolean.FALSE;
@@ -294,7 +285,7 @@ public class Server implements LifeCycle {
 		if (className.equals("javax.sql.DataSource")) {
 			try {
 				final DataSourceConfig dataSourceConfig = MapConverter.apply(extractRelevantArgs(args, name), new DataSourceConfig());
-				globalJndiManager.bind(dataSourceConfig, loader);
+				globalJndiManager.bind(dataSourceConfig);
 				return Boolean.TRUE;
 			} catch (final Throwable err) {
 				Server.logger.error("Error building JDBC Datasource object " + name, err);
@@ -304,7 +295,7 @@ public class Server implements LifeCycle {
 			try {
 				final Properties p = new Properties();
 				p.putAll(extractRelevantArgs(args, name));
-				globalJndiManager.bindSmtpSession(name, p, loader);
+				globalJndiManager.bindSmtpSession(name, p, Thread.currentThread().getContextClassLoader());
 				return Boolean.TRUE;
 			} catch (final Throwable err) {
 				Server.logger.error("Error building JavaMail session " + name, err);
@@ -312,7 +303,7 @@ public class Server implements LifeCycle {
 		} // If unknown type, try to instantiate with the string constructor
 		else if (value != null) {
 			try {
-				globalJndiManager.bind(name, className, value, loader);
+				globalJndiManager.bind(name, className, value, Thread.currentThread().getContextClassLoader());
 				return Boolean.TRUE;
 			} catch (final Throwable err) {
 				Server.logger.error("Error building JNDI object " + name + " (class: " + className + ")", err);
@@ -494,13 +485,6 @@ public class Server implements LifeCycle {
 	 */
 	public int getControlPort() {
 		return controlPort;
-	}
-
-	/**
-	 * @return the commonLibClassLoader
-	 */
-	public ClassLoader getCommonLibClassLoader() {
-		return commonLibClassLoader;
 	}
 
 	/**
