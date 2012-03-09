@@ -14,10 +14,12 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 
@@ -58,11 +60,15 @@ public class WinstoneResponse implements HttpServletResponse {
 	private String explicitEncoding;
 	private String implicitEncoding;
 	private final List<Cookie> cookies;
+	/**
+	 * Of {@link #cookies}, ones that should be marked as "HttpOnly". See
+	 * http://en.wikipedia.org/wiki/HTTP_cookie#HttpOnly_cookie
+	 */
+	private final Set<Cookie> httpOnlyCookies;
 	private Locale locale;
 	private String protocol;
 	private String reqKeepAliveHeader;
 	private Integer errorStatusCode;
-	
 
 	/**
 	 * Build a new instance of WinstoneResponse.
@@ -71,6 +77,7 @@ public class WinstoneResponse implements HttpServletResponse {
 		super();
 		headers = new ArrayList<String>();
 		cookies = new ArrayList<Cookie>();
+		httpOnlyCookies = new HashSet<Cookie>();
 
 		statusCode = HttpServletResponse.SC_OK;
 		locale = null; // Locale.getDefault();
@@ -89,6 +96,7 @@ public class WinstoneResponse implements HttpServletResponse {
 		outputWriter = null;
 		headers.clear();
 		cookies.clear();
+		httpOnlyCookies.clear();
 		protocol = null;
 		reqKeepAliveHeader = null;
 
@@ -101,6 +109,7 @@ public class WinstoneResponse implements HttpServletResponse {
 
 	/**
 	 * Determine witch encoding to use for specified locale.
+	 * 
 	 * @param locale
 	 * @return
 	 */
@@ -204,7 +213,7 @@ public class WinstoneResponse implements HttpServletResponse {
 				remainder.append(clause);
 			}
 		}
-		if ((localEncoding == null) || !localEncoding.startsWith("\"") || !localEncoding.endsWith("\"")) {
+		if (localEncoding == null || !localEncoding.startsWith("\"") || !localEncoding.endsWith("\"")) {
 			return localEncoding;
 		} else {
 			return localEncoding.substring(1, localEncoding.length() - 1);
@@ -218,7 +227,7 @@ public class WinstoneResponse implements HttpServletResponse {
 		// Need this block for WebDAV support. "Connection:close" header is
 		// ignored
 		String lengthHeader = getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
-		if ((lengthHeader == null) && (statusCode >= 300)) {
+		if (lengthHeader == null && statusCode >= 300) {
 			final long bodyBytes = outputStream.getOutputStreamLength();
 			if (getBufferSize() > bodyBytes) {
 				WinstoneResponse.logger.debug("Keep-alive requested but no content length set. Setting to {} bytes", "" + bodyBytes);
@@ -248,7 +257,7 @@ public class WinstoneResponse implements HttpServletResponse {
 		}
 		if (locale != null) {
 			String lang = locale.getLanguage();
-			if ((locale.getCountry() != null) && !locale.getCountry().equals("")) {
+			if (locale.getCountry() != null && !locale.getCountry().equals("")) {
 				lang = lang + "-" + locale.getCountry();
 			}
 			forceHeader(WinstoneConstant.CONTENT_LANGUAGE_HEADER, lang);
@@ -267,7 +276,7 @@ public class WinstoneResponse implements HttpServletResponse {
 			final WebAppConfiguration ownerContext = hostConfig.getWebAppByURI(prefix);
 			if (ownerContext != null) {
 				final WinstoneSession session = ownerContext.getSessionById(sessionId, Boolean.TRUE);
-				if ((session != null) && session.isNew()) {
+				if (session != null && session.isNew()) {
 					session.setIsNew(Boolean.FALSE);
 					final Cookie cookie = new Cookie(WinstoneSession.SESSION_COOKIE_NAME, session.getId());
 					cookie.setMaxAge(-1);
@@ -276,6 +285,8 @@ public class WinstoneResponse implements HttpServletResponse {
 					cookie.setPath(req.getWebAppConfig().getContextPath().equals("") ? "/" : req.getWebAppConfig().getContextPath());
 					cookies.add(cookie); // don't call addCookie because we
 											// might be including
+					httpOnlyCookies.add(cookie);
+
 				}
 			}
 		}
@@ -291,8 +302,9 @@ public class WinstoneResponse implements HttpServletResponse {
 				cookie.setSecure(req.isSecure());
 				cookie.setVersion(0); // req.isSecure() ? 1 : 0);
 				cookie.setPath(prefix.equals("") ? "/" : prefix);
-				cookies.add(cookie); // don't call addCookie because we
-										// might be including
+				cookies.add(cookie); // don't call addCookie because we might be
+										// including
+				httpOnlyCookies.add(cookie);
 			}
 		}
 		WinstoneResponse.logger.debug("Headers prepared for writing: {}", "" + headers + "");
@@ -348,7 +360,7 @@ public class WinstoneResponse implements HttpServletResponse {
 				out.append(cookie.getDomain());
 			}
 			if (cookie.getMaxAge() > 0) {
-				final long expiryMS = System.currentTimeMillis() + (1000 * (long) cookie.getMaxAge());
+				final long expiryMS = System.currentTimeMillis() + 1000 * (long) cookie.getMaxAge();
 				String expiryDate = null;
 				synchronized (WinstoneResponse.VERSION0_DF) {
 					expiryDate = WinstoneResponse.VERSION0_DF.format(new Date(expiryMS));
@@ -367,6 +379,9 @@ public class WinstoneResponse implements HttpServletResponse {
 			if (cookie.getSecure()) {
 				out.append("; Secure");
 			}
+		}
+		if (httpOnlyCookies.contains(cookie)) {
+			out.append("; HttpOnly");
 		}
 		return out.toString();
 	}
@@ -390,7 +405,7 @@ public class WinstoneResponse implements HttpServletResponse {
 			boolean containsSpecial = Boolean.FALSE;
 			for (int n = 0; n < value.length(); n++) {
 				final char thisChar = value.charAt(n);
-				if ((thisChar < 32) || (thisChar >= 127) || (WinstoneResponse.specialCharacters.indexOf(thisChar) != -1)) {
+				if (thisChar < 32 || thisChar >= 127 || WinstoneResponse.specialCharacters.indexOf(thisChar) != -1) {
 					containsSpecial = Boolean.TRUE;
 					break;
 				}
@@ -412,10 +427,10 @@ public class WinstoneResponse implements HttpServletResponse {
 	public boolean closeAfterRequest() {
 		final String inKeepAliveHeader = reqKeepAliveHeader;
 		final String outKeepAliveHeader = getHeader(WinstoneConstant.KEEP_ALIVE_HEADER);
-		final boolean hasContentLength = (getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER) != null);
+		final boolean hasContentLength = getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER) != null;
 		if (protocol.startsWith("HTTP/0")) {
 			return Boolean.TRUE;
-		} else if ((inKeepAliveHeader == null) && (outKeepAliveHeader == null)) {
+		} else if (inKeepAliveHeader == null && outKeepAliveHeader == null) {
 			return protocol.equals("HTTP/1.0") ? Boolean.TRUE : !hasContentLength;
 		} else if (outKeepAliveHeader != null) {
 			return outKeepAliveHeader.equalsIgnoreCase(WinstoneConstant.KEEP_ALIVE_CLOSE) || !hasContentLength;
@@ -433,8 +448,8 @@ public class WinstoneResponse implements HttpServletResponse {
 			outputWriter.flush();
 		}
 		try {
-			this.outputStream.flush();
-		} catch (ClientSocketException e) {
+			outputStream.flush();
+		} catch (final ClientSocketException e) {
 			// ignore this error as it's not interesting enough to log
 		}
 	}
@@ -452,12 +467,12 @@ public class WinstoneResponse implements HttpServletResponse {
 	@Override
 	public String getCharacterEncoding() {
 		final String enc = getCurrentEncoding();
-		return (enc == null ? "ISO-8859-1" : enc);
+		return enc == null ? "ISO-8859-1" : enc;
 	}
 
 	@Override
 	public void setCharacterEncoding(final String encoding) {
-		if ((outputWriter == null) && !isCommitted()) {
+		if (outputWriter == null && !isCommitted()) {
 			WinstoneResponse.logger.debug("Setting response character encoding to {}", encoding);
 			explicitEncoding = encoding;
 			correctContentTypeHeaderEncoding(encoding);
@@ -501,7 +516,7 @@ public class WinstoneResponse implements HttpServletResponse {
 		} else if (isCommitted()) {
 			WinstoneResponse.logger.warn("Response.setLocale() ignored, because getWriter already called");
 		} else {
-			if ((outputWriter == null) && (explicitEncoding == null)) {
+			if (outputWriter == null && explicitEncoding == null) {
 				final String localeEncoding = getEncodingFromLocale(loc);
 				if (localeEncoding != null) {
 					implicitEncoding = localeEncoding;
@@ -541,6 +556,7 @@ public class WinstoneResponse implements HttpServletResponse {
 			statusCode = HttpServletResponse.SC_OK;
 			headers.clear();
 			cookies.clear();
+			httpOnlyCookies.clear();
 		}
 	}
 
@@ -638,7 +654,7 @@ public class WinstoneResponse implements HttpServletResponse {
 			WinstoneResponse.logger.debug("Header ignored after response committed - {}: {} ", name, value);
 		} else {
 			boolean found = Boolean.FALSE;
-			for (int n = 0; (n < headers.size()); n++) {
+			for (int n = 0; n < headers.size(); n++) {
 				final String header = headers.get(n);
 				if (header.startsWith(name + ": ")) {
 					if (found) {
@@ -673,7 +689,7 @@ public class WinstoneResponse implements HttpServletResponse {
 
 	private void forceHeader(final String name, final String value) {
 		boolean found = Boolean.FALSE;
-		for (int n = 0; (n < headers.size()); n++) {
+		for (int n = 0; n < headers.size(); n++) {
 			final String header = headers.get(n);
 			if (header.startsWith(name + ": ")) {
 				found = Boolean.TRUE;
@@ -690,7 +706,7 @@ public class WinstoneResponse implements HttpServletResponse {
 			return explicitEncoding;
 		} else if (implicitEncoding != null) {
 			return implicitEncoding;
-		} else if ((req != null) && (req.getCharacterEncoding() != null)) {
+		} else if (req != null && req.getCharacterEncoding() != null) {
 			try {
 				"0".getBytes(req.getCharacterEncoding());
 				return req.getCharacterEncoding();
@@ -732,7 +748,7 @@ public class WinstoneResponse implements HttpServletResponse {
 
 	@Override
 	public void setStatus(final int sc) {
-		if (!isIncluding() && (errorStatusCode == null)) {
+		if (!isIncluding() && errorStatusCode == null) {
 			// if (!isIncluding()) {
 			statusCode = sc;
 			// if (this.errorStatusCode != null) {
@@ -762,7 +778,7 @@ public class WinstoneResponse implements HttpServletResponse {
 
 			fullLocation.append(req.getScheme()).append("://");
 			fullLocation.append(req.getServerName());
-			if (!((req.getServerPort() == 80) && req.getScheme().equals("http")) && !((req.getServerPort() == 443) && req.getScheme().equals("https"))) {
+			if (!(req.getServerPort() == 80 && req.getScheme().equals("http")) && !(req.getServerPort() == 443 && req.getScheme().equals("https"))) {
 				fullLocation.append(':').append(req.getServerPort());
 			}
 			if (location.startsWith("/")) {
@@ -798,7 +814,7 @@ public class WinstoneResponse implements HttpServletResponse {
 			return;
 		}
 		WinstoneResponse.logger.debug("Sending error message to browser: code {}, message: {}", "" + sc, msg);
-		if ((webAppConfig != null) && (req != null)) {
+		if (webAppConfig != null && req != null) {
 
 			final SimpleRequestDispatcher rd = webAppConfig.getErrorDispatcherByCode(req.getRequestURI(), sc, msg, null);
 			if (rd != null) {
@@ -822,7 +838,7 @@ public class WinstoneResponse implements HttpServletResponse {
 		if (errorStatusCode == null) {
 			statusCode = sc;
 		}
-		final String output = WinstoneResourceBundle.getInstance().getString("WinstoneResponse.ErrorPage", sc + "", (msg == null ? "" : StringUtils.htmlEscapeBasicMarkup(msg)), "", WinstoneResourceBundle.getInstance().getString("ServerVersion"),
+		final String output = WinstoneResourceBundle.getInstance().getString("WinstoneResponse.ErrorPage", sc + "", msg == null ? "" : StringUtils.htmlEscapeBasicMarkup(msg), "", WinstoneResourceBundle.getInstance().getString("ServerVersion"),
 				"" + new Date());
 		setContentLength(output.getBytes(getCharacterEncoding()).length);
 		final Writer out = getWriter();
