@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>net.winstone</groupId>
 		<artifactId>winstone-project</artifactId>
-		<version>1.0.4</version>
+		<version>1.0.5-SNAPSHOT</version>
 	</parent>
 	<artifactId>winstone</artifactId>
 	<packaging>jar</packaging>
@@ -69,7 +69,7 @@
 		<dependency>
 			<groupId>net.winstone</groupId>
 			<artifactId>jndi</artifactId>
-			<version>1.0.4</version>
+			<version>1.0.5-SNAPSHOT</version>
 		</dependency>
 		<!-- we did not add mail dependency in minimal system -->
 		<dependency>
