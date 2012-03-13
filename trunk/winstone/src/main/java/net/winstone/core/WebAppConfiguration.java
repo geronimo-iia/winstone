@@ -222,7 +222,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 				Class.forName(WinstoneConstant.JSP_SERVLET_CLASS, Boolean.TRUE, loader);
 			} catch (final Throwable err) {
 				if (StringUtils.booleanArg(startupArgs, "useJasper", Boolean.FALSE)) {
-					WebAppConfiguration.logger.warn("WARNING: Jasper servlet not found - disabling JSP support. Do you have all \nthe jasper libraries in the common lib folder (see --commonLibFolder setting) ?");
+					WebAppConfiguration.logger.warn("WARNING: Jasper servlet not found - disabling JSP support. Do you have all \nthe jasper libraries in the lib folder ?");
 					WebAppConfiguration.logger.debug("Error loading Jasper JSP compilation servlet");
 				}
 				useJasper = Boolean.FALSE;
