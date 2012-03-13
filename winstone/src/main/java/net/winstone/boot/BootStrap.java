@@ -132,6 +132,10 @@ public class BootStrap {
 		if (toolsJar != null) {
 			BootStrap.logger.warn("argument --toolsJar is deprecated. Default is JAVA_HOME/lib/tools.jar, or in the winstone server libraries.");
 		}
+		String commonLibFolder = StringUtils.stringArg(args, "commonLibFolder", null);
+		if (commonLibFolder != null) {
+			BootStrap.logger.warn("argument --commonLibFolder is deprecated. See --Bootstrap.extraLibrariesFolderPath.");
+		}
 		// if (StringUtils.booleanArg(args, "useJasper", Boolean.FALSE)) {
 		// BootStrap.logger.warn("WARNING: Tools.jar was not found - jsp compilation will cause errors. Maybe you should set JAVA_HOME using --javaHome");
 		// }
