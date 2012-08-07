@@ -207,6 +207,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 		this.contextName = contextName;
 
 		final List<File> localLoaderClassPathFiles = new ArrayList<File>();
+		//TODO add a filter on specific package from winstone dependencies: logger
 		loader = buildWebAppClassLoader(startupArgs, Thread.currentThread().getContextClassLoader(), webRoot, localLoaderClassPathFiles);
 
 		// Build switch values
