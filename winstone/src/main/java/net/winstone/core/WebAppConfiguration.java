@@ -54,6 +54,7 @@ import net.winstone.core.authentication.AuthenticationHandler;
 import net.winstone.core.authentication.AuthenticationRealm;
 import net.winstone.core.authentication.realm.ArgumentsRealm;
 import net.winstone.jndi.JndiManager;
+import net.winstone.loader.FilteringClassLoader;
 import net.winstone.loader.ReloadingClassLoader;
 import net.winstone.loader.WebappClassLoader;
 import net.winstone.servlet.ErrorServlet;
@@ -207,8 +208,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 		this.contextName = contextName;
 
 		final List<File> localLoaderClassPathFiles = new ArrayList<File>();
-		//TODO add a filter on specific package from winstone dependencies: logger
-		loader = buildWebAppClassLoader(startupArgs, Thread.currentThread().getContextClassLoader(), webRoot, localLoaderClassPathFiles);
+		loader = buildWebAppClassLoader(startupArgs, new FilteringClassLoader(Thread.currentThread().getContextClassLoader(), new String[] { "org.apache.log4j", "org.slf4j" }), webRoot, localLoaderClassPathFiles);
 
 		// Build switch values
 		boolean useJasper = StringUtils.booleanArg(startupArgs, "useJasper", Boolean.TRUE);
