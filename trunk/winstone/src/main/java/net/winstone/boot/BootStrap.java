@@ -101,14 +101,15 @@ public class BootStrap {
 			return server;
 		}
 		/** check embeded */
-		BootStrap.logger.info("stage 2/3: check embedded file...");
-		if (!deployEmbeddedWarfile(args)) {
-			BootStrap.logger.info("no embedded file was found");
-		}
-		/** check parameter validity */
-		if (!args.containsKey("webroots") && !args.containsKey("webroot") && !args.containsKey("warfile") && !args.containsKey("webappsDir") && !args.containsKey("hostsDir")) {
-			printUsage();
-			return server;
+		BootStrap.logger.info("stage 2/3: Loading WebApplication configuration...");
+		if (deployEmbeddedWarfile(args)) {
+			BootStrap.logger.info("embedded file was found");
+		} else {
+			/** check parameter validity */
+			if (!args.containsKey("webroots") && !args.containsKey("webroot") && !args.containsKey("warfile") && !args.containsKey("webappsDir") && !args.containsKey("hostsDir")) {
+				printUsage();
+				return server;
+			}
 		}
 		/** compute lib path */
 		BootStrap.logger.info("stage 3/3: compute JSP classpath...");
