@@ -14,6 +14,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Simple test servlet that counts the number of times it has been requested,
  * and returns that number in the response.
@@ -23,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
  *          Exp $
  */
 public class CountRequestsServlet extends HttpServlet {
+	private Logger logger = LoggerFactory.getLogger(CountRequestsServlet.class);
 	private static final long serialVersionUID = -1276193379275847349L;
 	private int numberOfGets;
 
@@ -37,6 +41,7 @@ public class CountRequestsServlet extends HttpServlet {
 	 */
 	@Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+		logger.trace("CountRequestsServlet/doGet");
 		numberOfGets++;
 		final ServletOutputStream out = response.getOutputStream();
 		out.println("<html><body>This servlet has been accessed via GET " + numberOfGets + " times</body></html>");
