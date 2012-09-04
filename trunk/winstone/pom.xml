@@ -11,15 +11,6 @@
 	<name>Winstone Server</name>
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<configuration>
-					<wtpversion>2.0</wtpversion>
-					<downloadSources>true</downloadSources>
-					<ajdtVersion>none</ajdtVersion>
-				</configuration>
-			</plugin>
 			<!-- Main Class -->
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
