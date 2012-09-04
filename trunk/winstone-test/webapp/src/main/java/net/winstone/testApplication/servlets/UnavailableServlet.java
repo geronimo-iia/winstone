@@ -15,6 +15,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Used to test the unavailable exception processing
  * 
@@ -23,14 +26,16 @@ import javax.servlet.http.HttpServletResponse;
  *          Exp $
  */
 public class UnavailableServlet extends HttpServlet {
-
+	private Logger logger = LoggerFactory.getLogger(UnavailableServlet.class);
 	private static final long serialVersionUID = 4534971467464517373L;
 	protected boolean errorAtInit;
 
 	@Override
 	public void init() throws ServletException {
+		logger.trace("UnavailableServlet/init");
 		final String errorTime = getServletConfig().getInitParameter("errorTime");
 		errorAtInit = ((errorTime == null) || errorTime.equals("init"));
+		logger.debug("UnavailableServlet errorTime {}", errorTime);
 		if (errorAtInit) {
 			throw new UnavailableException("Error thrown deliberately during init");
 		}
@@ -38,6 +43,7 @@ public class UnavailableServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+		logger.trace("UnavailableServlet/doGet");
 		if (!errorAtInit) {
 			throw new UnavailableException("Error thrown deliberately during get");
 		}
