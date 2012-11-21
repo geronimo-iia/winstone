@@ -1,12 +1,16 @@
 #labels Featured,Phase-Requirements
 = Requested Features =
 
+  * use configuration class:
+    * parse from command line or json document
+    * use configuration to instanciate server components
+  * use JCL project to manage class loader
+  * clean pom (reduce size)
+  * Add a Servlet Manager info about Winstone Stuff
   * Expose a programmatic API to:
     * add/remove/list HostConfiguration
     * deploy/undeploy/repload/list WebApplication
-  * Add a Servlet Manager info about Winstone Stuff
-  * Add a ServerConfiguration with command line parsing and validator 
-  * Apply ioc pattern on all configured object
-  * Relocate Jndi Management feeds from command line
   * Use Executor Service instead of simple thread
   * Study jackson framework to parse web.xml element 
+  * use guava 13.0.1 for cache, preconditions, etc..
+ 
