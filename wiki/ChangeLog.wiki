@@ -4,6 +4,9 @@
 
 =Change Log=
 
+==v1.0.5 ==
+  * filtering server classpath in order to exclude org.apache.log4j and org.slf4j package
+
 
 ==v1.0.4 ==
   * Create dedicated module:
