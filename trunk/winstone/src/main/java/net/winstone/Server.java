@@ -252,7 +252,7 @@ public class Server implements LifeCycle {
 				globalJndiManager.initialize();
 				Server.logger.info("JNDI Started {}", jndiMgrClass.getName());
 			} catch (final ClassNotFoundException err) {
-				Server.logger.error("JNDI disabled at container level - can't find JNDI Manager class");
+				Server.logger.error("JNDI disabled at container level - can't find JNDI Manager class", err);
 			} catch (final Throwable err) {
 				Server.logger.error("JNDI disabled at container level - couldn't load JNDI Manager: " + jndiMgrClassName, err);
 			}
@@ -346,7 +346,7 @@ public class Server implements LifeCycle {
 				listeners.add(listener);
 			}
 		} catch (final ClassNotFoundException err) {
-			Server.logger.info("Listener {} not found / disabled - ignoring", listenerClassName);
+			Server.logger.warn("Listener {} not found / disabled - ignoring", listenerClassName);
 		} catch (final Throwable err) {
 			Server.logger.error("Error during listener startup " + listenerClassName, err);
 			throw (IOException) new IOException("Failed to start a listener: " + listenerClassName).initCause(err);
