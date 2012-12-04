@@ -140,7 +140,7 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 
 			final int statusCode = owner.getStatus();
 			final HttpProtocole reason = HttpProtocole.valueOf("HTTP_" + Integer.toString(statusCode));
-			final String statusLine = owner.getProtocol() + " " + statusCode + " " + (reason == null ? "No reason" : reason.toString());
+			final String statusLine = owner.getProtocol() + " " + statusCode + " " + (reason == null ? "No reason" : reason.getMessage());
 			final OutputStream o = new BufferedOutputStream(outStream);
 			o.write(statusLine.getBytes("8859_1"));
 			o.write(WinstoneOutputStream.CR_LF);
