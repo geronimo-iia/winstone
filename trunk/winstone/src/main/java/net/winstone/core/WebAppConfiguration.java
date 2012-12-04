@@ -641,7 +641,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 				WebAppConfiguration.logger.error("Authentication disabled - couldn't load authentication handler: " + authClassName + " or realm: " + realmClassName, err);
 			}
 		} else if (!StringUtils.stringArg(startupArgs, "realmClassName", "").trim().equals("")) {
-			WebAppConfiguration.logger.debug("WARNING: Realm configuration ignored, because there are no roles defined in the web.xml ");
+			WebAppConfiguration.logger.warn("WARNING: Realm configuration ignored, because there are no roles defined in the web.xml ");
 		}
 
 		// Instantiate the JNDI manager
@@ -661,7 +661,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 				WebAppConfiguration.logger.error("Error instantiating access logger class: " + loggerClassName, err);
 			}
 		} else {
-			WebAppConfiguration.logger.debug("Access logging disabled - no logger class defined");
+			WebAppConfiguration.logger.info("Access logging disabled - no logger class defined");
 		}
 
 		// Add the default index.html welcomeFile if none are supplied
