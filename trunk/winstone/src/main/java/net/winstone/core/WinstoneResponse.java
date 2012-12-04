@@ -461,7 +461,7 @@ public class WinstoneResponse implements HttpServletResponse {
 
 	@Override
 	public int getBufferSize() {
-		return outputStream.getBufferSize();
+		return (int) outputStream.getBufferSize();
 	}
 
 	@Override

@@ -31,9 +31,9 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 	private static final int DEFAULT_BUFFER_SIZE = 8192;
 	private static final byte[] CR_LF = "\r\n".getBytes();
 	protected OutputStream outStream;
-	protected int bufferSize;
-	protected int bufferPosition;
-	protected int bytesCommitted;
+	protected long bufferSize;
+	protected long bufferPosition;
+	protected long bytesCommitted;
 	protected ByteArrayOutputStream buffer;
 	protected boolean committed;
 	protected boolean bodyOnly;
@@ -58,11 +58,11 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 		owner = response;
 	}
 
-	public int getBufferSize() {
+	public long getBufferSize() {
 		return bufferSize;
 	}
 
-	public void setBufferSize(final int bufferSize) {
+	public void setBufferSize(final long bufferSize) {
 		if (owner.isCommitted()) {
 			throw new IllegalStateException("OutputStream already committed");
 		}
@@ -95,11 +95,9 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 			return;
 		}
 		final String contentLengthHeader = owner.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
-		if ((contentLengthHeader != null) && (bytesCommitted >= Integer.parseInt(contentLengthHeader))) {
+		if ((contentLengthHeader != null) && (bytesCommitted >= Long.parseLong(contentLengthHeader))) {
 			return;
 		}
-		// System.out.println("Out: " + this.bufferPosition + " char=" +
-		// (char)oneChar);
 		buffer.write(oneChar);
 		commit(contentLengthHeader, 1);
 	}
@@ -110,7 +108,7 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 			return;
 		}
 		final String contentLengthHeader = owner.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
-		if ((contentLengthHeader != null) && ((bytesCommitted + len) > Integer.parseInt(contentLengthHeader))) {
+		if ((contentLengthHeader != null) && ((bytesCommitted + len) > Long.parseLong(contentLengthHeader))) {
 			return;
 		}
 
@@ -123,7 +121,7 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 		// if (this.headersWritten)
 		if (bufferPosition >= bufferSize) {
 			commit();
-		} else if ((contentLengthHeader != null) && ((bufferPosition + bytesCommitted) >= Integer.parseInt(contentLengthHeader))) {
+		} else if ((contentLengthHeader != null) && ((bufferPosition + bytesCommitted) >= Long.parseLong(contentLengthHeader))) {
 			commit();
 		}
 	}
@@ -172,13 +170,13 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 		final byte content[] = buffer.toByteArray();
 		// winstone.ajp13.Ajp13Listener.packetDump(content, content.length);
 		// this.buffer.writeTo(this.outStream);
-		int commitLength = content.length;
+		long commitLength = content.length;
 		final String contentLengthHeader = owner.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER);
 		if (contentLengthHeader != null) {
-			commitLength = Math.min(Integer.parseInt(contentLengthHeader) - bytesCommitted, content.length);
+			commitLength = Math.min(Long.parseLong(contentLengthHeader) - bytesCommitted, (long) content.length);
 		}
 		if (commitLength > 0) {
-			outStream.write(content, 0, commitLength);
+			outStream.write(content, 0, (int) commitLength);
 		}
 		outStream.flush();
 		WinstoneOutputStream.logger.debug("Written {} bytes to response body", Long.toString(bytesCommitted + commitLength));
@@ -192,7 +190,7 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 		if (isCommitted()) {
 			throw new IllegalStateException("OutputStream already committed");
 		} else {
-			WinstoneOutputStream.logger.debug("WResetting buffer - discarding {} bytes", Integer.toString(bufferPosition));
+			WinstoneOutputStream.logger.debug("WResetting buffer - discarding {} bytes", Long.toString(bufferPosition));
 			buffer.reset();
 			bufferPosition = 0;
 			bytesCommitted = 0;
@@ -218,7 +216,7 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 	public void close() throws IOException {
 		if (!isCommitted() && !disregardMode && !closed && (owner.getHeader(WinstoneConstant.CONTENT_LENGTH_HEADER) == null)) {
 			if ((owner != null) && !bodyOnly) {
-				owner.setContentLength(getOutputStreamLength());
+				owner.setContentLength((int) getOutputStreamLength());
 			}
 		}
 		flush();
