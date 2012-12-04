@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -80,7 +81,7 @@ public class HttpListener implements Listener, Runnable {
 		} else {
 			interrupted = Boolean.FALSE;
 
-			ServerSocket ss = getServerSocket();
+			final ServerSocket ss = getServerSocket();
 			ss.setSoTimeout(LISTENER_TIMEOUT);
 			HttpListener.logger.info("{} Listener started: port={}", getConnectorName().toUpperCase(), listenPort + "");
 			serverSocket = ss;
@@ -119,7 +120,7 @@ public class HttpListener implements Listener, Runnable {
 	protected ServerSocket getServerSocket() throws IOException {
 		try {
 			return this.listenAddress == null ? new ServerSocket(this.listenPort, BACKLOG_COUNT) : new ServerSocket(this.listenPort, BACKLOG_COUNT, InetAddress.getByName(this.listenAddress));
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw (IOException) new IOException("Failed to listen on port " + listenPort).initCause(e);
 		}
 	}
@@ -308,23 +309,28 @@ public class HttpListener implements Listener, Runnable {
 		request.setRemoteIP(socket.getInetAddress().getHostAddress());
 		request.setRemotePort(socket.getPort());
 		if (doHostnameLookups) {
-			request.setServerName(socket.getLocalAddress().getHostName());
+			request.setServerName(getHostName(socket.getLocalAddress()));
 			request.setRemoteName(socket.getInetAddress().getHostName());
-			request.setLocalName(socket.getLocalAddress().getHostName());
+			request.setLocalName(getHostName(socket.getLocalAddress()));
 		} else {
-			request.setServerName(socket.getLocalAddress().getHostAddress());
+			request.setServerName(getHostAddress(socket.getLocalAddress()));
 			request.setRemoteName(socket.getInetAddress().getHostAddress());
-			request.setLocalName(socket.getLocalAddress().getHostAddress());
+			request.setLocalName(getHostAddress(socket.getLocalAddress()));
 		}
+		// setRemoteName pairs with getRemoteHost(), and in Jetty
+		// this returns ::1 not [::1].
+		// but getServerName() and getLocalName() returns [::1] and not ::1.
+		// that's why setRemoteName() is left without the IPv6-aware wrapper
+		// method
 	}
 
 	/**
 	 * Tries to wait for extra requests on the same socket. If any are found
-	 * before the timeout expires, it exits with a Boolean.TRUE, indicating a new
-	 * request is waiting. If the protocol does not support keep-alives, or the
-	 * request instructed us to close the connection, or the timeout expires,
-	 * return a Boolean.FALSE, instructing the handler thread to begin shutting down the
-	 * socket and relase itself.
+	 * before the timeout expires, it exits with a Boolean.TRUE, indicating a
+	 * new request is waiting. If the protocol does not support keep-alives, or
+	 * the request instructed us to close the connection, or the timeout
+	 * expires, return a Boolean.FALSE, instructing the handler thread to begin
+	 * shutting down the socket and relase itself.
 	 */
 	@Override
 	public boolean processKeepAlive(final WinstoneRequest request, final WinstoneResponse response, final InputStream inSocket) throws IOException, InterruptedException {
@@ -337,18 +343,19 @@ public class HttpListener implements Listener, Runnable {
 	 * Processes the uri line into it's component parts, determining protocol,
 	 * method and uri
 	 */
-	private static String parseURILine(String uriLine, WinstoneRequest req, WinstoneResponse rsp) {
+	private static String parseURILine(final String uriLine, final WinstoneRequest req, final WinstoneResponse rsp) {
 		HttpListener.logger.trace("URI Line:", uriLine.trim());
 
 		// Method
 		int spacePos = uriLine.indexOf(' ');
-		if (spacePos == -1)
+		if (spacePos == -1) {
 			throw new WinstoneException("Error URI Line: " + uriLine);
-		String method = uriLine.substring(0, spacePos).toUpperCase();
+		}
+		final String method = uriLine.substring(0, spacePos).toUpperCase();
 		String fullURI;
 
 		// URI
-		String remainder = uriLine.substring(spacePos + 1);
+		final String remainder = uriLine.substring(spacePos + 1);
 		spacePos = remainder.indexOf(' ');
 		if (spacePos == -1) {
 			fullURI = trimHostName(remainder.trim());
@@ -357,10 +364,11 @@ public class HttpListener implements Listener, Runnable {
 		} else {
 			fullURI = trimHostName(remainder.substring(0, spacePos).trim());
 			String protocol = remainder.substring(spacePos + 1).trim().toUpperCase();
-			if (!protocol.startsWith("HTTP/"))
+			if (!protocol.startsWith("HTTP/")) {
 				protocol = "HTTP/1.0"; // didn't understand this protocol. this
-										// typically means the request line had
-										// extra space. assume 1.0
+			}
+			// typically means the request line had
+			// extra space. assume 1.0
 			req.setProtocol(protocol);
 			rsp.setProtocol(protocol);
 		}
@@ -370,21 +378,24 @@ public class HttpListener implements Listener, Runnable {
 		return fullURI;
 	}
 
-	private static String trimHostName(String input) {
-		if (input == null)
+	private static String trimHostName(final String input) {
+		if (input == null) {
 			return null;
-		else if (input.startsWith("/"))
+		} else if (input.startsWith("/")) {
 			return input;
+		}
 
-		int hostStart = input.indexOf("://");
-		if (hostStart == -1)
+		final int hostStart = input.indexOf("://");
+		if (hostStart == -1) {
 			return input;
-		String hostName = input.substring(hostStart + 3);
-		int pathStart = hostName.indexOf('/');
-		if (pathStart == -1)
+		}
+		final String hostName = input.substring(hostStart + 3);
+		final int pathStart = hostName.indexOf('/');
+		if (pathStart == -1) {
 			return "/";
-		else
+		} else {
 			return hostName.substring(pathStart);
+		}
 	}
 
 	/**
@@ -414,4 +425,23 @@ public class HttpListener implements Listener, Runnable {
 		req.parseHeaders(headerList);
 	}
 
+	private String getHostAddress(final InetAddress adrs) {
+		if (adrs instanceof Inet6Address) {
+			return '[' + adrs.getHostAddress() + ']';
+		} else {
+			return adrs.getHostAddress();
+		}
+	}
+
+	private String getHostName(final InetAddress adrs) {
+		if (adrs instanceof Inet6Address) {
+			final String n = adrs.getHostName();
+			if (n.indexOf(':') >= 0) {
+				return '[' + n + ']';
+			}
+			return n;
+		} else {
+			return adrs.getHostName();
+		}
+	}
 }
