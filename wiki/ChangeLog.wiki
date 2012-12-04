@@ -8,6 +8,15 @@
   * filtering server classpath in order to exclude org.apache.log4j and org.slf4j package
   * adding Configuration class and builder
   * FIX issue 16: Wrong "reason" messages for the HTTP status codes
+  * Add more information in case of class not found
+  * From [https://github.com/jenkinsci/winstone jenkins winstone]
+    * Recognize \ as path separator
+    * Added more MIME type mappings from https://github.com/jenkinsci/jenkins/pull/447
+    * MIME type of .ipa/.plist for iOS App Distribution http://stackoverflow.com/questions/3728601/what-is-the-correct-mime-type-for-serving-an-iphone-ipa-file
+    * [FIXED JENKINS-14452] Fixed the handling of IPv6 address
+    * [FIXED JENKINS-9882] Use Java5 ExecutorService for thread management.
+    * Do not allow the webapp to split HTTP header values into multiple lines. 
+
 
 
 ==v1.0.4 ==
