@@ -261,7 +261,7 @@ public class StringUtils {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static String canonicalPath(final String path) {
-		final List r = new ArrayList(Arrays.asList(path.split("/+")));
+		final List r = new ArrayList(Arrays.asList(path.split("[/\\\\]+")));
 		for (int i = 0; i < r.size();) {
 			final String cur = (String) r.get(i);
 			if ((cur.length() == 0) || cur.equals(".")) {
