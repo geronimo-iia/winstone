@@ -16,12 +16,10 @@ import java.net.SocketException;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
-import javax.servlet.http.HttpServletResponse;
 
 import net.winstone.accesslog.AccessLogger;
 import net.winstone.core.ClientSocketException;
 import net.winstone.core.HostConfiguration;
-import net.winstone.core.ObjectPool;
 import net.winstone.core.SimpleRequestDispatcher;
 import net.winstone.core.WebAppConfiguration;
 import net.winstone.core.WinstoneInputStream;
@@ -41,33 +39,26 @@ import org.slf4j.LoggerFactory;
 public class RequestHandlerThread implements Runnable {
 
 	protected static org.slf4j.Logger logger = LoggerFactory.getLogger(RequestHandlerThread.class);
-	private final Thread thread;
-	private final ObjectPool objectPool;
+
 	private WinstoneInputStream inData;
 	private WinstoneOutputStream outData;
 	private WinstoneRequest req;
 	private WinstoneResponse rsp;
 	private Listener listener;
 	private Socket socket;
-	private final String threadName;
 	private long requestStartTime;
 	private final boolean simulateModUniqueId;
 	private final boolean saveSessions;
- 
 
 	/**
 	 * Constructor - this is called by the handler pool, and just sets up for
 	 * when a real request comes along.
 	 */
-	public RequestHandlerThread(final ObjectPool objectPool, final int threadIndex, final boolean simulateModUniqueId, final boolean saveSessions) {
-		this.objectPool = objectPool;
+	public RequestHandlerThread(boolean simulateModUniqueId, boolean saveSessions, Socket socket, Listener listener) {
 		this.simulateModUniqueId = simulateModUniqueId;
 		this.saveSessions = saveSessions;
-		threadName = "RequestHandlerThread[" + threadIndex + "]";
-
-		// allocate a thread to run on this object
-		thread = new Thread(this, threadName);
-		thread.setDaemon(Boolean.TRUE);
+		this.socket = socket;
+		this.listener = listener;
 	}
 
 	/**
@@ -75,154 +66,130 @@ public class RequestHandlerThread implements Runnable {
 	 */
 	@Override
 	public void run() {
+		// Start request processing
+		InputStream inSocket = null;
+		OutputStream outSocket = null;
+		boolean iAmFirst = true;
+		try {
+			// Get input/output streams
+			inSocket = socket.getInputStream();
+			outSocket = socket.getOutputStream();
 
-		while (Boolean.TRUE) {
-			// Start request processing
-			InputStream inSocket = null;
-			OutputStream outSocket = null;
-			boolean iAmFirst = Boolean.TRUE;
-			try {
-				// Get input/output streams
-				inSocket = socket.getInputStream();
-				outSocket = socket.getOutputStream();
+			// The keep alive loop - exiting from here means the connection has
+			// closed
+			boolean continueFlag = true;
+			while (continueFlag) {
+				try {
+					long requestId = System.currentTimeMillis();
+					this.listener.allocateRequestResponse(socket, inSocket, outSocket, this, iAmFirst);
+					if (this.req == null) {
+						// Dead request - happens sometimes with ajp13 - discard
+						this.listener.deallocateRequestResponse(this, req, rsp, inData, outData);
+						continue;
+					}
+					String servletURI = this.listener.parseURI(this, this.req, this.rsp, this.inData, this.socket, iAmFirst);
+					if (servletURI == null) {
+						RequestHandlerThread.logger.debug("Keep alive timed out in thread: {}", Thread.currentThread().getName());
+						// Keep alive timed out - deallocate and go into wait
+						// state
+						this.listener.deallocateRequestResponse(this, req, rsp, inData, outData);
+						continueFlag = false;
+						continue;
+					}
 
-				// The keep alive loop - exiting from here means the connection
-				// has closed
-				boolean continueFlag = Boolean.TRUE;
-				while (continueFlag) {
-					try {
-						final long requestId = System.currentTimeMillis();
-						listener.allocateRequestResponse(socket, inSocket, outSocket, this, iAmFirst);
-						if (req == null) {
-							// Dead request - happens sometimes with ajp13 -
-							// discard
-							listener.deallocateRequestResponse(this, req, rsp, inData, outData);
-							continue;
-						}
-						final String servletURI = listener.parseURI(this, req, rsp, inData, socket, iAmFirst);
-						if (servletURI == null) {
-							RequestHandlerThread.logger.debug("Keep alive timed out in thread: {}", threadName);
+					if (this.simulateModUniqueId) {
+						req.setAttribute("UNIQUE_ID", "" + requestId);
+					}
+					long headerParseTime = getRequestProcessTime();
+					iAmFirst = false;
 
-							// Keep alive timed out - deallocate and go into
-							// wait state
-							listener.deallocateRequestResponse(this, req, rsp, inData, outData);
-							continueFlag = Boolean.FALSE;
-							continue;
-						}
+					HostConfiguration hostConfig = req.getHostGroup().getHostByName(req.getServerName());
+					RequestHandlerThread.logger.debug("Starting request on host:[{}] with id: {}", "" + requestId, hostConfig.getHostname());
 
-						if (simulateModUniqueId) {
-							req.setAttribute("UNIQUE_ID", "" + requestId);
-						}
-						final long headerParseTime = getRequestProcessTime();
-						iAmFirst = Boolean.FALSE;
+					// Get the URI from the request, check for prefix, then
+					// match it to a requestDispatcher
+					WebAppConfiguration webAppConfig = hostConfig.getWebAppByURI(servletURI);
+					if (webAppConfig == null) {
+						webAppConfig = hostConfig.getWebAppByURI("/");
+					}
+					if (webAppConfig == null) {
+						RequestHandlerThread.logger.warn("Request URL {} not found - doesn't match any webapp prefix", servletURI);
 
-						final HostConfiguration hostConfig = req.getHostGroup().getHostByName(req.getServerName());
-						RequestHandlerThread.logger.debug("Starting request on host:[{}] with id: {}", "" + requestId, hostConfig.getHostname());
-
-						// Get the URI from the request, check for prefix, then
-						// match it to a requestDispatcher
-						WebAppConfiguration webAppConfig = hostConfig.getWebAppByURI(servletURI);
-						if (webAppConfig == null) {
-							webAppConfig = hostConfig.getWebAppByURI("/");
-						}
-						if (webAppConfig == null) {
-							RequestHandlerThread.logger.warn("Request URL {} not found - doesn't match any webapp prefix", servletURI);
-							rsp.sendError(HttpServletResponse.SC_NOT_FOUND, "Request URL " + servletURI + " not found.<br><br>");
-							rsp.flushBuffer();
-							req.discardRequestBody();
-							writeToAccessLog(servletURI, req, rsp, null);
-
-							// Process keep-alive
-							continueFlag = listener.processKeepAlive(req, rsp, inSocket);
-							listener.deallocateRequestResponse(this, req, rsp, inData, outData);
-							RequestHandlerThread.logger.debug("Finishing request id:  {}", "" + requestId);
-							RequestHandlerThread.logger.debug("Processed complete request: headerParseTime={}ms totalTime={}ms path={}", new Object[] { "" + headerParseTime, "" + getRequestProcessTime(), servletURI });
-							continue;
-						}
-						req.setWebAppConfig(webAppConfig);
-
-						// Now we've verified it's in the right webapp, send
-						// request in scope notify
-						final ServletRequestListener reqLsnrs[] = webAppConfig.getRequestListeners();
-						for (int n = 0; n < reqLsnrs.length; n++) {
-							final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-							Thread.currentThread().setContextClassLoader(webAppConfig.getLoader());
-							reqLsnrs[n].requestInitialized(new ServletRequestEvent(webAppConfig, req));
-							Thread.currentThread().setContextClassLoader(cl);
-						}
-
-						// Lookup a dispatcher, then process with it
-						processRequest(webAppConfig, req, rsp, webAppConfig.getServletURIFromRequestURI(servletURI));
-						writeToAccessLog(servletURI, req, rsp, webAppConfig);
-
-						outData.finishResponse();
-						inData.finishRequest();
-
-						RequestHandlerThread.logger.debug("Finishing request id:  {}", "" + requestId);
+						rsp.sendError(WinstoneResponse.SC_NOT_FOUND, "Request URL " + servletURI + " not found.<br><br>");
+						rsp.flushBuffer();
+						req.discardRequestBody();
+						writeToAccessLog(servletURI, req, rsp, null);
 
 						// Process keep-alive
-						continueFlag = listener.processKeepAlive(req, rsp, inSocket);
-
-						// Set last accessed time on session as start of this
-						// request
-						req.markSessionsAsRequestFinished(requestStartTime, saveSessions);
-
-						// send request listener notifies
-						for (int n = 0; n < reqLsnrs.length; n++) {
-							final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-							Thread.currentThread().setContextClassLoader(webAppConfig.getLoader());
-							reqLsnrs[n].requestDestroyed(new ServletRequestEvent(webAppConfig, req));
-							Thread.currentThread().setContextClassLoader(cl);
-						}
-
-						req.setWebAppConfig(null);
-						rsp.setWebAppConfig(null);
-						req.setRequestAttributeListeners(null);
-
-						listener.deallocateRequestResponse(this, req, rsp, inData, outData);
+						continueFlag = this.listener.processKeepAlive(req, rsp, inSocket);
+						this.listener.deallocateRequestResponse(this, req, rsp, inData, outData);
+						RequestHandlerThread.logger.debug("Finishing request id:  {}", "" + requestId);
 						RequestHandlerThread.logger.debug("Processed complete request: headerParseTime={}ms totalTime={}ms path={}", new Object[] { "" + headerParseTime, "" + getRequestProcessTime(), servletURI });
-					} catch (final InterruptedIOException errIO) {
-						continueFlag = Boolean.FALSE;
-						RequestHandlerThread.logger.error("Socket read timed out - exiting request handler thread", errIO);
-					} catch (final SocketException errIO) {
-						continueFlag = Boolean.FALSE;
+						continue;
 					}
-				}
-				listener.deallocateRequestResponse(this, req, rsp, inData, outData);
-				listener.releaseSocket(socket, inSocket, outSocket); // shut
-																		// sockets
-			} catch (final Throwable err) {
-				try {
-					listener.deallocateRequestResponse(this, req, rsp, inData, outData);
-				} catch (final Throwable errClose) {
-				}
-				try {
-					listener.releaseSocket(socket, inSocket, outSocket); // shut
-																			// sockets
-				} catch (final Throwable errClose) {
-				}
-				if (!(err instanceof ClientSocketException)) {
-					RequestHandlerThread.logger.error("Error within request handler thread", err);
-				}
+					req.setWebAppConfig(webAppConfig);
 
+					// Now we've verified it's in the right webapp, send
+					// request in scope notify
+					ServletRequestListener reqLsnrs[] = webAppConfig.getRequestListeners();
+					for (ServletRequestListener reqLsnr1 : reqLsnrs) {
+						ClassLoader cl = Thread.currentThread().getContextClassLoader();
+						Thread.currentThread().setContextClassLoader(webAppConfig.getLoader());
+						reqLsnr1.requestInitialized(new ServletRequestEvent(webAppConfig, req));
+						Thread.currentThread().setContextClassLoader(cl);
+					}
+
+					// Lookup a dispatcher, then process with it
+					processRequest(webAppConfig, req, rsp, webAppConfig.getServletURIFromRequestURI(servletURI));
+					writeToAccessLog(servletURI, req, rsp, webAppConfig);
+
+					this.outData.finishResponse();
+					this.inData.finishRequest();
+					RequestHandlerThread.logger.debug("Finishing request id:  {}", "" + requestId);
+
+					// Process keep-alive
+					continueFlag = this.listener.processKeepAlive(req, rsp, inSocket);
+
+					// Set last accessed time on session as start of this
+					// request
+					req.markSessionsAsRequestFinished(this.requestStartTime, this.saveSessions);
+
+					// send request listener notifies
+					for (ServletRequestListener reqLsnr : reqLsnrs) {
+						ClassLoader cl = Thread.currentThread().getContextClassLoader();
+						Thread.currentThread().setContextClassLoader(webAppConfig.getLoader());
+						reqLsnr.requestDestroyed(new ServletRequestEvent(webAppConfig, req));
+						Thread.currentThread().setContextClassLoader(cl);
+					}
+
+					req.setWebAppConfig(null);
+					rsp.setWebAppConfig(null);
+					req.setRequestAttributeListeners(null);
+
+					this.listener.deallocateRequestResponse(this, req, rsp, inData, outData);
+					RequestHandlerThread.logger.debug("Processed complete request: headerParseTime={}ms totalTime={}ms path={}", new Object[] { "" + headerParseTime, "" + getRequestProcessTime(), servletURI });
+				} catch (InterruptedIOException errIO) {
+					continueFlag = false;
+					RequestHandlerThread.logger.error("Socket read timed out - exiting request handler thread", errIO);
+				} catch (SocketException errIO) {
+					continueFlag = false;
+				}
 			}
-			socket = null;
-			objectPool.releaseRequestHandler(this);
-
-			// Suspend this thread until we get assigned and woken up
-			RequestHandlerThread.logger.debug("Thread entering wait state");
+			this.listener.deallocateRequestResponse(this, req, rsp, inData, outData);
+			this.listener.releaseSocket(this.socket, inSocket, outSocket); // shut
+																			// sockets
+		} catch (Throwable err) {
 			try {
-				// wait for another request to come
-				synchronized (this) {
-					while (socket == null) {
-						this.wait();
-					}
-				}
-				RequestHandlerThread.logger.debug("Thread leaving wait state");
-
-			} catch (final InterruptedException err) {
-				RequestHandlerThread.logger.debug("Exiting thread");
-				return;
+				this.listener.deallocateRequestResponse(this, req, rsp, inData, outData);
+			} catch (Throwable errClose) {
+			}
+			try {
+				this.listener.releaseSocket(this.socket, inSocket, outSocket); // shut
+																				// sockets
+			} catch (Throwable errClose) {
+			}
+			if (!(err instanceof ClientSocketException)) {
+				RequestHandlerThread.logger.error("Error within request handler thread", err);
 			}
 		}
 	}
@@ -282,19 +249,6 @@ public class RequestHandlerThread implements Runnable {
 		req.discardRequestBody();
 	}
 
-	/**
-	 * Assign a socket to the handler
-	 */
-	public synchronized void commenceRequestHandling(final Socket socket, final Listener listener) {
-		this.listener = listener;
-		this.socket = socket;
-		if (thread.isAlive()) {
-			notifyAll();
-		} else {
-			thread.start();
-		}
-	}
-
 	public void setRequest(final WinstoneRequest request) {
 		req = request;
 	}
@@ -317,15 +271,6 @@ public class RequestHandlerThread implements Runnable {
 
 	public long getRequestProcessTime() {
 		return System.currentTimeMillis() - requestStartTime;
-	}
-
-	/**
-	 * Trigger the thread destruction for this handler
-	 */
-	public void destroy() {
-		if (thread.isAlive()) {
-			thread.interrupt();
-		}
 	}
 
 	protected void writeToAccessLog(final String originalURL, final WinstoneRequest request, final WinstoneResponse response, final WebAppConfiguration webAppConfig) {
