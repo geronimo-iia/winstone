@@ -14,6 +14,8 @@ import java.util.Stack;
 
 import javax.servlet.http.Cookie;
 
+import net.winstone.util.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,8 +147,8 @@ public class WinstoneOutputStream extends javax.servlet.ServletOutputStream {
 			WinstoneOutputStream.logger.debug("Response: " + statusLine);
 
 			// Write headers and cookies
-			for (final String header : owner.getHeaders()) { 
-				o.write(header.getBytes("8859_1"));
+			for (final String header : owner.getHeaders()) {
+				o.write(StringUtils.noCRLF(header).getBytes("8859_1"));
 				o.write(WinstoneOutputStream.CR_LF);
 				WinstoneOutputStream.logger.debug("Header: " + header);
 			}

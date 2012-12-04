@@ -259,11 +259,10 @@ public class StringUtils {
 	 * any string that looks like an URI, this method preserves the leading and
 	 * trailing '/'.
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static String canonicalPath(final String path) {
-		final List r = new ArrayList(Arrays.asList(path.split("[/\\\\]+")));
+		final List<String> r = new ArrayList<String>(Arrays.asList(path.split("[/\\\\]+")));
 		for (int i = 0; i < r.size();) {
-			final String cur = (String) r.get(i);
+			final String cur = r.get(i);
 			if ((cur.length() == 0) || cur.equals(".")) {
 				// empty token occurs for example, "".split("/+") is [""]
 				r.remove(i);
@@ -298,5 +297,14 @@ public class StringUtils {
 			buf.append('/');
 		}
 		return buf.toString();
+	}
+
+	/**
+	 * Removes any occurrence of CR and LF in the text.
+	 */
+	public static String noCRLF(String text) {
+		// so long as the value doesn't contain CR nor LF, don't really care how
+		// they get replaced
+		return text.replace('\r', ' ').replace('\n', ' ');
 	}
 }

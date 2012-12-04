@@ -17,6 +17,7 @@ import javax.servlet.http.Cookie;
 
 import net.winstone.WinstoneException;
 import net.winstone.core.WinstoneOutputStream;
+import net.winstone.util.StringUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,8 +85,8 @@ public class Ajp13OutputStream extends WinstoneOutputStream {
 				if (colonPos == -1) {
 					throw new WinstoneException("No colon header: " + header);
 				}
-				final String headerName = header.substring(0, colonPos).trim();
-				final String headerValue = header.substring(colonPos + 1).trim();
+				final String headerName = StringUtils.noCRLF(header.substring(0, colonPos).trim());
+				final String headerValue = StringUtils.noCRLF(header.substring(colonPos + 1).trim());
 				final byte headerCode[] = Ajp13OutputStream.headerCodes.get(headerName.toLowerCase());
 				if (headerCode == null) {
 					headerArrayStream.write(getStringBlock(headerName));
