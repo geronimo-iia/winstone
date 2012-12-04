@@ -598,8 +598,8 @@ public class WinstoneResponse implements HttpServletResponse {
 
 	@Override
 	public boolean containsHeader(final String name) {
-		for (int n = 0; n < headers.size(); n++) {
-			if (headers.get(n).startsWith(name)) {
+		for (String header : this.headers) {
+			if (header.startsWith(name)) {
 				return Boolean.TRUE;
 			}
 		}
