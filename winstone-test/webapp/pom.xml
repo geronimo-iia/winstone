@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>net.winstone</groupId>
 		<artifactId>winstone-test</artifactId>
-		<version>1.0.5-SNAPSHOT</version>
+		<version>1.0.5</version>
 	</parent>
 	<artifactId>winstone-test-webapp</artifactId>
 	<name>Winstone Web Application Test</name>
