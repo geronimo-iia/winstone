@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>net.winstone</groupId>
 		<artifactId>winstone-project</artifactId>
-		<version>1.0.5-SNAPSHOT</version>
+		<version>1.0.5</version>
 	</parent>
 	<artifactId>winstone-test</artifactId>
 	<packaging>pom</packaging>
@@ -14,7 +14,7 @@
 			<dependency>
 				<groupId>net.winstone</groupId>
 				<artifactId>winstone</artifactId>
-				<version>1.0.5-SNAPSHOT</version>
+				<version>1.0.5</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
