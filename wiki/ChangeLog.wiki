@@ -4,6 +4,9 @@
 
 =Change Log=
 
+==v1.0.6 (SNAPSHOT) ==
+  * add maven filtered mechanism on internal message resource (issue 17)
+
 ==v1.0.5 ==
   * filtering server classpath in order to exclude org.apache.log4j and org.slf4j package
   * adding Configuration class and builder
