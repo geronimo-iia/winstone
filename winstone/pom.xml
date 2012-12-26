@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>net.winstone</groupId>
@@ -10,6 +11,17 @@
 	<packaging>jar</packaging>
 	<name>Winstone Server</name>
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/filtered</directory>
+				<filtering>true</filtering>
+				<targetPath>${project.build.directory}/classes</targetPath>
+			</resource>
+		</resources>
 		<plugins>
 			<!-- Main Class -->
 			<plugin>
@@ -38,10 +50,7 @@
 							<info>true</info>
 							<verbose>false</verbose>
 							<cleanUpLib>false</cleanUpLib>
-							<!-- 
-							<replaceProjectArtifact>true</replaceProjectArtifact>
-							<explodeDependencies>true</explodeDependencies>
-							 -->
+							<!-- <replaceProjectArtifact>true</replaceProjectArtifact> <explodeDependencies>true</explodeDependencies> -->
 						</configuration>
 						<goals>
 							<goal>custom</goal>
