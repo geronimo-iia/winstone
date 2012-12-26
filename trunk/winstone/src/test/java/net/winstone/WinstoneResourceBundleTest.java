@@ -19,6 +19,5 @@ public class WinstoneResourceBundleTest extends TestCase {
 		for (final String key : keys) {
 			Assert.assertNotNull(bundle.getString(key));
 		}
-
 	}
 }
