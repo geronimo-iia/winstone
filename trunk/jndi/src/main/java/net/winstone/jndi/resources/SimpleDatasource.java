@@ -10,12 +10,14 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
@@ -66,12 +68,12 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 		}
 		// check url
 		url = config.getUrl();
-		if (url == null || url.isEmpty()) {
+		if ((url == null) || url.isEmpty()) {
 			throw new IllegalArgumentException(String.format("Can't create database %s connection : url not provided", config.getName()));
 		}
 		// set validation query
 		validationQuery = config.getValidationQuery();
-		validated = config.getValidationQuery() != null && config.getValidationQuery().length() > 0;
+		validated = (config.getValidationQuery() != null) && (config.getValidationQuery().length() > 0);
 		validationTimeOut = config.getValidationTimeOut();
 		if (validationTimeOut <= 0) {
 			throw new IllegalArgumentException(String.format("Database %s: validation TimeOut must be > 0", config.getName()));
@@ -235,7 +237,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 	 * Execute keep alive operation on all idle connection.
 	 */
 	public void keepAlive() {
-		if (keepAliveSQL != null && !keepAliveSQL.isEmpty()) {
+		if ((keepAliveSQL != null) && !keepAliveSQL.isEmpty()) {
 			try {
 				pool.applyOnIdle(new Function<Void, Connection>() {
 
@@ -275,6 +277,10 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 	@Override
 	public String toString() {
 		return "SimpleDatasource [name=" + name + "]";
+	}
+
+	public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+		throw new SQLFeatureNotSupportedException();
 	}
 
 	/**
@@ -338,7 +344,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 	 */
 	private void log(final String message, final Throwable err, final Object... args) {
 		if (logWriter != null) {
-			if (args == null || args.length == 0) {
+			if ((args == null) || (args.length == 0)) {
 				logWriter.println(message);
 			} else {
 				logWriter.write(String.format(message, args));
@@ -391,7 +397,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 			} else {
 				try {
 					final Object realStmt = method.invoke(connection, args);
-					if (realStmt instanceof Statement == Boolean.FALSE) {
+					if ((realStmt instanceof Statement) == Boolean.FALSE) {
 						return realStmt;
 					}
 				} catch (final InvocationTargetException exception) {

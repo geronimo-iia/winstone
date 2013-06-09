@@ -33,13 +33,26 @@
 	<build>
 		<pluginManagement>
 			<plugins>
+				<!-- ******************************************************************* -->
+				<!-- Default Compiler and Resource -->
+				<!-- ******************************************************************* -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>2.3.2</version>
+					<version>${maven-compiler-plugin.version}</version>
 					<configuration>
 						<source>1.6</source>
 						<target>1.6</target>
+						<encoding>UTF-8</encoding>
+						<optimize>${maven.compiler.optimize}</optimize>
+						<showDeprecation>${maven.compiler.showDeprecation}</showDeprecation>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>${maven-resources-plugin.version}</version>
+					<configuration>
 						<encoding>UTF-8</encoding>
 					</configuration>
 				</plugin>
@@ -60,14 +73,6 @@
 							</goals>
 						</execution>
 					</executions>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-resources-plugin</artifactId>
-					<version>2.5</version>
-					<configuration>
-						<encoding>UTF-8</encoding>
-					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -183,10 +188,35 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	<repositories>
+		<repositories>
+		<!-- Intelligents-ia RELEASE -->
 		<repository>
-			<id>intelligents-ia</id>
-			<name>Intelligents-ia Repository On Intelligents-ia Web Site</name>
+			<id>intelligents-ia-releases</id>
+			<name>Intelligents-ia releases repository</name>
+			<url>http://mvn.intelligents-ia.com/releases</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<!-- Intelligents-ia SNAPSHOT -->
+		<repository>
+			<id>intelligents-ia-snapshot</id>
+			<name>Intelligents-ia snapshot repository</name>
+			<url>http://mvn.intelligents-ia.com/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<!-- Intelligents-ia Older Repository -->
+		<repository>
+			<id>intelligents-ia-snapshot-old</id>
+			<name>Intelligents-ia snapshot repository</name>
 			<url>http://intelligents-ia.com/maven2</url>
 			<releases>
 				<enabled>true</enabled>
@@ -198,11 +228,22 @@
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
-			<id>intelligents-ia.plugin</id>
-			<name>Intelligents-ia Repository</name>
-			<url>http://intelligents-ia.com/maven2</url>
+			<id>intelligents-ia-releases</id>
+			<name>Intelligents-ia releases repository</name>
+			<url>http://mvn.intelligents-ia.com/releases</url>
 			<releases>
 				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+		<pluginRepository>
+			<id>intelligents-ia-snapshot</id>
+			<name>Intelligents-ia snapshot repository</name>
+			<url>http://mvn.intelligents-ia.com/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
@@ -246,6 +287,8 @@
 	</profiles>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven-compiler-plugin.version>2.3.2</maven-compiler-plugin.version>
+		<maven-resources-plugin.version>2.5</maven-resources-plugin.version>
 		<javax.servlet.version>2.5</javax.servlet.version>
 		<google-collections.version>1.0</google-collections.version>
 		<org.slf4j.version>1.6.4</org.slf4j.version>
