@@ -40,7 +40,7 @@
 			<plugin>
 				<groupId>org.intelligents-ia.keystone</groupId>
 				<artifactId>keystone-plugin</artifactId>
-				<version>2.6.0</version>
+				<version>3.1</version>
 				<executions>
 					<execution>
 						<id>make-assembly</id>
