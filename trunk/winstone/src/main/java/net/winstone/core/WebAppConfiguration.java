@@ -593,14 +593,15 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 			}
 			/** Build a specific mime type */
 			if (webApplicationMimeType != null) {
-				// init mimeTypes with default set.
-				mimeTypes = MimeTypes.getInstance();
-			} else {
 				// build mime types with default and those find in web.xml
 				mimeTypes = MimeTypes.getInstance(webApplicationMimeType);
 			}
 		}
-
+		/** Build a default mime type if necessary */
+		if (mimeTypes==null) {
+		    mimeTypes = MimeTypes.getInstance();
+		}
+		
 		// If not distributable, remove the cluster reference
 		if (!distributable && cluster != null) {
 			WebAppConfiguration.logger.info("Clustering disabled for webapp {} - the web application must be distributable", this.contextName);
