@@ -397,9 +397,7 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 			} else {
 				try {
 					final Object realStmt = method.invoke(connection, args);
-					if ((realStmt instanceof Statement) == Boolean.FALSE) {
-						return realStmt;
-					}
+					return realStmt;
 				} catch (final InvocationTargetException exception) {
 					final Throwable cause = exception.getCause();
 					try {
@@ -411,7 +409,6 @@ public class SimpleDatasource implements DataSource, ResourceFactory<Connection>
 					throw exception.getCause();
 				}
 			}
-			return null;
 		}
 
 	}
