@@ -678,20 +678,8 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
 		filterPatternsForward = lfpForward.toArray(new Mapping[0]);
 		filterPatternsInclude = lfpInclude.toArray(new Mapping[0]);
 		filterPatternsError = lfpError.toArray(new Mapping[0]);
-
-		if (filterPatternsRequest.length > 0) {
-			Arrays.sort(filterPatternsRequest, filterPatternsRequest[0]);
-		}
-		if (filterPatternsForward.length > 0) {
-			Arrays.sort(filterPatternsForward, filterPatternsForward[0]);
-		}
-		if (filterPatternsInclude.length > 0) {
-			Arrays.sort(filterPatternsInclude, filterPatternsInclude[0]);
-		}
-		if (filterPatternsError.length > 0) {
-			Arrays.sort(filterPatternsError, filterPatternsError[0]);
-		}
-
+		// no sort on filter (@see issue 18)
+		
 		welcomeFiles = localWelcomeFiles.toArray(new String[0]);
 		errorPagesByExceptionKeysSorted = localErrorPagesByExceptionList.toArray(new Class[0]);
 		Arrays.sort(errorPagesByExceptionKeysSorted, this);
