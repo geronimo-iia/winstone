@@ -9,6 +9,7 @@
   * remove sort on filter (issue 18)
   * fix NPE on mime type (issue 19)
   * fix NPE on Simple Datasource (issue 20)
+  * update keystone version to 3.1
 
 ==v1.0.5 ==
   * filtering server classpath in order to exclude org.apache.log4j and org.slf4j package
