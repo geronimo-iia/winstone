@@ -94,7 +94,7 @@ public class FileRealm implements AuthenticationRealm {
 								rl.add(currentRole);
 							}
 						}
-						final String[] roleArray = (String[]) rl.toArray();
+						final String[] roleArray = rl.toArray(new String[rl.size()]);
 						Arrays.sort(roleArray);
 						passwords.put(userName, password);
 						roles.put(userName, Arrays.asList(roleArray));
