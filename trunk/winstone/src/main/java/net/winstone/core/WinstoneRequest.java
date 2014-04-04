@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
@@ -419,11 +420,9 @@ public class WinstoneRequest implements HttpServletRequest {
 			final String token = st.nextToken();
 			final int equalPos = token.indexOf('=');
 			try {
-				final String decodedNameDefault = WinstoneRequest.decodeURLToken(equalPos == -1 ? token : token.substring(0, equalPos));
-				final String decodedValueDefault = (equalPos == -1 ? "" : WinstoneRequest.decodeURLToken(token.substring(equalPos + 1)));
-				final String decodedName = (encoding == null ? decodedNameDefault : new String(decodedNameDefault.getBytes("8859_1"), encoding));
-				final String decodedValue = (encoding == null ? decodedValueDefault : new String(decodedValueDefault.getBytes("8859_1"), encoding));
-
+				 final String decodedName = decodeURLToken(equalPos == -1 ? token : token.substring(0, equalPos), encoding==null?"UTF-8":encoding );
+				 final String decodedValue = (equalPos == -1 ? "" : decodeURLToken(token.substring(equalPos + 1), encoding==null?"UTF-8":encoding));
+				         
 				String[] already = null;
 				if (overwrite) {
 					if (overwrittenParamNames == null) {
@@ -451,14 +450,18 @@ public class WinstoneRequest implements HttpServletRequest {
 	}
 
 	/**
-	 * For decoding the URL encoding used on query strings.
+	 * For decoding the URL encoding used on query strings as "UTF-8".
 	 * 
 	 * @param in
 	 *            input string
 	 * @return decoded string
 	 */
 	public static String decodeURLToken(String in) {
-		return decodeURLToken(in, Boolean.TRUE);
+		try {
+            return decodeURLToken(in, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new AssertionError(); // impossible
+        }
 	}
 
 	/**
@@ -472,47 +475,44 @@ public class WinstoneRequest implements HttpServletRequest {
 	 * @throws UnsupportedEncodingException
 	 */
 	public static String decodeURLToken(String in, String encoding) throws UnsupportedEncodingException {
-		return decodeURLToken(in, encoding, Boolean.TRUE);
+		return URLDecoder.decode(in,encoding);
 	}
 
+	
 	/**
-	 * For decoding the URL encoding used on query strings (using UTF-8)
+	 * For decoding the URL encoding using UTF-8.
+	 * Decode as path token, where '+' is not an escape character.
 	 * 
 	 * @param in
 	 *            in input string
-	 * @param isQueryString
-	 *            Decode query string, where '+' is an escape for ' '. Otherwise
-	 *            decode as path token, where '+' is not an escape character.
-	 * @return decoded string
-	 */
-	public static String decodeURLToken(String in, boolean isQueryString) {
-		try {
-			return decodeURLToken(in, "UTF-8", isQueryString);
-		} catch (UnsupportedEncodingException e) {
-			throw new AssertionError(); // impossible
-		}
-	}
-
-	/**
-	 * For decoding the URL encoding.
-	 * 
-	 * @param in
-	 *            in input string
-	 * @param encoding
-	 *            encoding
-	 * @param isQueryString
-	 *            Decode query string, where '+' is an escape for ' '. Otherwise
-	 *            decode as path token, where '+' is not an escape character.
 	 * @return decoded string
 	 * @throws UnsupportedEncodingException
 	 */
-	public static String decodeURLToken(String in, String encoding, boolean isQueryString) throws UnsupportedEncodingException {
+	public static String decodePathURLToken(String in)  {
+	    try {
+	    return decodePathURLToken(in, "UTF-8");
+	    } catch (UnsupportedEncodingException e) {
+            throw new AssertionError(); // impossible
+        }
+	}
+	
+	/**
+     * For decoding the URL encoding.
+     * Decode as path token, where '+' is not an escape character.
+     * 
+     * @param in
+     *            in input string
+     * @param encoding
+     *            encoding
+     * 
+     * @return decoded string
+     * @throws UnsupportedEncodingException
+     */
+	public static String decodePathURLToken(String in, String encoding) throws UnsupportedEncodingException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		for (int n = 0; n < in.length(); n++) {
 			char thisChar = in.charAt(n);
-			if (thisChar == '+' && isQueryString)
-				baos.write(' ');
-			else if (thisChar == '%') {
+			if (thisChar == '%') {
 				String token = in.substring(Math.min(n + 1, in.length()), Math.min(n + 3, in.length()));
 				try {
 					int decoded = Integer.parseInt(token, 16);
