@@ -50,7 +50,6 @@
 							<info>true</info>
 							<verbose>false</verbose>
 							<cleanUpLib>false</cleanUpLib>
-							<!-- <replaceProjectArtifact>true</replaceProjectArtifact> <explodeDependencies>true</explodeDependencies> -->
 						</configuration>
 						<goals>
 							<goal>custom</goal>
