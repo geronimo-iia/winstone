@@ -4,7 +4,11 @@
 
 =Change Log=
 
-==v1.0.6 (SNAPSHOT) ==
+==v1.0.7 (SNAPSHOT) ==
+
+
+
+==v1.0.6  ==
   * add maven filtered mechanism on internal message resource (issue 17)
   * remove sort on filter (issue 18)
   * fix NPE on mime type (issue 19)
