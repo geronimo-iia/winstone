@@ -100,7 +100,7 @@ against hash DoS attack (oCERT #2011-003). Default is 10000.
 --simpleAccessLogger.file      = The location pattern for the log file(SimpleAccessLogger only)
 }}}
 
-===ClassPath Option===
+===ClassPath-Option===
 {{{
 --useServerClassPath           = Set filtering active on server classpath. Filtered package from server will be not visible for all web application. Default is TRUE.
 --filterClassPath              = Comma separated list of filtered package. Per default is "org.apache.log4j,org.slf4j".
