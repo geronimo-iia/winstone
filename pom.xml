@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.winstone</groupId>
 	<artifactId>winstone-project</artifactId>
@@ -32,7 +33,7 @@
 	</organization>
 	<!-- ******************************************************************* -->
 	<!-- PROPERTIES -->
-	<!-- ******************************************************************* -->	
+	<!-- ******************************************************************* -->
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-compiler-plugin.version>2.3.2</maven-compiler-plugin.version>
@@ -49,16 +50,16 @@
 	</properties>
 	<!-- ******************************************************************* -->
 	<!-- MODULE LIST -->
-	<!-- ******************************************************************* -->	
+	<!-- ******************************************************************* -->
 	<modules>
 		<module>jndi</module>
 		<module>winstone</module>
 		<module>winstone-jsp</module>
 		<module>winstone-test</module>
-	</modules>	
+	</modules>
 	<!-- ******************************************************************* -->
 	<!-- BUILD -->
-	<!-- ******************************************************************* -->	
+	<!-- ******************************************************************* -->
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -134,14 +135,14 @@
 		<extensions>
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ftp</artifactId>
-				<version>1.0</version>
+				<artifactId>wagon-ssh</artifactId>
+				<version>2.6</version>
 			</extension>
 		</extensions>
 	</build>
 	<!-- ******************************************************************* -->
 	<!-- DEPENDENCIES -->
-	<!-- ******************************************************************* -->	
+	<!-- ******************************************************************* -->
 	<dependencies>
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -220,7 +221,10 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-		<repositories>
+	<!-- ******************************************************************* -->
+	<!-- DISTRIBUTION -->
+	<!-- ******************************************************************* -->
+	<repositories>
 		<!-- Intelligents-ia RELEASE -->
 		<repository>
 			<id>intelligents-ia-releases</id>
@@ -231,30 +235,6 @@
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<!-- Intelligents-ia SNAPSHOT -->
-		<repository>
-			<id>intelligents-ia-snapshot</id>
-			<name>Intelligents-ia snapshot repository</name>
-			<url>http://mvn.intelligents-ia.com/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<!-- Intelligents-ia Older Repository -->
-		<repository>
-			<id>intelligents-ia-snapshot-old</id>
-			<name>Intelligents-ia snapshot repository</name>
-			<url>http://intelligents-ia.com/maven2</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
 			</snapshots>
 		</repository>
 	</repositories>
@@ -270,29 +250,13 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</pluginRepository>
-		<pluginRepository>
-			<id>intelligents-ia-snapshot</id>
-			<name>Intelligents-ia snapshot repository</name>
-			<url>http://mvn.intelligents-ia.com/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</pluginRepository>
 	</pluginRepositories>
 	<distributionManagement>
 		<repository>
-			<id>intelligents-ia</id>
-			<name>Intelligents-ia FTP Repository</name>
-			<url>ftp://ftp.lost-oasis.net/web-intelligents-ia.com/htdocs/maven2</url>
+			<id>intelligents-ia-releases</id>
+			<name>Intelligents-ia releases repository</name>
+			<url>sftp://sftp.dc0.gpaas.net:/vhosts/mvn.intelligents-ia.com/htdocs/releases</url>
 		</repository>
-		<snapshotRepository>
-			<id>intelligents-ia</id>
-			<name>Intelligents-ia FTP Repository</name>
-			<url>ftp://ftp.lost-oasis.net/web-intelligents-ia.com/htdocs/maven2</url>
-		</snapshotRepository>
 	</distributionManagement>
 	<profiles>
 		<profile>
