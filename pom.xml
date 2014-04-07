@@ -30,6 +30,35 @@
 		<name>Intelligents-ia</name>
 		<url>http://intelligents-ia.com</url>
 	</organization>
+	<!-- ******************************************************************* -->
+	<!-- PROPERTIES -->
+	<!-- ******************************************************************* -->	
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven-compiler-plugin.version>2.3.2</maven-compiler-plugin.version>
+		<maven-resources-plugin.version>2.5</maven-resources-plugin.version>
+		<javax.servlet.version>2.5</javax.servlet.version>
+		<google-collections.version>1.0</google-collections.version>
+		<org.slf4j.version>1.6.4</org.slf4j.version>
+		<junit.version>3.8.1</junit.version>
+		<com.h2database.version>1.3.154</com.h2database.version>
+		<httpunit.version>1.6</httpunit.version>
+		<logback.version>1.0.0</logback.version>
+		<javax.mail.version>1.4.1</javax.mail.version>
+		<spring.version>3.0.5.RELEASE</spring.version>
+	</properties>
+	<!-- ******************************************************************* -->
+	<!-- MODULE LIST -->
+	<!-- ******************************************************************* -->	
+	<modules>
+		<module>jndi</module>
+		<module>winstone</module>
+		<module>winstone-jsp</module>
+		<module>winstone-test</module>
+	</modules>	
+	<!-- ******************************************************************* -->
+	<!-- BUILD -->
+	<!-- ******************************************************************* -->	
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -110,6 +139,9 @@
 			</extension>
 		</extensions>
 	</build>
+	<!-- ******************************************************************* -->
+	<!-- DEPENDENCIES -->
+	<!-- ******************************************************************* -->	
 	<dependencies>
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -285,24 +317,4 @@
 			</build>
 		</profile>
 	</profiles>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven-compiler-plugin.version>2.3.2</maven-compiler-plugin.version>
-		<maven-resources-plugin.version>2.5</maven-resources-plugin.version>
-		<javax.servlet.version>2.5</javax.servlet.version>
-		<google-collections.version>1.0</google-collections.version>
-		<org.slf4j.version>1.6.4</org.slf4j.version>
-		<junit.version>3.8.1</junit.version>
-		<com.h2database.version>1.3.154</com.h2database.version>
-		<httpunit.version>1.6</httpunit.version>
-		<logback.version>1.0.0</logback.version>
-		<javax.mail.version>1.4.1</javax.mail.version>
-		<spring.version>3.0.5.RELEASE</spring.version>
-	</properties>
-	<modules>
-		<module>jndi</module>
-		<module>winstone</module>
-		<module>winstone-jsp</module>
-		<module>winstone-test</module>
-	</modules>
 </project>
