@@ -88,7 +88,7 @@ public class FilteringClassLoader extends ClassLoader {
 	protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
 		for (String pkg : packages) {
 			if (name.startsWith(pkg))
-				throw new ClassNotFoundException("Class not found (filtered): " + name);
+				throw new ClassNotFoundException("Class not found (filtered): " + name + "\n set option useServerClassPath=false to disable filtering\n\n");
 		}
 		return super.loadClass(name, resolve);
 	}
