@@ -5,8 +5,9 @@
 =Change Log=
 
 ==v1.0.7 (SNAPSHOT) ==
-  * fix issue 26
-  * make change according issue 24
+  * fix issue 26: key not serializable was not removed from winsone session...
+  * fix issue 25: format log pattern are no case sensitive
+  * make change according issue 24: maven central
 
 
 ==v1.0.6  ==
