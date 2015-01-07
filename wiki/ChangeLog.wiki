@@ -5,7 +5,8 @@
 =Change Log=
 
 ==v1.0.7 (SNAPSHOT) ==
-
+  * fix issue 26
+  * make change according issue 24
 
 
 ==v1.0.6  ==
