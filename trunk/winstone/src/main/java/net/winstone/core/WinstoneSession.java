@@ -463,8 +463,8 @@ public class WinstoneSession implements HttpSession, Serializable {
 			if (!(copy.get(key) instanceof Serializable)) {
 				WinstoneSession.logger.warn("Web application is marked distributable, but session object {} (class {}) does not extend java.io.Serializable - this variable is being ignored by session transfer", key, copy.get(key).getClass()
 						.getName());
+				copy.remove(key);
 			}
-			copy.remove(key);
 		}
 		out.writeInt(copy.size());
 		for (final Iterator<String> i = copy.keySet().iterator(); i.hasNext();) {
