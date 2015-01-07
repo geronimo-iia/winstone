@@ -39,7 +39,6 @@
 			<plugin>
 				<groupId>org.intelligents-ia</groupId>
 				<artifactId>keystone-plugin</artifactId>
-				<version>3.3</version>		
 				<executions>
 					<execution>
 						<id>make-assembly</id>

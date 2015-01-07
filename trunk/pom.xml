@@ -25,7 +25,13 @@
 	<scm>
 		<connection>scm:svn:https://winstone.googlecode.com/svn/trunk/</connection>
 		<url>https://winstone.googlecode.com/svn/trunk/</url>
+		<developerConnection>scm:svn:https://winstone.googlecode.com/svn/trunk/</developerConnection>
+		<tag>HEAD</tag>
 	</scm>
+	<issueManagement>
+		<system>Google Code</system>
+		<url>http://code.google.com/p/winstone/issues/list</url>
+	</issueManagement>
 	<organization>
 		<name>Intelligents-ia</name>
 		<url>http://intelligents-ia.com</url>
@@ -35,8 +41,30 @@
 	<!-- ******************************************************************* -->
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven-compiler-plugin.version>2.3.2</maven-compiler-plugin.version>
-		<maven-resources-plugin.version>2.5</maven-resources-plugin.version>
+
+		<!-- maven version -->
+		<maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
+		<maven-resources-plugin.version>2.6</maven-resources-plugin.version>
+		<maven-jar-plugin.version>2.5</maven-jar-plugin.version>
+		<maven-javadoc-plugin>2.9.1</maven-javadoc-plugin>
+		<maven-source-plugin.version>2.2.1</maven-source-plugin.version>
+		<maven-install-plugin.version>2.5.1</maven-install-plugin.version>
+		<maven-release-plugin.version>2.5</maven-release-plugin.version>
+		<maven-gpg-plugin.version>1.5</maven-gpg-plugin.version>
+		<maven-license-plugin.version>1.9.0</maven-license-plugin.version>
+		<maven-reactor-plugin.version>1.1</maven-reactor-plugin.version>
+		<maven-enforcer-plugin.version>1.3.1</maven-enforcer-plugin.version>
+
+		<!-- GnuPg Configuration key to define per project. -->
+		<gnupg.keyname>F45635CF</gnupg.keyname>
+	
+		<!-- Maven Compiler settings -->
+		<jvm.specification.version>1.6</jvm.specification.version>
+		<maven.compiler.optimize>true</maven.compiler.optimize>
+		<maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
+		
+		<!-- dependencies version -->
+		
 		<javax.servlet.version>2.5</javax.servlet.version>
 		<google-collections.version>1.0</google-collections.version>
 		<org.slf4j.version>1.6.4</org.slf4j.version>
@@ -46,6 +74,9 @@
 		<logback.version>1.0.0</logback.version>
 		<javax.mail.version>1.4.1</javax.mail.version>
 		<spring.version>3.0.5.RELEASE</spring.version>
+		
+		<!-- Keystone Plugin version -->
+		<keystone-plugin.version>3.3</keystone-plugin.version>
 	</properties>
 	<!-- ******************************************************************* -->
 	<!-- MODULE LIST -->
@@ -57,12 +88,25 @@
 		<module>winstone-test</module>
 	</modules>
 	<!-- ******************************************************************* -->
+	<!-- DISTRIBUTION -->
+	<!-- ******************************************************************* -->
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+	<!-- ******************************************************************* -->
 	<!-- BUILD -->
 	<!-- ******************************************************************* -->
 	<build>
 		<pluginManagement>
 			<plugins>
-				<!-- ******************************************************************* -->
+			<!-- ******************************************************************* -->
 				<!-- Default Compiler and Resource -->
 				<!-- ******************************************************************* -->
 				<plugin>
@@ -70,9 +114,9 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>${maven-compiler-plugin.version}</version>
 					<configuration>
-						<source>1.6</source>
-						<target>1.6</target>
-						<encoding>UTF-8</encoding>
+						<source>${jvm.specification.version}</source>
+						<target>${jvm.specification.version}</target>
+						<encoding>${project.build.sourceEncoding}</encoding>
 						<optimize>${maven.compiler.optimize}</optimize>
 						<showDeprecation>${maven.compiler.showDeprecation}</showDeprecation>
 					</configuration>
@@ -82,23 +126,35 @@
 					<artifactId>maven-resources-plugin</artifactId>
 					<version>${maven-resources-plugin.version}</version>
 					<configuration>
-						<encoding>UTF-8</encoding>
+						<encoding>${project.build.sourceEncoding}</encoding>
 					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>2.3.2</version>
+					<version>${maven-jar-plugin.version}</version>
+					<configuration>
+						<archive>
+							<addMavenDescriptor>true</addMavenDescriptor>
+							<manifest>
+								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+								<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+							</manifest>
+						</archive>
+					</configuration>
 				</plugin>
+				<!-- ******************************************************************* -->
+				<!-- Source and java doc -->
+				<!-- ******************************************************************* -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>2.1.2</version>
+					<version>${maven-source-plugin.version}</version>
 					<executions>
 						<execution>
 							<id>attach-sources</id>
 							<goals>
-								<goal>jar</goal>
+								<goal>jar-no-fork</goal>
 							</goals>
 						</execution>
 					</executions>
@@ -106,18 +162,100 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>2.8</version>
-					<configuration>
-						<nohelp>true</nohelp>
-					</configuration>
+					<version>${maven-javadoc-plugin}</version>
 					<executions>
 						<execution>
-							<id>attach-sources</id>
+							<id>attach-javadocs</id>
 							<goals>
 								<goal>jar</goal>
 							</goals>
 						</execution>
 					</executions>
+				</plugin>
+				<!-- ******************************************************************* -->
+				<!-- Checksum file will be deployed into repository with md5 and sha1 
+					extension. -->
+				<!-- ******************************************************************* -->
+				<plugin>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>${maven-install-plugin.version}</version>
+					<configuration>
+						<createChecksum>true</createChecksum>
+					</configuration>
+				</plugin>
+				<!-- ******************************************************************* -->
+				<!-- Release -->
+				<!-- ******************************************************************* -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>${maven-release-plugin.version}</version>
+					<configuration>
+						<scmCommentPrefix>[maven-release-plugin]</scmCommentPrefix>
+						<autoVersionSubmodules>true</autoVersionSubmodules>
+						<useReleaseProfile>false</useReleaseProfile>
+						<releaseProfiles>release</releaseProfiles>
+						<goals>deploy</goals>
+					</configuration>
+				</plugin>
+				<!-- ******************************************************************* -->
+				<!-- Signature -->
+				<!-- ******************************************************************* -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>${maven-gpg-plugin.version}</version>
+					<configuration>
+						<keyname>${gnupg.keyname}</keyname>
+					</configuration>
+					<executions>
+						<execution>
+							<id>sign-artifacts</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>sign</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<!-- ******************************************************************* -->
+				<!-- Reactor -->
+				<!-- ******************************************************************* -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-reactor-plugin</artifactId>
+					<version>${maven-reactor-plugin.version}</version>
+				</plugin>
+				<!-- ******************************************************************* -->
+				<!-- ENFORCER Plugin Declaration -->
+				<!-- ******************************************************************* -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>${maven-enforcer-plugin.version}</version>
+					<executions>
+						<execution>
+							<id>enforce-versions</id>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+							<configuration>
+								<rules>
+									<requireJavaVersion>
+										<version>${jvm.specification.version}</version>
+									</requireJavaVersion>
+								</rules>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<!-- ******************************************************************* -->
+				<!-- Keystone Plugin Declaration -->
+				<!-- ******************************************************************* -->
+				<plugin>
+					<groupId>org.intelligents-ia</groupId>
+					<artifactId>keystone-plugin</artifactId>
+					<version>${keystone-plugin.version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -131,13 +269,6 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
 		</plugins>
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh</artifactId>
-				<version>2.6</version>
-			</extension>
-		</extensions>
 	</build>
 	<!-- ******************************************************************* -->
 	<!-- DEPENDENCIES -->
@@ -220,52 +351,12 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	<!-- ******************************************************************* -->
-	<!-- DISTRIBUTION -->
-	<!-- ******************************************************************* -->
-	<repositories>
-		<!-- Intelligents-ia RELEASE -->
-		<repository>
-			<id>intelligents-ia-releases</id>
-			<name>Intelligents-ia releases repository</name>
-			<url>http://mvn.intelligents-ia.com/releases</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>intelligents-ia-releases</id>
-			<name>Intelligents-ia releases repository</name>
-			<url>http://mvn.intelligents-ia.com/releases</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
-	<distributionManagement>
-		<repository>
-			<id>intelligents-ia-releases</id>
-			<name>Intelligents-ia releases repository</name>
-			<url>sftp://sftp.dc0.gpaas.net:/vhosts/mvn.intelligents-ia.com/htdocs/releases</url>
-		</repository>
-	</distributionManagement>
+	<!-- ********************************************************************************* -->
+	<!-- ON RELEASE PROFILE -->
+	<!-- ********************************************************************************* -->
 	<profiles>
 		<profile>
-			<id>release-doc-artifacts</id>
-			<activation>
-				<property>
-					<name>performRelease</name>
-					<value>true</value>
-				</property>
-			</activation>
+			<id>release</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -276,8 +367,40 @@
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
 					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
 				</plugins>
 			</build>
 		</profile>
 	</profiles>
+	<!-- ******************************************************************* -->
+	<!-- REPORTING -->
+	<!-- ******************************************************************* -->
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.0</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>dependency-updates-report</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
 </project>
