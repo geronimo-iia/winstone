@@ -695,7 +695,7 @@ public class WebAppConfiguration implements ServletContext, Comparator<Object> {
         if (!loggerClassName.equals("")) {
             try {
                 accessLogger = AccessLoggerProviderFactory.getAccessLogger(getOwnerHostname(), getContextName(),
-                        PatternType.valueOf(StringUtils.stringArg(startupArgs, "simpleAccessLogger.format", "combined")),
+                        PatternType.fromName(StringUtils.stringArg(startupArgs, "simpleAccessLogger.format", "combined")),
                         StringUtils.stringArg(startupArgs, "simpleAccessLogger.file", "logs/###host###/###webapp###_access.log"));
             } catch (final Throwable err) {
                 WebAppConfiguration.logger.error("Error instantiating access logger class: " + loggerClassName, err);
