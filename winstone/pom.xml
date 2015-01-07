@@ -37,9 +37,9 @@
 			</plugin>
 			<!-- Packaging -->
 			<plugin>
-				<groupId>org.intelligents-ia.keystone</groupId>
+				<groupId>org.intelligents-ia</groupId>
 				<artifactId>keystone-plugin</artifactId>
-				<version>3.1</version>
+				<version>3.3</version>		
 				<executions>
 					<execution>
 						<id>make-assembly</id>
