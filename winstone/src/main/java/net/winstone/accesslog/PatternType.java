@@ -24,4 +24,13 @@ public enum PatternType {
 	public final String getPattern() {
 		return pattern;
 	}
+	
+	public static PatternType fromName(String value) {
+	    for (PatternType type: PatternType.values()) {
+	        if (type.name().equalsIgnoreCase(value)) {
+	            return type;
+	        }
+	    }
+	    return COMBINED;
+	}
 }
