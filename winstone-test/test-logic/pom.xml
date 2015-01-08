@@ -12,7 +12,7 @@
 	<packaging>jar</packaging>
 	<dependencies>
 		<dependency>
-			<groupId>net.winstone</groupId>
+			<groupId>org.intelligents-ia.winstone</groupId>
 			<artifactId>winstone</artifactId> 
 			<scope>compile</scope>
 		</dependency>
