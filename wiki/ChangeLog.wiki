@@ -12,7 +12,7 @@
   * make change according issue 24: maven central
     * change group id
     * change distribution repository
-    * add module *-boot in order to be able to sign them (when release occurs)
+    * add module winstone-boot and winstone-jps-boot in order to be able to sign them (when release occurs)
   * set JDK 1.7 as minimal supported version
   
 
