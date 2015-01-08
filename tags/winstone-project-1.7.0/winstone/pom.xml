@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.intelligents-ia.winstone</groupId>
+		<artifactId>winstone-project</artifactId>
+		<version>1.7.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	<artifactId>winstone</artifactId>
+	<packaging>jar</packaging>
+	<name>Winstone Server</name>
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/filtered</directory>
+				<filtering>true</filtering>
+				<targetPath>${project.build.directory}/classes</targetPath>
+			</resource>
+		</resources>
+		<plugins>
+			<!-- Main Class -->
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<mainClass>net.winstone.Winstone</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>2.3</version>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>org.intelligents-ia.winstone</groupId>
+			<artifactId>jndi</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- we did not add mail dependency in minimal system -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<!-- Servlet API 2.5 -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+		</dependency>
+		<!-- Log -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+	</dependencies>
+	<profiles>
+		<profile>
+			<id>test-jdbc-jndi</id>
+			<activation>
+				<property>
+					<name>test-jdbc</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<dependencies>
+				<!-- This work only it your deploy oracle driver on your local repository -->
+				<!-- <dependency> -->
+				<!-- <groupId>com.oracle</groupId> -->
+				<!-- <artifactId>ojdbc6</artifactId> -->
+				<!-- <version>11.2.0.3</version> -->
+				<!-- </dependency> -->
+				<dependency>
+					<groupId>com.h2database</groupId>
+					<artifactId>h2</artifactId>
+					<scope>compile</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+</project>
