@@ -4,7 +4,7 @@
 	<artifactId>winstone-project</artifactId>
 	<packaging>pom</packaging>
 	<name>Winstone Project</name>
-	<version>1.7.0</version>
+	<version>1.7.1-SNAPSHOT</version>
 	<description>Winstone is a servlet container that was written out of a desire to provide servlet functionality without the bloat that full J2EE compliance introduces.</description>
 	<url>http://code.google.com/p/winstone/</url>
 	<inceptionYear>2010</inceptionYear>
@@ -23,9 +23,9 @@
 		</license>
 	</licenses>
 	<scm>
-		<connection>scm:svn:https://winstone.googlecode.com/svn/tags/winstone-project-1.7.0</connection>
-		<url>https://winstone.googlecode.com/svn/tags/winstone-project-1.7.0</url>
-		<developerConnection>scm:svn:https://winstone.googlecode.com/svn/tags/winstone-project-1.7.0</developerConnection>
+		<connection>scm:svn:https://winstone.googlecode.com/svn/trunk/</connection>
+		<url>https://winstone.googlecode.com/svn/trunk/</url>
+		<developerConnection>scm:svn:https://winstone.googlecode.com/svn/trunk/</developerConnection>
 	</scm>
 	<issueManagement>
 		<system>Google Code</system>
