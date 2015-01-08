@@ -56,14 +56,14 @@
 
 		<!-- GnuPg Configuration key to define per project. -->
 		<gnupg.keyname>F45635CF</gnupg.keyname>
-	
+
 		<!-- Maven Compiler settings -->
 		<jvm.specification.version>1.7</jvm.specification.version>
 		<maven.compiler.optimize>true</maven.compiler.optimize>
 		<maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
-		
+
 		<!-- dependencies version -->
-		
+
 		<javax.servlet.version>2.5</javax.servlet.version>
 		<google-collections.version>1.0</google-collections.version>
 		<org.slf4j.version>1.6.4</org.slf4j.version>
@@ -73,7 +73,7 @@
 		<logback.version>1.0.0</logback.version>
 		<javax.mail.version>1.4.1</javax.mail.version>
 		<spring.version>3.0.5.RELEASE</spring.version>
-		
+
 		<!-- Keystone Plugin version -->
 		<keystone-plugin.version>3.3</keystone-plugin.version>
 	</properties>
@@ -83,7 +83,9 @@
 	<modules>
 		<module>jndi</module>
 		<module>winstone</module>
+		<module>winstone-boot</module>
 		<module>winstone-jsp</module>
+		<module>winstone-jsp-boot</module>
 		<module>winstone-test</module>
 	</modules>
 	<!-- ******************************************************************* -->
@@ -172,7 +174,7 @@
 					</executions>
 				</plugin>
 				<!-- ******************************************************************* -->
-				<!-- Checksum file will be deployed into repository with md5 and sha1 
+				<!-- Checksum file will be deployed into repository with md5 and sha1
 					extension. -->
 				<!-- ******************************************************************* -->
 				<plugin>

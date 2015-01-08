@@ -36,26 +36,6 @@
 					</archive>
 				</configuration>
 			</plugin>
-			<!-- Packaging -->
-			<plugin>
-				<groupId>org.intelligents-ia</groupId>
-				<artifactId>keystone-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>make-assembly</id>
-						<phase>package</phase>
-						<configuration>
-							<mainClass>net.winstone.Winstone</mainClass>
-							<info>true</info>
-							<verbose>false</verbose>
-							<cleanUpLib>false</cleanUpLib>
-						</configuration>
-						<goals>
-							<goal>custom</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>findbugs-maven-plugin</artifactId>
@@ -111,4 +91,3 @@
 		</profile>
 	</profiles>
 </project>
-
