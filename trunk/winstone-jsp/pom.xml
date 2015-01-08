@@ -47,26 +47,6 @@
 					</archive>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.intelligents-ia</groupId>
-				<artifactId>keystone-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>make-assembly</id>
-						<phase>package</phase>
-						<configuration>
-							<mainClass>net.winstone.Winstone</mainClass>
-							<info>false</info>
-							<verbose>false</verbose>
-							<cleanUpLib>true</cleanUpLib>
-						</configuration>
-						<goals>
-							<goal>custom</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
 </project>
-
