@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<fileset>
-<file>
-   <path>src/main/java</path>
-   <type>java</type>
-   <license>LGPL</icense>
-</file>    
-</fileset>
