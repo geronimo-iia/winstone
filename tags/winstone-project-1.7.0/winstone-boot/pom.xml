@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.intelligents-ia.winstone</groupId>
+		<artifactId>winstone-project</artifactId>
+		<version>1.7.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	<artifactId>winstone-boot</artifactId>
+	<packaging>jar</packaging>
+	<name>Winstone Server BootStrap</name>
+	<build>
+		<plugins>
+			<!-- Packaging -->
+			<plugin>
+				<groupId>org.intelligents-ia</groupId>
+				<artifactId>keystone-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<configuration>
+							<mainClass>net.winstone.Winstone</mainClass>
+							<info>true</info>
+							<verbose>false</verbose>
+							<cleanUpLib>false</cleanUpLib>
+							<replaceProjectArtifact>true</replaceProjectArtifact>
+						</configuration>
+						<goals>
+							<goal>custom</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>org.intelligents-ia.winstone</groupId>
+			<artifactId>winstone</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
+</project>
+
