@@ -1,0 +1,305 @@
+#List of done things since v0.3
+
+---
+
+
+# Change Log #
+
+## v1.7.1 (SNAPSHOT) ##
+
+## v1.7.0 ##
+  * fix [issue 26](https://code.google.com/p/winstone/issues/detail?id=26): key not serializable was not removed from winsone session...
+  * fix [issue 25](https://code.google.com/p/winstone/issues/detail?id=25): format log pattern are no case sensitive
+  * make change according [issue 24](https://code.google.com/p/winstone/issues/detail?id=24): maven central
+    * change group id
+    * change distribution repository
+    * add module winstone-boot and winstone-jps-boot in order to be able to sign them (when release occurs)
+  * set JDK 1.7 as minimal supported version
+
+
+
+## v1.0.6 ##
+  * add maven filtered mechanism on internal message resource ([issue 17](https://code.google.com/p/winstone/issues/detail?id=17))
+  * remove sort on filter ([issue 18](https://code.google.com/p/winstone/issues/detail?id=18))
+  * fix NPE on mime type ([issue 19](https://code.google.com/p/winstone/issues/detail?id=19))
+  * fix NPE on Simple Datasource ([issue 20](https://code.google.com/p/winstone/issues/detail?id=20))
+  * update keystone version to 3.1
+  * add two command line option : ([issue 22](https://code.google.com/p/winstone/issues/detail?id=22))
+  * change UTF-8 decoding ([issue 21](https://code.google.com/p/winstone/issues/detail?id=21))
+  * fix class cast exception ([issue 23](https://code.google.com/p/winstone/issues/detail?id=23))
+  * update distribution managment
+
+## v1.0.5 ##
+  * filtering server classpath in order to exclude org.apache.log4j and org.slf4j package
+  * adding Configuration class and builder
+  * FIX [issue 16](https://code.google.com/p/winstone/issues/detail?id=16): Wrong "reason" messages for the HTTP status codes
+  * Add more information in case of class not found
+  * From [jenkins winstone](https://github.com/jenkinsci/winstone)
+    * Recognize \ as path separator
+    * Added more MIME type mappings from https://github.com/jenkinsci/jenkins/pull/447
+    * MIME type of .ipa/.plist for iOS App Distribution http://stackoverflow.com/questions/3728601/what-is-the-correct-mime-type-for-serving-an-iphone-ipa-file
+    * [JENKINS-14452](FIXED.md) Fixed the handling of IPv6 address
+    * [JENKINS-9882](FIXED.md) Use Java5 ExecutorService for thread management.
+    * Do not allow the webapp to split HTTP header values into multiple lines.
+
+
+
+## v1.0.4 ##
+  * Create dedicated module:
+    * jndi
+    * test and sub-module
+  * removing deprecated parameter :
+    * commonLibFolder: replaced by --Bootstrap.extraLibrariesFolderPath which is managed by bootsrap framewok ([keystone](http://code.google.com/p/intelligents-ia/))
+    * --javaHome, Override the JAVA\_HOME variable by setting his value on command shell
+    * --toolsJar Default is JAVA\_HOME/lib/tools.jar, or in the winstone server libraries.
+  * Add a ServerConfiguration object and server configuration DSL (testing purpose only)
+  * Mark session cookies as HTTP only so that it won't show to JavaScript. (from jenkins branch)
+
+
+## v1.0.3 ##
+  * update of command line argument list
+  * Fix path separator on HostConfiguration
+  * WebApplicationConfiguration versus jdk5
+  * Add shutdown message
+  * change to StringBuilder usage
+  * Adding programmatic HostGroup, Cluster and JNDI access on Server instance.
+  * Start adding javadoc and comment
+  * Use Boolean singleton
+  * Add webroots command line option
+  * Fix jndi manager configuration
+  * Fix dependencies on log4j
+  * Add more information on deployed webapplication (or not...)
+  * Relocate Server class and expose clean member
+  * Expose method on HostGroup, HostConfiguration
+  * From [jenkins winstone](https://github.com/jenkinsci/winstone)
+    * Add better consistency check between war and exploded dir
+    * Fix XSS vulnerability in default error pages [jenkins-advisory](http://www.cloudbees.com/jenkins-advisory/jenkins-security-advisory-2011-11-08.cb)
+    * FIX HUDSON-728
+    * don't mask all the errors on HostConfiguration
+    * Update ObjectPool in order to avoir memory leak
+    * made the usage screen customizable
+    * Fix AJP13Listener
+    * ignore IOException caused by browsers terminating connections abruptly
+    * detect nested exceptions in RequestHandlerThread
+    * sessions cleanup
+    * performance improvement on WinstoneInputStream
+    * FIX HUDSON-4804
+    * FIXED HUDSON-5119: finite default session timeout
+    * if --httpsPort is given without the key store, run with a self-signed certificate.
+    * added httpsCertificate and httpsPrivateKey options to support OpenSSL style key formats.
+    * Added an explicit switch to enable SSL client auth, as the "optional"
+    * Fixed a bug in AJP packet parsing
+    * Added the canonicalization of the URI path.
+    * Fixed a possible memory leak. A large number of sessions whose isNew flag is left to true. It seem to me that for the sake of session eviction, the timestamp should be enough.
+    * FIX AJP13Listener  "shutdown OK" will be reported even for an error case.
+    * fixed a error recovery behaviour on HttpListener
+    * Carry forward the request URI in the error dispatching.
+    * write response headers with buffering.
+    * allow the session cookie name to be modified
+    * Failing to launch a listener is a fatal error.
+    * HTTPS certificate generation so long as HTTPS listener is off
+    * escape error messages which are supposed be plain text and not markup
+    * Compliance for IPv6 HTTP requests
+    * Winstone does not parse the query string if the POST request has any  content. This would be the correct behavior for forms, but not for normal requests, specially when we want to send POST requests for executing tasks, such as createItem.
+    * Fixed the bogus "URI must start with a slash" problem
+    * do not report ClientSocketException caused by the client aborting the connection.
+    * eliminated a pointless use of a variable in RequestHandlerThread
+    * ClassNotFoundException resulting from the user error be reported to the user
+    * implemented a fix for hash DoS
+
+## v1.0.2 ##
+  * Add log4jConfiguration
+  * Fix startup problem
+  * Update to bootloader Keystone 2.2
+  * cleanup warning
+  * update to jdk 1.6
+  * update slf4j to version 1.6.4
+  * Fix shutdown hook call
+
+
+## v1.0.0 ##
+
+  * Update to be maven v2 compliance:
+    * source tree
+    * load resources as UTF-8
+    * JDK 1.5
+    * add find bug plugin
+  * Update maven dependency (servlet v2.5 MR6 - JSR 154)
+  * Remove GCJ build mechanism (not working)
+  * integrate extra stuff (filter)
+  * make HostGroup members to protected.
+  * add constructor on HostGroup, HostConfiguration and WebApplicationconfiguration with no cluster neither objectPool args
+  * add a method that return a servlet from an URI;
+  * the method that computes a session ID in WinstoneRequest#makeNewSession() is now public;
+  * HttpListenet#releaseSocket : add try/catch on each close and throw last IO exception.
+  * set bunch of methods public AND static :
+    * `HttpListener#parseURILine(String,WinstoneRequest,WinstoneResponse)`
+    * `HttpListener#trimHostName(String input)`
+    * Why declare a method static ? (see on http://leepoint.net/notes-java/flow/methods/50static-methods.html)
+> > "The above mean() method would work just as well if it wasn't declared static, as long as it was called from within the same class. If called from outside the class and it wasn't declared static, it would have to be qualified (uselessly) with an object. Even when used within the class, there are good reasons to define a method as static when it could be.
+> > Documentation. Anyone seeing that a method is static will know how to call it (see below). Similarly, any programmer looking at the code will know that a static method can't interact with instance variables, which makes reading and debugging easier.
+> > Efficiency. A compiler will usually produce slightly more efficient code because no implicit object parameter has to be passed to the method."
+  * Control port password: "Since the control port doesn't have a password yet, it would be good, security-wise, to bind the control port only to the loopback interface."
+    * Add `--controlAddress` command line parameter. This  provide and easy way to ensure that shutdown requests originate from the localhost or a machine on a trusted interface while still allowing winstone to serve requests on an untrusted public interface. If no controlAddress is provided, InetAddress.getLocalHost() is used.
+  * removing deprecated call: `jars.add(toolsJar.toURL());` and check that `toolsJar.toURI().toURL() == toolsJar.toURL()` (Launcher)
+  * FIX NullPointerException in WinstoneControl.java When running the command `java -cp winstone-0.9.10.jar winstone.tools.WinstoneControl`
+  * Fix Ajp13Listener failure to deallocate response/request
+  * FIX potential bug in HostConfiguration when webapp prefix (context path) did not start with "/".
+  * Errors in listener instantiation are not ignored now
+  * Temp Dir: The original issue reported in https://hudson.dev.java.net/issues/show_bug.cgi?id=693. By default system will use  `$TMP/winstone/${user.name}/${hostname}/${warFileBaseName`}, and i've add a parameter `--tempDirectory`. If tempDirectory is set, tempory directory used will be: `${tempDirectory}/${hostname}/${warFileBaseName`}
+  * update  parameter name into a more simpler way
+  * FIX serialVersionUID
+  * (TOD0) ArrayIndexOutOfBoundsException in SecurityConstraint. This exception is thrown if web.xml contains a security-constraint -> web-resource-collection with more than one url-pattern entry. ==> Have to write a test case
+  * Add type information on collection.
+  * remove ressource bundle ? We should try a way with less time consumming ?
+    * ResourceBundle time -> 9681464, 9681464000
+    * WinstoneResourceBundle time -> 10006776, 10006776498
+    * HashResourceBundle time -> 8912917, 8912917803 (google collection)
+    * Immutable HashResourceBundle time -> 15437561, 15437561550  (google collection)
+    * FastMap HashResourceBundle time -> 9583291, 9583291592	 (from javolution 5.5.1)
+  * Mime type: In a more confortable way, i start to add default value (aka tomcat) by MimeTypes class which load all their value from properties file "mime.properties". The ServletContext.getMimeType(String) returns a MIME type for a given file name based on the extension of the filename. The mapping returned is based on the servlet container configuration as well as the web application descriptor's mime-mapping elements.
+  * Set parameter map to <String, String[.md](.md)> as specification 2.5
+
+## v0.9.5 ##
+  * Add session persistence across reboots (ie serialize to file)
+  * Add v2.5 spec support
+  * Heaps of include/forward and session related fixes (thanks to Martin Cordova and Robert Boyce)
+
+## v0.8.1 ##
+  * License change to dual CDDL + LGPL
+  * appfuse bugfix. All listeners need a context class loader set.
+  * update outputstream to do include stacking internally, rather than returning new streams for each level
+  * fixed some nasty web.xml parsing bugs
+
+## v0.8 ##
+  * Remove resource bundles as arguments. Declare statically in class
+  * DB connection pool keep-alive support, etc
+  * Cache filter matching calcs for various URLs
+  * Virtual host support
+  * Access log. Apache style if possible, minimal config.
+  * Fix for davenport and jakarta slide webdav applications
+  * Check for warfile, properties file inside classpath, so that we can pack an app in a single jar
+
+## v0.7 ##
+  * Fixed load-on-startup optional content bug (thanks to Matthias Wuttke)
+  * Fixed the "error request loses attributes when forwarded" bug
+  * Upgraded to maven build process, ant is deprecated
+  * Reformatted source using eclipse source formatter
+  * Added better resolution of paths in static resource servlet, so that spaces etc in paths are handled properly
+  * Multiple webapp support
+  * Fix for JamVM JNDI properties bug (thanks Martin Cordova)
+  * SSL Key manager factory selector (thanks Martin Cordova)
+  * TCK compliance testing
+  * Added optional gzip and multipart upload filters
+  * Fixed session bugs in SSL (thanks Martin Cordova)
+
+## v0.6.4 ##
+  * Added HTTPS listener class
+  * Fixed the path separator bug in the classpath under linux
+  * Changed default hostname lookups to off (more stable).
+
+## v0.6.3 ##
+  * Fixed the errorPage directive bug
+  * Fixed bugs related to requestDispatcher and non-existants urls
+  * Fixed querystring parsing error when non-latin1 encoding
+
+## v0.6.2 ##
+  * Move all debugging message lookups into logger (performance)
+  * Made invoker servlet on by default
+
+## v0.6.1 ##
+  * Fix VariableInfo and BodyContent api errors for jsps
+  * Fix WinstoneDataSource lockup problem
+
+## v0.6 ##
+  * Create winstone local jsp 2.0 api classes
+  * Update to v2.4 servlet api classes
+  * Refactor to winstone package, not com.rickknowles.winstone package
+  * Test with Apache Struts framework
+  * Added logfile directive
+  * Fixed request/response locale setting
+  * Fixed jsp include bugs
+  * Fixed http session bugs
+  * Added simple test application
+  * Java wrapper for control operations, such as shutdown or flush
+  * Additional control port options, such as manual webapp forced reload operation
+  * Added 206 Partial Content (ie restartable downloads) to static servlet
+  * Added interface specific binding for ajp13 and http listeners
+  * Add additional listener class calls for request + attributes
+  * Update to make winstone completely compliant with servlet 2.4 spec (non-compliance with 2.4 spec parts completed in v0.6)
+  * 1.6.1 Session Destroyed call timing is not called at correct time
+  * 2.3.2.1 Error handling in servlet.init() - UnavailableException
+  * 2.3.3.2 Error handling in servlet.service() - UnavailableException
+  * 2.3.4 Calling destroy incorrectly - wait for all threads to finish
+  * 3.5 Resource URLs
+  * 4.1.1 Parse conditions for POST parameters
+  * 4.4 Context Path / Servlet Path / Path Info values wrong
+  * 4.5 Path translation methods incorrect
+  * 4.7 Add SSL request attribute (javax.servlet.request.key\_size)
+  * 4.9 Request Encoding
+  * 4.10 Implement request listeners
+  * 4.10 Implement request attribute listeners
+  * 5.1 Reset / Buffer management
+  * 5.2 X-Powered-By
+  * 5.3 Redirect URLs must be absolute
+  * 5.4 Locale mapping implementation
+  * 6.2.1 Filter init() error handling
+  * 6.2.4 Build filter chain in reverse order
+  * 6.2.5 Filter config for dispatcher
+  * 7.1.1 Session cookie name
+  * 7.4 Check order of session binding listeners
+  * 7.6 Session accessed time
+  * 7.7.2 Errors in distributed sessions
+  * 8.1 Return null request dispatcher when no url found
+  * 8.1 Request vs Context Dispatchers
+  * 8.1.1 Query string in request dispatchers
+  * 8.3 Request attributes for include dispatches
+  * 8.3.1 getNamedDispatcher
+  * 8.4.2 Forward request attributes
+  * 8.5 Errors in dispatch
+  * 9.5 404 for WEB-INF
+  * 9.6 404 for META-INF
+  * 9.7.1 Shared library classloader (common/lib)
+  * IGNR 9.7.1 Manifest depend libraries
+  * 9.9.1 Error request attributes
+  * 9.9.2 Error page matching
+  * 9.9.3 Error filters
+  * 9.10 Welcome file match
+  * 9.12 Order of startup
+  * 10.3.2 Order of listener invokation
+  * 10.3.4 Session then context listeners
+  * 10.6 Listener exceptions
+  * 10.8 Can determine invalidate or timeout on session
+  * 11.1 Rule order for URL match
+  * 11.2 default mapping of /
+  * 11.2.1  .jsp mapping is overrideable
+  * 12.2 Security on incoming only
+  * 12.3 Match security-role-ref in IsUserInRole
+  * IGNR - 12.7 run-as element in servlet
+  * 12.8.1  = all roles
+  * 13.1 Locale-mapping element
+  * IGNR - 13.2 Canonical paths in web.xml
+
+## v0.5 ##
+  * Implement session clustering between multiple Winstone instances
+  * Make the core distribution jar smaller, with optional components detached
+  * Add CLIENT-CERT authentication handler
+  * Add DIGEST authentication handler
+  * Add optional JNDI support for env-refs and jdbc datasource / mail session support
+
+## v0.4 ##
+  * Implement errorPage directives in web.xml
+  * Add in request/response object pools to improve execution time
+  * Add command line arguments to control handler thread startup/max-idle/max
+  * Add servlet reloading to the WinstoneClassLoader
+  * Add authentication/security model - pluggable if possible, so Winstone can work in non-security mode
+  * Add xml-file-based realm support
+  * Add FORM based authentication
+
+## v0.3 ##
+  * Modify the request handler thread to survive beyond a single request cycle
+  * Add auto WAR extract instead of webroot
+  * Change build process to use external ant
+  * Add listener handlers, etc
+  * Add filter handling code
+  * Refactor HttpConnector links, and build an ajp13 connector

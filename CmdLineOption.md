@@ -1,0 +1,113 @@
+Command-line options
+
+
+## Syntax ##
+```
+  java -jar winstone.x.x.x-boot.jar [--option=value] [--option=value] etc
+```
+
+## Required options ##
+
+Either --webroot OR --warfile OR --webappsDir OR --hostsDir OR -- webroots
+```
+--webroot                = set document root folder.
+--warfile                = set location of warfile to extract from.
+--webroots               = set n document root folder (war file or webapplication folder) in a dot-comma separated list.
+Example: --webroots=../target/sample.war;./sample-2-folder
+--webappsDir             = set directory for multiple webapps to be deployed from
+--hostsDir               = set directory for name-based virtual hosts to be deployed from
+```
+
+## Other options: ##
+
+```
+--config                 = load configuration properties from here. Default is ./winstone.properties
+--prefix                 = add this prefix to all URLs (eg http://localhost:8080/prefix/resource). Default is none
+--tempDirectory          = specify a default temporary directory.
+--Bootstrap.extraLibrariesFolderPath = folder for additional jar files. Default is ./lib. (since 1.0.4)
+```
+
+
+```
+--httpPort               = set the http listening port. -1 to disable, Default is 8080
+--httpListenAddress      = set the http listening address. Default is all interfaces
+--httpDoHostnameLookups  = enable host name lookups on incoming http connections (true/false). Default is false
+--httpsPort              = set the https listening port. -1 to disable, Default is disabled
+--httpsListenAddress     = set the https listening address. Default is all interfaces
+--httpsDoHostnameLookups = enable host name lookups on incoming https connections (true/false). Default is false
+--httpsKeyStore          = the location of the SSL KeyStore file.
+--httpsKeyStorePassword  = the password for the SSL KeyStore file. Default is null
+--httpsKeyManagerType    = the SSL KeyManagerFactory type (eg SunX509, IbmX509). Default is SunX509
+--httpsVerifyClient      = If true, request the client certificate aka "SSLVerifyClient require" Apache directive. 
+Default is false
+--httpsCertificate       = Path of HTTPS certificate
+--httpsPrivateKey        = Path of private key
+--ajp13Port              = set the ajp13 listening port. -1 to disable, Default is 8009
+--ajp13ListenAddress     = set the ajp13 listening address. Default is all interfaces
+--controlPort            = set the shutdown/control port. -1 to disable, Default disabled
+--controlAddress         = set the ip address which the control listener should bind to, Default is local host
+--handlerCountStartup    = set the no of worker threads to spawn at startup. Default is 5
+--handlerCountMax        = set the max no of worker threads to allow. Default is 300
+--handlerCountMaxIdle    = set the max no of idle worker threads to allow. Default is 50
+```
+
+```
+--directoryListings      = enable directory lists (true/false). Default is true
+--useJasper              = enable jasper JSP handling (true/false). Default is false
+--useServletReloading    = enable servlet reloading (true/false). Default is false
+--preferredClassLoader   = override the preferred webapp class loader.
+--useInvoker             = enable the servlet invoker (true/false). Default is true
+--invokerPrefix          = set the invoker prefix. Default is /servlet/
+--simulateModUniqueId    = simulate the apache mod_unique_id function. Default is false
+--useSavedSessions       = enables session persistence (true/false). Default is false
+--maxParamAllowed        = set the max number of parameters allowed in a form submission to protect
+against hash DoS attack (oCERT #2011-003). Default is 10000.
+--usage / --help         = show this message
+```
+
+### Cluster options ###
+```
+--useCluster             = enable cluster support (true/false). Default is false
+--clusterClassName       = Set the cluster class to use. Defaults to SimpleCluster class
+--clusterNodes           = a comma separated list of node addresses (IP:ControlPort,IP:ControlPort,etc)
+```
+
+
+### JNDI options ###
+```
+--useJNDI                      = enable JNDI support (true/false). Default is false
+--containerJndiClassName       = Set the container wide JNDI manager class to use. Defaults to ContainerJNDIManager
+--webappJndiClassName          = Set the web-app JNDI manager class to use. Defaults to WebAppJNDIManager
+--jndi.resource.<name>         = set the class to be used for the resource marked <name>
+--jndi.param.<name>.<attName>  = set an attribute <attName> to be associated with the resource marked <name>
+```
+
+### Security options ###
+```
+--realmClassName               = Set the realm class to use for user authentication. Defaults to ArgumentsRealm class
+
+--argumentsRealm.passwd.<user> = Password for user <user>. Only valid for the ArgumentsRealm realm class
+--argumentsRealm.roles.<user>  = Roles for user <user> (comma separated). Only valid for the ArgumentsRealm realm class
+
+--fileRealm.configFile         = File containing users/passwds/roles. Only valid for the FileRealm realm class
+```
+
+### Access logging ###
+```
+--accessLoggerClassName        = Set the access logger class to use for user authentication. Defaults to disabled
+--simpleAccessLogger.format    = The log format to use. Supports combined/common/resin/custom (SimpleAccessLogger only)
+--simpleAccessLogger.file      = The location pattern for the log file(SimpleAccessLogger only)
+```
+
+### ClassPath-Option ###
+```
+--useServerClassPath           = Set filtering active on server classpath. Filtered package from server will be not visible for all web application. Default is TRUE.
+--filterClassPath              = Comma separated list of filtered package. Per default is "org.apache.log4j,org.slf4j".
+```
+
+### Deprecated ###
+```
+--javaHome               = Deprecated. Override the JAVA_HOME variable by setting his value on command shell
+--toolsJar               = Deprecated. Default is JAVA_HOME/lib/tools.jar, or in the winstone server libraries.
+--commonLibFolder        = Deprecated. See --Bootstrap.extraLibrariesFolderPath
+```

@@ -1,0 +1,52 @@
+# Using Winstone #
+
+
+## Run it ##
+
+Deploy a single webapplication using a directory:
+```
+  java -jar target/winstone-X.X.X-boot.jar --webroot=<location of webroot> (+ other options)
+```
+- OR -
+Deploy a single webapplication using a war file:
+```
+  java -jar target/winstone-X.X.X-boot.jar --warfile=<location of warfile> (+ other options)
+```
+- OR -
+Deploy several webapplication using a multiple directories :
+```
+  java -jar target/winstone-X.X.X-boot.jar --webroots=[<location of webroot>;]+ (+ other options)
+```
+_webroots is a dot-comma separated list of webroot_
+- OR -
+Deploy several webapplication under the same directory:
+```
+  java -jar target/winstone-X.X.X-boot.jar --webappsDir=<location of webapps directory> (+ other options)
+```
+- OR -
+Deploy several webapplication under the host directory:
+```
+  java -jar target/winstone-X.X.X-boot.jar --hostsDir=<location of hosts directory> (+ other options)
+```
+
+
+
+## Build from source ##
+
+If you want to build from source code, you will need to download and install: Apache Maven (v2.x) and Subversion Tool.
+The following instructions assume you have already installed Maven/Svn and have the maven/svn shell script in your path (to get them, see http://maven.apache.org/ and http://subversion.apache.org/packages.html).
+
+To build Winstone, checkout the tree:
+```
+svn checkout http://winstone.googlecode.com/svn/trunk/ winstone
+```
+Then build it:
+```
+cd winstone
+mvn clean install
+```
+
+The winstone-X.X.X-boot.jar file will be in the winstone/target directory after the build is complete.
+
+
+By default maven build add dependencies into archive folder `/lib` in target jar file. If you need more information read more about [Keystone](http://code.google.com/p/intelligents-ia/wiki/KeystoneHowToEN)

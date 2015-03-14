@@ -1,0 +1,15 @@
+# Requested Features #
+
+  * prepare support of JDK 8 (take car about HTTPSListener)
+  * use configuration class:
+    * parse from command line or json document
+    * use configuration to instanciate server components
+  * use JCL project to manage class loader
+  * clean pom (reduce size)
+  * Add a Servlet Manager info about Winstone Stuff
+  * Expose a programmatic API to:
+    * add/remove/list HostConfiguration
+    * deploy/undeploy/repload/list WebApplication
+  * Use Executor Service instead of simple thread
+  * Study jackson framework to parse web.xml element
+  * use guava 13.0.1 for cache, preconditions, etc..
