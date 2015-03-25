@@ -13,11 +13,14 @@ Sometimes you want just a simple servlet container - without all the other junk 
 
 This is where Winstone is best suited.
 
-You could find some documentation and support on this site: 
- 
- - [Github Wiki](https://github.com/geronimo-iia/winstone/wiki)
- - [Blog] http://intelligents-ia.com/index.php/category/technique/Winstone
+You could find some documentation and support on [Wiki pages](https://github.com/geronimo-iia/winstone/wiki).
 
+
+Few Article and external link about winstone:
+
+  * [blog on winstone](http://intelligents-ia.com/index.php/category/technique/Winstone)
+  * [Introducing Winstone, an ultra-lightweight alternative to Tomcat and Jetty (version 0.9.10) ](http://www.netwhisperer.com/2011/07/18/introducing-winstone-an-ultra-lightweight-alternative-to-tomcat-and-jetty/)
+  * [wikipedia](http://en.wikipedia.org/wiki/Winstone_Servlet_Container)
 
 The original goals in writing Winstone were:
 
