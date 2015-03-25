@@ -23,13 +23,14 @@
 		</license>
 	</licenses>
 	<scm>
-		<connection>scm:svn:https://winstone.googlecode.com/svn/trunk/</connection>
-		<url>https://winstone.googlecode.com/svn/trunk/</url>
-		<developerConnection>scm:svn:https://winstone.googlecode.com/svn/trunk/</developerConnection>
+        <url>https://github.com/geronimo-iia/winstone.git</url>
+        <connection>scm:git:https://github.com/geronimo-iia/winstone.git</connection>
+        <developerConnection>scm:git:https://github.com/geronimo-iia/winstone.git</developerConnection>
+        <tag>HEAD</tag>
 	</scm>
 	<issueManagement>
-		<system>Google Code</system>
-		<url>http://code.google.com/p/winstone/issues/list</url>
+		<system>GitHub</system>
+		<url>https://github.com/geronimo-iia/winstone/issues</url>
 	</issueManagement>
 	<organization>
 		<name>Intelligents-ia</name>
