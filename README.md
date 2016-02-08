@@ -13,7 +13,10 @@ Sometimes you want just a simple servlet container - without all the other junk 
 
 This is where Winstone is best suited.
 
-You could find some documentation and support on [Wiki pages](https://github.com/geronimo-iia/winstone/wiki).
+You could find some documentation and support on [Wiki pages](https://github.com/geronimo-iia/winstone/wiki):
+ * [Using Winstone](https://github.com/geronimo-iia/winstone/wiki/Using-Winstone)
+ * [Command Line Options](https://github.com/geronimo-iia/winstone/wiki/Command-line-options)
+ * and more...
 
 
 Few Article and external link about winstone:
@@ -37,6 +40,9 @@ He actually stopped developing and supporting Winstone, due to other projects. S
 
 We hope that our little fingers instill enough magic in this project so that you are likely to use it.
 
+# Change Log
+
+[See wiki page](https://github.com/geronimo-iia/winstone/wiki/Change-Log)
 
 # Latest Release
 
